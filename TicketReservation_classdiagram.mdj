@@ -4895,7 +4895,7 @@
 											"top": 188,
 											"width": 166.826171875,
 											"height": 13,
-											"text": "+QueryCatalogue*[]",
+											"text": "+QueryCatalogue*",
 											"horizontalAlignment": 0
 										}
 									],
@@ -15104,7 +15104,7 @@
 							"_parent": {
 								"$ref": "AAAAAAGZgojbusAN1Oo="
 							},
-							"name": "QueryCatalogue*[]"
+							"name": "QueryCatalogue*"
 						}
 					],
 					"operations": [
