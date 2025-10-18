@@ -15148,7 +15148,7 @@
 											"top": 879,
 											"width": 142.2607421875,
 											"height": 13,
-											"text": "RouteCatalogue"
+											"text": "RouteCatalog"
 										},
 										{
 											"_type": "LabelView",
@@ -18658,7 +18658,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFF+qBWK6M3Z8Y="
 					},
-					"name": "RouteCatalogue",
+					"name": "RouteCatalog",
 					"attributes": [
 						{
 							"_type": "UMLAttribute",
