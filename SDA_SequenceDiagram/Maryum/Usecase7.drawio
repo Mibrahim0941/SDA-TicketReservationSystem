@@ -1,0 +1,199 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36" version="28.2.7">
+  <diagram name="Page-1" id="2YBvvXClWsGukQMizWep">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="piEthun23IsSPh5JsXoc-1" value=":GUI" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#97D077;" vertex="1" parent="1">
+          <mxGeometry x="560" y="320" width="100" height="590" as="geometry" />
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-2" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="piEthun23IsSPh5JsXoc-1">
+          <mxGeometry x="45" y="70" width="10" height="510" as="geometry" />
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-3" value="BookSeats()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;entryX=0.456;entryY=0.205;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" target="piEthun23IsSPh5JsXoc-5">
+          <mxGeometry x="-0.0414" relative="1" as="geometry">
+            <mxPoint x="620" y="440" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="760" y="440" />
+              <mxPoint x="715" y="430" />
+            </Array>
+            <mxPoint x="829.5" y="440" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-4" value="Review selected seats and click book now" style="html=1;verticalAlign=bottom;startArrow=oval;endArrow=block;startSize=8;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="380" y="420" as="sourcePoint" />
+            <mxPoint x="600" y="420" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="580" y="420" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-5" value=":ControllerClass" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#97D077;" vertex="1" parent="1">
+          <mxGeometry x="800" y="320" width="100" height="590" as="geometry" />
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-6" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="piEthun23IsSPh5JsXoc-5">
+          <mxGeometry x="45" y="100" width="10" height="480" as="geometry" />
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-7" value=":Reservation" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#97D077;" vertex="1" parent="1">
+          <mxGeometry x="960" y="320" width="100" height="590" as="geometry" />
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-8" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="piEthun23IsSPh5JsXoc-7">
+          <mxGeometry x="45" y="120" width="10" height="410" as="geometry" />
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-9" value=":Booking" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#97D077;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="320" width="100" height="590" as="geometry" />
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-10" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="piEthun23IsSPh5JsXoc-9">
+          <mxGeometry x="45" y="260" width="10" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-11" value=":BookCatalogue" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#97D077;" vertex="1" parent="1">
+          <mxGeometry x="1290" y="320" width="100" height="590" as="geometry" />
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-12" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="piEthun23IsSPh5JsXoc-11">
+          <mxGeometry x="45" y="370" width="10" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-13" value=":Seat" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#97D077;" vertex="1" parent="1">
+          <mxGeometry x="1450" y="320" width="100" height="590" as="geometry" />
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-14" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="piEthun23IsSPh5JsXoc-13">
+          <mxGeometry x="45" y="150" width="10" height="340" as="geometry" />
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-15" value="Booking Created Successfully" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry x="-0.0667" relative="1" as="geometry">
+            <mxPoint x="1020" y="684.17" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1135" y="684.17" />
+            </Array>
+            <mxPoint x="1170" y="684.17" as="sourcePoint" />
+            <mxPoint x="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-16" value="CheckAvailability()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1020" y="490" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="1310" y="490" />
+              <mxPoint x="1265" y="480" />
+            </Array>
+            <mxPoint x="1490" y="490" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-17" value="Display error &quot;Seat not available, please&amp;nbsp;&lt;span style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212)); color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;reselect&quot;&lt;/span&gt;" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry x="-0.0465" relative="1" as="geometry">
+            <mxPoint x="620" y="560" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1125" y="560" />
+            </Array>
+            <mxPoint x="1490" y="560" as="sourcePoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-18" value="if no available seats" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=90;height=30;fillColor=#A680B8;" vertex="1" parent="1">
+          <mxGeometry x="790" y="510" width="770" height="380" as="geometry" />
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-19" value="Customer" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#97D077;" vertex="1" parent="1">
+          <mxGeometry x="350" y="400" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-20" value="CreateBooking()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="860" y="460" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="990" y="460" />
+              <mxPoint x="945" y="450" />
+            </Array>
+            <mxPoint x="1000" y="460" as="targetPoint" />
+            <mxPoint x="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-21" value="else" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=light-dark(#A680B8,#A680B8);" vertex="1" parent="1">
+          <mxGeometry x="790" y="590" width="770" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-22" value="CreateNewBooking()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1020" y="620" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="1150" y="620" />
+              <mxPoint x="1105" y="610" />
+            </Array>
+            <mxPoint x="1170" y="620" as="targetPoint" />
+            <mxPoint x="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-23" value="GenerateBookingID()" style="html=1;align=left;spacingLeft=2;endArrow=block;rounded=0;edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1190" y="630" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="1220" y="660" />
+            </Array>
+            <mxPoint x="1190" y="660" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-24" value="StoreNewBooking()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1017.5" y="710" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="1152.5" y="710" />
+              <mxPoint x="1107.5" y="700" />
+            </Array>
+            <mxPoint x="1332.5" y="710" as="targetPoint" />
+            <mxPoint x="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-25" value="Booking Stored Successfully" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry x="-0.0645" relative="1" as="geometry">
+            <mxPoint x="1020" y="740" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1295" y="740" />
+            </Array>
+            <mxPoint x="1330" y="740" as="sourcePoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-26" value="UpdateSeatStatus()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1020" y="764.17" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="1155" y="764.17" />
+              <mxPoint x="1110" y="754.17" />
+            </Array>
+            <mxPoint x="1492.5" y="764.17" as="targetPoint" />
+            <mxPoint x="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-27" value="Seat Status Updated" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry x="-0.0645" relative="1" as="geometry">
+            <mxPoint x="1020" y="790" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1460" y="790" />
+            </Array>
+            <mxPoint x="1495" y="790" as="sourcePoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-28" value="Booking Successful" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry x="-0.0645" relative="1" as="geometry">
+            <mxPoint x="850" y="830" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="970" y="830" />
+            </Array>
+            <mxPoint x="1005" y="830" as="sourcePoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="piEthun23IsSPh5JsXoc-29" value="Redirect to payment page" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry x="-0.0645" relative="1" as="geometry">
+            <mxPoint x="620" y="850" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="810" y="850" />
+            </Array>
+            <mxPoint x="845" y="850" as="sourcePoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
