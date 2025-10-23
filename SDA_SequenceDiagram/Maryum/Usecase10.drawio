@@ -1,0 +1,129 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36" version="28.2.7">
+  <diagram name="Page-1" id="2YBvvXClWsGukQMizWep">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="M_ZG_Z6-BuQjEJbESKjK-1" value="GetBookingHistory()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1" target="M_ZG_Z6-BuQjEJbESKjK-4">
+          <mxGeometry x="-0.0414" relative="1" as="geometry">
+            <mxPoint x="580" y="470" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="720" y="470" />
+              <mxPoint x="675" y="460" />
+            </Array>
+            <mxPoint x="789.5" y="470" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_ZG_Z6-BuQjEJbESKjK-2" value="Customer" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#F8CECC;" vertex="1" parent="1">
+          <mxGeometry x="350" y="430" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="M_ZG_Z6-BuQjEJbESKjK-3" value="Navigate to Booking History Section" style="html=1;verticalAlign=bottom;startArrow=oval;endArrow=block;startSize=8;edgeStyle=elbowEdgeStyle;elbow=horizontal;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="380" y="450" as="sourcePoint" />
+            <mxPoint x="560" y="450" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="540" y="450" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_ZG_Z6-BuQjEJbESKjK-4" value=":ControllerClass" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#F8CECC;" vertex="1" parent="1">
+          <mxGeometry x="760" y="350" width="100" height="540" as="geometry" />
+        </mxCell>
+        <mxCell id="M_ZG_Z6-BuQjEJbESKjK-5" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="M_ZG_Z6-BuQjEJbESKjK-4">
+          <mxGeometry x="45" y="110" width="10" height="380" as="geometry" />
+        </mxCell>
+        <mxCell id="M_ZG_Z6-BuQjEJbESKjK-6" value=":BookCatalogue" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#F8CECC;" vertex="1" parent="1">
+          <mxGeometry x="925" y="350" width="100" height="540" as="geometry" />
+        </mxCell>
+        <mxCell id="M_ZG_Z6-BuQjEJbESKjK-7" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="M_ZG_Z6-BuQjEJbESKjK-6">
+          <mxGeometry x="45" y="150" width="10" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="M_ZG_Z6-BuQjEJbESKjK-8" value="GetCustomerBookings()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1" target="M_ZG_Z6-BuQjEJbESKjK-7">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="820" y="510" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="950" y="510" />
+              <mxPoint x="905" y="500" />
+            </Array>
+            <mxPoint x="960" y="510" as="targetPoint" />
+            <mxPoint x="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_ZG_Z6-BuQjEJbESKjK-9" value="Return List Of Bookings" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry x="-0.0526" relative="1" as="geometry">
+            <mxPoint x="820" y="540" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1070" y="540" />
+            </Array>
+            <mxPoint x="970" y="541" as="sourcePoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_ZG_Z6-BuQjEJbESKjK-10" value=":Booking" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#F8CECC;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="350" width="100" height="530" as="geometry" />
+        </mxCell>
+        <mxCell id="M_ZG_Z6-BuQjEJbESKjK-11" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="M_ZG_Z6-BuQjEJbESKjK-10">
+          <mxGeometry x="45" y="220" width="10" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="M_ZG_Z6-BuQjEJbESKjK-12" value="GetBookingDetails()" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="820" y="590" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="950" y="590" />
+              <mxPoint x="905" y="580" />
+            </Array>
+            <mxPoint x="1130" y="590" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_ZG_Z6-BuQjEJbESKjK-13" value=":GUI" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=#F8CECC;" vertex="1" parent="1">
+          <mxGeometry x="520" y="350" width="100" height="540" as="geometry" />
+        </mxCell>
+        <mxCell id="M_ZG_Z6-BuQjEJbESKjK-14" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="M_ZG_Z6-BuQjEJbESKjK-13">
+          <mxGeometry x="45" y="70" width="10" height="440" as="geometry" />
+        </mxCell>
+        <mxCell id="M_ZG_Z6-BuQjEJbESKjK-15" value="for each booking" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=60;height=30;fillColor=#EA6B66;" vertex="1" parent="1">
+          <mxGeometry x="730" y="560" width="600" height="270" as="geometry" />
+        </mxCell>
+        <mxCell id="M_ZG_Z6-BuQjEJbESKjK-16" value="if no booking history" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=80;height=40;fillColor=#7EA6E0;" vertex="1" parent="1">
+          <mxGeometry x="770" y="620" width="550" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="M_ZG_Z6-BuQjEJbESKjK-17" value="Display Error &quot;No Booking&amp;nbsp;&lt;div&gt;History&lt;span style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212)); color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;&quot;&lt;/span&gt;&lt;/div&gt;" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry x="-0.1487" relative="1" as="geometry">
+            <mxPoint x="580" y="690" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1235" y="690" />
+            </Array>
+            <mxPoint x="1135" y="691" as="sourcePoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_ZG_Z6-BuQjEJbESKjK-18" value="else" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fillColor=#7EA6E0;" vertex="1" parent="1">
+          <mxGeometry x="770" y="710" width="550" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="M_ZG_Z6-BuQjEJbESKjK-19" value="Return Booking Information" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry x="-0.1765" relative="1" as="geometry">
+            <mxPoint x="818" y="759.17" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1233" y="759.17" />
+            </Array>
+            <mxPoint x="1133" y="760.17" as="sourcePoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_ZG_Z6-BuQjEJbESKjK-20" value="Display Complete Booking History" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;" edge="1" parent="1" target="M_ZG_Z6-BuQjEJbESKjK-13">
+          <mxGeometry x="-0.0526" relative="1" as="geometry">
+            <mxPoint x="650" y="790" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="900" y="790" />
+            </Array>
+            <mxPoint x="800" y="791" as="sourcePoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
