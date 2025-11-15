@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextAlignment?>
+
+<VBox alignment="CENTER" spacing="40.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MainController">
+   <padding>
+      <Insets bottom="50.0" left="50.0" right="50.0" top="50.0" />
+   </padding>
+   <style>
+      -fx-background-color: linear-gradient(to bottom right, #f0f9ff, #e0f2fe);
+   </style>
+   
+   <!-- Login Type Container -->
+   <VBox alignment="CENTER" spacing="30.0" styleClass="login-type-container">
+      <padding>
+         <Insets bottom="50.0" left="50.0" right="50.0" top="50.0" />
+      </padding>
+      <maxWidth>600.0</maxWidth>
+      
+      <!-- Header Section -->
+      <VBox alignment="CENTER" spacing="10.0">
+         <Text styleClass="login-type-title" text="Select Login Type" textAlignment="CENTER" />
+         <Text styleClass="login-type-subtitle" text="Choose your role to continue" textAlignment="CENTER" />
+      </VBox>
+      
+      <!-- Login Type Cards Grid -->
+      <GridPane alignment="CENTER" hgap="20.0" vgap="20.0">
+         <padding>
+            <Insets top="20.0" />
+         </padding>
+         
+         <!-- Admin Card -->
+         <VBox fx:id="adminCard" alignment="CENTER" onMouseClicked="#handleAdminLogin" prefHeight="150.0" prefWidth="250.0" styleClass="login-type-card" GridPane.columnIndex="0" GridPane.rowIndex="0">
+            <padding>
+               <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+            <Label styleClass="card-title" text="👑 Admin" />
+            <Label styleClass="card-description" text="System administrator access" wrapText="true" maxWidth="200.0" />
+            <Label style="-fx-font-family: 'Segoe UI', 'System', sans-serif; -fx-font-size: 12px; -fx-text-fill: #94a3b8; -fx-text-alignment: center;" text="Restricted to authorized personnel only" wrapText="true" maxWidth="200.0" />
+         </VBox>
+         
+         <!-- Customer Card -->
+         <VBox fx:id="customerCard" alignment="CENTER" onMouseClicked="#handleCustomerLogin" prefHeight="150.0" prefWidth="250.0" styleClass="login-type-card" GridPane.columnIndex="1" GridPane.rowIndex="0">
+            <padding>
+               <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+            <Label styleClass="card-title" text="👤 Customer" />
+            <Label styleClass="card-description" text="Book tickets and manage bookings" wrapText="true" maxWidth="200.0" />
+            <Label style="-fx-font-family: 'Segoe UI', 'System', sans-serif; -fx-font-size: 12px; -fx-text-fill: #94a3b8; -fx-text-alignment: center;" text="New users can register for an account" wrapText="true" maxWidth="200.0" />
+         </VBox>
+         
+         <!-- Support Staff Card -->
+         <VBox fx:id="staffCard" alignment="CENTER" onMouseClicked="#handleStaffLogin" prefHeight="150.0" prefWidth="250.0" styleClass="login-type-card" GridPane.columnIndex="0" GridPane.rowIndex="1">
+            <padding>
+               <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+            <Label styleClass="card-title" text="🛠️ Support Staff" />
+            <Label styleClass="card-description" text="Customer support and issue resolution" wrapText="true" maxWidth="200.0" />
+            <Label style="-fx-font-family: 'Segoe UI', 'System', sans-serif; -fx-font-size: 12px; -fx-text-fill: #94a3b8; -fx-text-alignment: center;" text="Restricted to support team members" wrapText="true" maxWidth="200.0" />
+         </VBox>
+      </GridPane>
+   </VBox>
+</VBox>
