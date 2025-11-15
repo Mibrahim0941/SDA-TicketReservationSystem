@@ -15,6 +15,7 @@ import models.User;
 import models.Customer;
 import models.SupportStaff;
 import models.Admin;
+import helpers.IDGenerator;
 import catalogs.UserCatalog;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -183,7 +184,8 @@ public class LoginController {
         }
 
         // Register new user
-        User newUser = new Customer("3", fullName, password, username, email, phoneNum);
+        String UserID = IDGenerator.generateCustomerID();
+        User newUser = new Customer(UserID, fullName, password, username, email, phoneNum);
         users.addToCatalog(newUser);
         System.out.println(users.getUsers() + " users in catalog after registration.");
         showSuccess("Registration successful! Redirecting to login...");
