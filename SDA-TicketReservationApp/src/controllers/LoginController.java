@@ -155,32 +155,32 @@ public class LoginController {
         // Validation
         if (fullName.isEmpty() || email.isEmpty() || username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() || phoneNum.isEmpty()) {
             showError("Please fill in all fields");
-            //return;
+            return;
         }
 
         if (!isValidEmail(email)) {
             showError("Please enter a valid email address");
-            //return;
+            return;
         }
 
         if (username.length() < 3) {
             showError("Username must be at least 3 characters long");
-            //return;
+            return;
         }
 
         if (password.length() < 6) {
             showError("Password must be at least 6 characters long");
-            //return;
+            return;
         }
 
         if (!password.equals(confirmPassword)) {
             showError("Passwords do not match");
-            //return;
+            return;
         }
 
         if (isUsernameTaken(username)) {
             showError("Username already exists. Please choose a different one.");
-            //return;
+            return;
         }
 
         // Register new user
