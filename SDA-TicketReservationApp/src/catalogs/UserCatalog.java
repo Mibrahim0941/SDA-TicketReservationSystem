@@ -8,20 +8,22 @@ import database.DatabaseConnection;
 public class UserCatalog {
     private java.util.ArrayList<User> users;
 
-    public UserCatalog() {
+    public UserCatalog(String type) {
         this.users = new java.util.ArrayList<>();
-        loadUsersFromDatabase(); // Only called once at startup
+        loadUsersFromDatabase(type); // Only called once at startup
     }
 
     // Load users from database ONLY at startup
-    private void loadUsersFromDatabase() {
+    private void loadUsersFromDatabase(String type) {
         String query = "SELECT u.UserID, u.Name, u.Password, u.Username, u.UserType, c.Email, c.PhoneNum " +
-                      "FROM Users u INNER JOIN ContactInfo c ON u.ContactID = c.ContactID";
+                      "FROM Users u INNER JOIN ContactInfo c ON u.ContactID = c.ContactID where u.UserType = ?";
         
+
         // DON'T use try-with-resources for Connection - use regular try-catch
         try {
             java.sql.Connection conn = DatabaseConnection.getConnection();
             java.sql.PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, type);
             java.sql.ResultSet rs = stmt.executeQuery();
             
             while (rs.next()) {

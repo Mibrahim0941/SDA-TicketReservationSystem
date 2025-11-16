@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 
 public class CustomerLoginController {
 
-    private UserCatalog users = new UserCatalog();
+    private UserCatalog users = new UserCatalog("Customer");
     
     // Email validation pattern
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");

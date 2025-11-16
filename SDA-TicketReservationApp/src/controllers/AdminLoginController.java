@@ -18,7 +18,7 @@ import catalogs.UserCatalog;
 
 public class AdminLoginController implements Initializable {
 
-    UserCatalog admin = new UserCatalog();
+    UserCatalog admin = new UserCatalog("Admin");
 
     @FXML private Text adminTitle;
     @FXML private Text adminSubtitle;

@@ -18,7 +18,7 @@ import catalogs.UserCatalog;
 
 public class StaffLoginController implements Initializable {
 
-    private UserCatalog staff = new UserCatalog();
+    private UserCatalog staff = new UserCatalog("SupportStaff");
 
     @FXML private Text staffTitle;
     @FXML private Text staffSubtitle;

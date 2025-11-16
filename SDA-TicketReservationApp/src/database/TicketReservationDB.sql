@@ -46,6 +46,27 @@ INSERT INTO Users (UserID, Name, Password, Username, ContactID, UserType)
 VALUES ('2', 'Jane Smith', 'password123', 'jane_smith', SCOPE_IDENTITY(), 'Customer');
 GO
 
+-- Add Admin User
+INSERT INTO ContactInfo (Email, PhoneNum) 
+VALUES ('admin@ticketgenie.com', '0300-1234567');
+
+INSERT INTO Users (UserID, Name, Password, Username, ContactID, UserType) 
+VALUES ('ADM_001', 'System Administrator', 'admin123', 'admin', IDENT_CURRENT('ContactInfo'), 'Admin');
+
+-- Add Support Staff User
+INSERT INTO ContactInfo (Email, PhoneNum) 
+VALUES ('support@ticketgenie.com', '0300-7654321');
+
+INSERT INTO Users (UserID, Name, Password, Username, ContactID, UserType) 
+VALUES ('SUP_001', 'Support Agent', 'support123', 'support', IDENT_CURRENT('ContactInfo'), 'SupportStaff');
+
+
+INSERT INTO ContactInfo (Email, PhoneNum) 
+VALUES ('support2@ticketgenie.com', '0300-7654322');
+
+INSERT INTO Users (UserID, Name, Password, Username, ContactID, UserType) 
+VALUES ('SUP_002', 'Support Agent', 'support123', 'support2', IDENT_CURRENT('ContactInfo'), 'SupportStaff');
+
 delete from Users
 delete from ContactInfo
 Select* from ContactInfo
