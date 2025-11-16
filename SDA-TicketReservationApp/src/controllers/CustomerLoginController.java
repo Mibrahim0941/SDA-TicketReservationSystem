@@ -13,20 +13,15 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import models.User;
 import models.Customer;
-import models.SupportStaff;
-import models.Admin;
 import helpers.IDGenerator;
 import catalogs.UserCatalog;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class LoginController {
+public class CustomerLoginController {
 
     private UserCatalog users = new UserCatalog();
-    private final String ADMIN_USERNAME = "admin";
-    private final String ADMIN_PASSWORD = "password123";
     
     // Email validation pattern
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
@@ -51,6 +46,25 @@ public class LoginController {
     @FXML private Button clearRegisterButton;
     @FXML private Button backToLoginButton;
 
+    // ADD THIS SHOW METHOD
+    public static void show(Stage stage) {
+        try {
+            FXMLLoader loader = new FXMLLoader(CustomerLoginController.class.getResource("/ui/customerlogin.fxml"));
+            Parent root = loader.load();
+            
+            Scene scene = new Scene(root, 900, 700);
+            scene.getStylesheets().add(CustomerLoginController.class.getResource("/ui/style.css").toExternalForm());
+            
+            stage.setScene(scene);
+            stage.setTitle("TicketGenie - Login");
+            stage.centerOnScreen();
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+            showErrorAlert("Failed to load login page: " + e.getMessage());
+        }
+    }
+
     @FXML
     public void initialize() {
         System.out.println("LoginController initialized");
@@ -67,6 +81,9 @@ public class LoginController {
         } else if (authenticateUser(username, password)) {
             showSuccess("Login successful! Redirecting...");
             
+            // Get the logged-in user
+            User loggedInUser = users.getUserByUsername(username);
+            
             // Simulate brief delay before redirect
             new Thread(() -> {
                 try {
@@ -74,10 +91,21 @@ public class LoginController {
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
-                Platform.runLater(() -> showMainApplication());
+                Platform.runLater(() -> showDashboard(loggedInUser.getUsername()));
             }).start();
         } else {
             showError("Invalid username or password");
+        }
+    }
+
+    // ADD THIS METHOD TO SHOW DASHBOARD
+    private void showDashboard(String username) {
+        try {
+            Stage currentStage = (Stage) usernameField.getScene().getWindow();
+            DashboardController.show(currentStage, username);
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Error", "Failed to load dashboard");
         }
     }
 
@@ -97,12 +125,9 @@ public class LoginController {
             Stage currentStage = (Stage) usernameField.getScene().getWindow();
             
             // Load the register FXML with a NEW controller instance
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/register.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/customerregister.fxml"));
             
             Parent root = loader.load();
-            
-            // Get the controller that was created for register.fxml
-            LoginController registerController = loader.getController();
             
             // Create new scene
             Scene scene = new Scene(root, 900, 700);
@@ -135,16 +160,6 @@ public class LoginController {
     private void handleCreateAccount() {
         System.out.println("handleCreateAccount called");
         
-        // Check if register form elements are available
-        if (fullNameField == null) {
-            showError("Full name field not available");
-            //return;
-        }
-        if (registerUsernameField == null) {
-            showError("Username field not available");
-            //return;
-        }
-
         String fullName = fullNameField.getText().trim();
         String email = emailField.getText().trim();
         String username = registerUsernameField.getText().trim();
@@ -214,8 +229,6 @@ public class LoginController {
     @FXML
     private void handleBackToLogin() {
         try {
-            System.out.println("Attempting to load login.fxml...");
-            
             Stage currentStage;
             
             // Get the current stage from any available component
@@ -228,25 +241,8 @@ public class LoginController {
                 return;
             }
             
-            // Load login FXML with a NEW controller instance
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/login.fxml"));
-            Parent root = loader.load();
-            
-            Scene scene = new Scene(root, 900, 700);
-            currentStage.setResizable(true);
-            // Load CSS
-            try {
-                String cssPath = getClass().getResource("/ui/style.css").toExternalForm();
-                scene.getStylesheets().add(cssPath);
-            } catch (Exception cssEx) {
-                System.err.println("Failed to load CSS: " + cssEx.getMessage());
-            }
-            
-            currentStage.setScene(scene);
-            currentStage.setTitle("TicketGenie - Login");
-            currentStage.centerOnScreen();
-            
-            System.out.println("Login page loaded successfully");
+            // Use the static show method
+            show(currentStage);
             
         } catch (Exception e) {
             System.err.println("Error loading login page: " + e.getMessage());
@@ -285,30 +281,18 @@ public class LoginController {
         }
     }
 
-    private void showMainApplication() {
-        try {
-            Stage currentStage = (Stage) usernameField.getScene().getWindow();
-            
-            // Load dashboard FXML
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/dashboard.fxml"));
-            Parent root = loader.load();
-            
-            Scene scene = new Scene(root, 600, 400);
-            scene.getStylesheets().add(getClass().getResource("/ui/style.css").toExternalForm());
-            
-            currentStage.setScene(scene);
-            currentStage.setTitle("TicketGenie - Dashboard");
-            currentStage.centerOnScreen();
-            
-        } catch (IOException e) {
-            e.printStackTrace();
-            showAlert("Error", "Failed to load main application");
-        }
-    }
-
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    // ADD THIS HELPER METHOD
+    private static void showErrorAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
@@ -318,7 +302,6 @@ public class LoginController {
     public List<User> getUsers() {
         return users.getUsers();
     }
-
 
     @FXML
     private void handleBackToMain() {
@@ -335,21 +318,10 @@ public class LoginController {
                 return;
             }
             
-            // Load main page FXML
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/mainpage.fxml"));
-            Parent root = loader.load();
+            // Use the static show method from MainController
+            MainController.show(currentStage);
             
-            Scene scene = new Scene(root, 900,700);
-            
-            // Load CSS styles
-            scene.getStylesheets().add(getClass().getResource("/ui/style.css").toExternalForm());
-            scene.getStylesheets().add(getClass().getResource("/ui/mainpage.css").toExternalForm());
-            
-            currentStage.setScene(scene);
-            currentStage.setTitle("TicketGenie - Welcome");
-            currentStage.centerOnScreen();
-            
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             showAlert("Error", "Failed to load main page: " + e.getMessage());
         }

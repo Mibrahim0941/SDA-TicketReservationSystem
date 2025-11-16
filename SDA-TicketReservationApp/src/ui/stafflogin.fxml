@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextAlignment?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="controllers.StaffLoginController" stylesheets="@stafflogin.css">
+   
+   <center>
+      <VBox alignment="CENTER" spacing="30" style="-fx-background-color: linear-gradient(to bottom right, #f0f9ff, #e0f2fe); -fx-padding: 50;">
+         
+         <!-- Staff Login Container -->
+         <VBox alignment="CENTER" spacing="25" style="-fx-background-color: white; -fx-background-radius: 15; -fx-border-radius: 15; -fx-border-color: #38bdf8; -fx-border-width: 2; -fx-effect: dropshadow(gaussian, rgba(56, 189, 248, 0.12), 20, 0, 0, 6); -fx-padding: 50;" maxWidth="450">
+            
+            <!-- Header Section -->
+            <VBox alignment="CENTER" spacing="10">
+               <Text fx:id="staffTitle" text="Support Staff Login" styleClass="staff-login-title"/>
+               <Text fx:id="staffSubtitle" text="Restricted access - Support team only" styleClass="staff-login-subtitle"/>
+            </VBox>
+
+            <!-- Form Section -->
+            <GridPane fx:id="formGrid" hgap="15" vgap="20" alignment="CENTER">
+               <padding>
+                  <Insets top="20" />
+               </padding>
+               
+               <!-- Username Field -->
+               <Label fx:id="usernameLabel" text="STAFF USERNAME" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+               <TextField fx:id="usernameField" promptText="Enter staff username" styleClass="form-field" prefWidth="300" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+               
+               <!-- Password Field -->
+               <Label fx:id="passwordLabel" text="STAFF PASSWORD" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+               <PasswordField fx:id="passwordField" promptText="Enter staff password" styleClass="form-field" prefWidth="300" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+               
+               <!-- Status Message -->
+               <Text fx:id="statusMessage" textAlignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+            </GridPane>
+
+            <!-- Buttons Section -->
+            <HBox alignment="CENTER" spacing="20">
+               <Button fx:id="loginButton" text="STAFF LOGIN" styleClass="staff-login-button" prefWidth="140" prefHeight="40"/>
+               <Button fx:id="backButton" text="← Back to Login Types" styleClass="action-button"/>
+            </HBox>
+            
+         </VBox>
+      </VBox>
+   </center>
+</BorderPane>

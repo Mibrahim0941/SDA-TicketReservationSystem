@@ -8,7 +8,7 @@ public class DatabaseConfig {
     private static final Properties properties = new Properties();
     
     static {
-        try (InputStream input = DatabaseConfig.class.getClassLoader().getResourceAsStream("config/database.properties")) {
+        try (InputStream input = DatabaseConfig.class.getClassLoader().getResourceAsStream("resources/config/database.properties")) {
             if (input == null) {
                 System.out.println("Sorry, unable to find database.properties");
                 // Set default values

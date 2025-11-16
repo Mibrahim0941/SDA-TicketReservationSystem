@@ -29,6 +29,55 @@ public class MainController {
         // Initialization code if needed
     }
 
+    // ADD THIS SHOW METHOD
+    public static void show(Stage stage) {
+        try {
+            FXMLLoader loader = new FXMLLoader(MainController.class.getResource("/ui/mainpage.fxml"));
+            Parent root = loader.load();
+            
+            Scene scene = new Scene(root, 900, 700);
+            
+            // Load CSS styles
+            scene.getStylesheets().add(MainController.class.getResource("/ui/style.css").toExternalForm());
+            scene.getStylesheets().add(MainController.class.getResource("/ui/mainpage.css").toExternalForm());
+            
+            stage.setScene(scene);
+            stage.setTitle("TicketGenie - Welcome");
+            stage.centerOnScreen();
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+            showErrorAlert("Failed to load main page: " + e.getMessage());
+        }
+    }
+
+    public static void showoptions(Stage stage) {
+        try {
+            FXMLLoader loader = new FXMLLoader(MainController.class.getResource("/ui/loginoptions.fxml"));
+            Parent root = loader.load();
+            
+            Scene scene = new Scene(root, 900, 700);
+            
+            // Load CSS styles
+            scene.getStylesheets().add(MainController.class.getResource("/ui/style.css").toExternalForm());
+            scene.getStylesheets().add(MainController.class.getResource("/ui/loginoptions.css").toExternalForm());
+            
+            stage.setScene(scene);
+            stage.setTitle("TicketGenie - Welcome");
+            stage.centerOnScreen();
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+            showErrorAlert("Failed to load main page: " + e.getMessage());
+        }
+    }
+
+
+    // ADD THIS OVERLOADED SHOW METHOD
+    public static void show(Stage stage, String username) {
+        show(stage); // For now, just use the regular show method
+    }
+
     @FXML
     private void handleGetStarted() {
         try {
@@ -78,7 +127,6 @@ public class MainController {
     private void loadLoginOptionsPage(Stage stage) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/loginoptions.fxml"));
-            //loader.setController(this); // Use the same controller instance
             Parent root = loader.load();
             
             Scene scene = new Scene(root, 900, 700);
@@ -101,26 +149,18 @@ public class MainController {
         try {
             switch (userType) {
                 case "Customer":
-                    // Load your existing customer login page
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/login.fxml"));
-                    Parent root = loader.load();
-                    
-                    Scene scene = new Scene(root, 900,700);
-                    scene.getStylesheets().add(getClass().getResource("/ui/style.css").toExternalForm());
-                    
-                    stage.setScene(scene);
-                    stage.setTitle("TicketGenie - Customer Login");
-                    stage.centerOnScreen();
+                    // Use the new show method from LoginController
+                    CustomerLoginController.show(stage);
                     break;
                     
                 case "Admin":
                     // Placeholder for admin login
-                    showInfo("Admin Login", "Admin login page will be implemented soon");
+                    AdminLoginController.show(stage);
                     break;
                     
                 case "Staff":
                     // Placeholder for staff login
-                    showInfo("Staff Login", "Staff login page will be implemented soon");
+                    StaffLoginController.show(stage);
                     break;
             }
         } catch (Exception e) {
@@ -140,6 +180,15 @@ public class MainController {
     private void showInfo(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    // ADD THIS HELPER METHOD
+    private static void showErrorAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
