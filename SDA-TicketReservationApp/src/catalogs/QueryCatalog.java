@@ -16,14 +16,21 @@ public class QueryCatalog {
 
     // Load queries from database ONLY at startup
     private void loadQueriesFromDatabase() {
-        String query = "SELECT q.QueryID, q.Text, q.AskedOn, q.Status, q.Response, " +
-                      "q.CustomerID, q.SupportStaffID, " +
-                      "cust.Name as CustomerName, cust.Email as CustomerEmail, cust.PhoneNum as CustomerPhone, " +
-                      "staff.Name as StaffName, staff.Email as StaffEmail, staff.PhoneNum as StaffPhone " +
-                      "FROM SupportQueries q " +
-                      "LEFT JOIN Users cust ON q.CustomerID = cust.UserID " +
-                      "LEFT JOIN Users staff ON q.SupportStaffID = staff.UserID " +
-                      "ORDER BY q.AskedOn DESC";
+        String query = "SELECT " +
+                  "q.QueryID, q.Text, q.AskedOn, q.Status, q.Response, " +
+                  "q.CustomerID, q.SupportStaffID, " +
+                  "cust.Name as CustomerName, " +
+                  "cust_contact.Email as CustomerEmail, " +
+                  "cust_contact.PhoneNum as CustomerPhone, " +
+                  "staff.Name as StaffName, " +
+                  "staff_contact.Email as StaffEmail, " +
+                  "staff_contact.PhoneNum as StaffPhone " +
+                  "FROM SupportQueries q " +
+                  "LEFT JOIN Users cust ON q.CustomerID = cust.UserID " +
+                  "LEFT JOIN ContactInfo cust_contact ON cust.ContactID = cust_contact.ContactID " +
+                  "LEFT JOIN Users staff ON q.SupportStaffID = staff.UserID " +
+                  "LEFT JOIN ContactInfo staff_contact ON staff.ContactID = staff_contact.ContactID " +
+                  "ORDER BY q.AskedOn DESC";
 
         // DON'T use try-with-resources for Connection - use regular try-catch
         try {

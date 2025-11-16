@@ -373,7 +373,7 @@ public class SupportStaffDashboardController {
     private void logout() {
         try {
             Stage currentStage = (Stage) logoutButton.getScene().getWindow();
-            LoginTypePage.show(currentStage);
+            StaffLoginController.show(currentStage);
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("Error", "Failed to logout: " + e.getMessage());
@@ -383,7 +383,7 @@ public class SupportStaffDashboardController {
     private void goToMainPage() {
         try {
             Stage currentStage = (Stage) mainPageButton.getScene().getWindow();
-            MainPage.show(currentStage);
+            MainController.show(currentStage);
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("Error", "Failed to load main page: " + e.getMessage());
