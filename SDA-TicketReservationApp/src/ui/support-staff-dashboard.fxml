@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextAlignment?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="controllers.SupportStaffDashboardController" stylesheets="@support-staff-dashboard.css">
+   
+   <center>
+      <VBox spacing="30" alignment="TOP_CENTER" style="-fx-padding: 40;">
+         <!-- Header Section -->
+         <VBox spacing="15" alignment="CENTER">
+            <Text fx:id="welcomeTitle" text="Support Staff Dashboard" styleClass="dashboard-title"/>
+            <Text fx:id="userGreeting" text="Hello, Support Agent! 👋" styleClass="dashboard-subtitle"/>
+         </VBox>
+
+         <!-- Support Features Grid -->
+         <GridPane fx:id="supportFeaturesGrid" hgap="20" vgap="20" alignment="CENTER">
+            <padding>
+               <Insets top="20" bottom="20" />
+            </padding>
+            
+            <!-- Row 1 -->
+            <VBox fx:id="viewQueriesCard" styleClass="feature-card" GridPane.columnIndex="0" GridPane.rowIndex="0">
+               <Label text="📋 View Customer Queries" styleClass="feature-title"/>
+               <Label text="Browse and review all customer inquiries and issues" styleClass="feature-description" wrapText="true"/>
+            </VBox>
+            
+            <VBox fx:id="answerQueriesCard" styleClass="feature-card" GridPane.columnIndex="1" GridPane.rowIndex="0">
+               <Label text="💬 Answer Queries" styleClass="feature-title"/>
+               <Label text="Respond to customer questions and provide solutions" styleClass="feature-description" wrapText="true"/>
+            </VBox>
+         </GridPane>
+
+         <!-- Customer Queries Section -->
+         <VBox spacing="15" alignment="CENTER_LEFT" style="-fx-padding: 25; -fx-background-color: white; -fx-background-radius: 15; -fx-border-color: #7dd3fc; -fx-border-width: 2px; -fx-border-radius: 15;">
+            <Label text="📥 Recent Customer Queries" styleClass="section-title"/>
+            
+            <!-- Queries Table -->
+            <TableView fx:id="queriesTable" styleClass="queries-table" prefHeight="200">
+               <columns>
+                  <TableColumn fx:id="queryIdColumn" text="Query ID" styleClass="table-column"/>
+                  <TableColumn fx:id="customerNameColumn" text="Customer" styleClass="table-column"/>
+                  <TableColumn fx:id="queryTypeColumn" text="Type" styleClass="table-column"/>
+                  <TableColumn fx:id="statusColumn" text="Status" styleClass="table-column"/>
+                  <TableColumn fx:id="dateColumn" text="Date" styleClass="table-column"/>
+               </columns>
+            </TableView>
+            
+            <!-- Query Details -->
+            <VBox spacing="10" style="-fx-padding: 15; -fx-background-color: #f8fafc; -fx-background-radius: 10;">
+               <Label text="Selected Query Details:" styleClass="subsection-title"/>
+               <HBox spacing="20" alignment="CENTER_LEFT">
+                  <VBox spacing="5">
+                     <Label text="Query:" styleClass="detail-label"/>
+                     <TextArea fx:id="queryDetailsArea" prefWidth="300" prefHeight="80" editable="false" styleClass="query-text-area"/>
+                  </VBox>
+                  <VBox spacing="5">
+                     <Label text="Your Response:" styleClass="detail-label"/>
+                     <TextArea fx:id="responseArea" prefWidth="300" prefHeight="80" promptText="Type your response here..." styleClass="response-text-area"/>
+                  </VBox>
+               </HBox>
+               
+               <!-- Response Actions -->
+               <HBox spacing="15" alignment="CENTER">
+                  <Button fx:id="sendResponseButton" text="📤 Send Response" styleClass="primary-button"/>
+                  <Button fx:id="markResolvedButton" text="✅ Mark as Resolved" styleClass="secondary-button"/>
+                  <Button fx:id="escalateButton" text="🔼 Escalate Issue" styleClass="secondary-button"/>
+               </HBox>
+            </VBox>
+         </VBox>
+
+         <!-- Support Statistics -->
+         <HBox spacing="30" alignment="CENTER" style="-fx-padding: 20; -fx-background-color: #f8fafc; -fx-background-radius: 15;">
+            <VBox alignment="CENTER" spacing="5">
+               <Label fx:id="pendingQueriesLabel" text="0" styleClass="stat-number"/>
+               <Label text="Pending Queries" styleClass="stat-label"/>
+            </VBox>
+            <VBox alignment="CENTER" spacing="5">
+               <Label fx:id="resolvedTodayLabel" text="0" styleClass="stat-number"/>
+               <Label text="Resolved Today" styleClass="stat-label"/>
+            </VBox>
+            <VBox alignment="CENTER" spacing="5">
+               <Label fx:id="responseRateLabel" text="0%" styleClass="stat-number"/>
+               <Label text="Response Rate" styleClass="stat-label"/>
+            </VBox>
+            <VBox alignment="CENTER" spacing="5">
+               <Label fx:id="avgResponseTimeLabel" text="0m" styleClass="stat-number"/>
+               <Label text="Avg. Response Time" styleClass="stat-label"/>
+            </VBox>
+         </HBox>
+
+         <!-- Action Buttons -->
+         <HBox spacing="15" alignment="CENTER">
+            <Button fx:id="refreshButton" text="🔄 Refresh" styleClass="secondary-button"/>
+            <Button fx:id="logoutButton" text="🚪 Logout" styleClass="secondary-button"/>
+            <Button fx:id="mainPageButton" text="🏠 Main Page" styleClass="secondary-button"/>
+         </HBox>
+      </VBox>
+   </center>
+</BorderPane>

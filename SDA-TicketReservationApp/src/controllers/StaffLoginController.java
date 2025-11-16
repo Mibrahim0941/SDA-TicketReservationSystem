@@ -86,7 +86,7 @@ public class StaffLoginController implements Initializable {
     private void showStaffDashboard(String username) {
         try {
             Stage currentStage = (Stage) loginButton.getScene().getWindow();
-            DashboardController.show(currentStage, username);
+            SupportStaffDashboardController.show(currentStage, username);
         } catch (Exception e) {
             System.err.println("Error loading staff dashboard: " + e.getMessage());
             e.printStackTrace();
