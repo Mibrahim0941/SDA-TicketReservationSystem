@@ -16,7 +16,7 @@ import models.Customer;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import models.User;
+
 
 public class DashboardController implements Initializable {
 
