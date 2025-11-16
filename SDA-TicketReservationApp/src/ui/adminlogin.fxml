@@ -16,10 +16,10 @@
             fx:controller="controllers.AdminLoginController" stylesheets="@adminlogin.css">
    
    <center>
-      <VBox alignment="CENTER" spacing="30" style="-fx-background-color: linear-gradient(to bottom right, #fef3c7, #fef7cd); -fx-padding: 50;">
+      <VBox alignment="CENTER" spacing="30" style="-fx-background-color: linear-gradient(to bottom right, #f0f9ff, #e0f2fe); -fx-padding: 50;">
          
          <!-- Admin Login Container -->
-         <VBox alignment="CENTER" spacing="25" style="-fx-background-color: white; -fx-background-radius: 15; -fx-border-radius: 15; -fx-border-color: #f59e0b; -fx-border-width: 2; -fx-effect: dropshadow(gaussian, rgba(245, 158, 11, 0.12), 20, 0, 0, 6); -fx-padding: 50;" maxWidth="450">
+         <VBox alignment="CENTER" spacing="25" style="-fx-background-color: white; -fx-background-radius: 15; -fx-border-radius: 15; -fx-border-color: 38bdf8; -fx-border-width: 2; -fx-effect: dropshadow(gaussian, rgba(56, 189, 248, 0.12), 20, 0, 0, 6); -fx-padding: 50;" maxWidth="450">
             
             <!-- Header Section -->
             <VBox alignment="CENTER" spacing="10">
