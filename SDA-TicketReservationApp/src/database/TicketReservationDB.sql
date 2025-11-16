@@ -25,6 +25,8 @@ CREATE TABLE Users (
 );
 GO
 
+
+
 -- Insert default admin user
 INSERT INTO ContactInfo (Email, PhoneNum) 
 VALUES ('admin@example.com', '1234567890');
@@ -71,3 +73,33 @@ delete from Users
 delete from ContactInfo
 Select* from ContactInfo
 select * from Users
+Select* from SupportQueries
+
+-- Create SupportQueries Table
+CREATE TABLE SupportQueries (
+    QueryID VARCHAR(20) PRIMARY KEY,
+    Text TEXT NOT NULL,
+    AskedOn DATETIME NOT NULL,
+    Status BIT DEFAULT 0,
+    Response TEXT NULL,
+    CustomerID NVARCHAR(50) NULL,
+    SupportStaffID NVARCHAR(50) NULL,
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    UpdatedAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (CustomerID) REFERENCES Users(UserID),
+    FOREIGN KEY (SupportStaffID) REFERENCES Users(UserID)
+);
+
+-- Insert Sample Support Queries
+
+-- Query from Customer C001 (Pending - Unassigned)
+INSERT INTO SupportQueries (QueryID, Text, AskedOn, Status, Response, CustomerID, SupportStaffID) 
+VALUES ('Q001', 'I cannot login to my account. It says invalid credentials even though I am sure my password is correct.', '2024-01-15 09:30:00', 0, NULL, 'CUST-029de333-c535-4172-953c-37dee5231046', NULL);
+
+-- Query from Customer C002 (Assigned but pending response)
+INSERT INTO SupportQueries (QueryID, Text, AskedOn, Status, Response, CustomerID, SupportStaffID) 
+VALUES ('Q002', 'My order #ORD-12345 has not been delivered yet. It was supposed to arrive 3 days ago. Can you check the status?', '2024-01-16 14:20:00', 0, NULL, 'CUST-30666e01-66ea-41de-a4f9-82bd53cc8af0', 'SUP_001');
+
+-- Query from Customer C003 (Resolved)
+INSERT INTO SupportQueries (QueryID, Text, AskedOn, Status, Response, CustomerID, SupportStaffID) 
+VALUES ('Q003', 'How do I reset my password? I forgot my password and cannot access my account.', '2024-01-10 11:15:00', 1, 'You can reset your password by clicking on "Forgot Password" on the login page. We have sent a password reset link to your registered email address.', 'CUST-7a8a92bf-26a2-4f39-8fc1-075e151af615', 'SUP_002');
