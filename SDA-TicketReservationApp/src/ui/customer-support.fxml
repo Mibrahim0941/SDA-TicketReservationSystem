@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="controllers.CustomerSupportController" stylesheets="@customer-support.css">
+   
+   <center>
+      <VBox spacing="20" alignment="TOP_CENTER" style="-fx-padding: 30;">
+         <!-- Header Section -->
+         <VBox spacing="10" alignment="CENTER">
+            <Text fx:id="welcomeTitle" text="Customer Support Center" styleClass="dashboard-title"/>
+            <Text fx:id="userGreeting" text="Hello, Customer! 👋" styleClass="dashboard-subtitle"/>
+         </VBox>
+
+         <!-- Main Content -->
+         <HBox spacing="30" alignment="TOP_CENTER">
+            
+            <!-- Left Side: Submit New Query -->
+            <VBox spacing="15" alignment="TOP_LEFT" styleClass="feature-card" prefWidth="400">
+               <Label text="📝 Submit New Query" styleClass="feature-title"/>
+               
+               <Label text="Describe your issue or question:" styleClass="feature-description"/>
+               <TextArea fx:id="newQueryArea" prefWidth="350" prefHeight="150" promptText="Please describe your issue in detail..." styleClass="query-text-area" wrapText="true"/>
+               
+               <Button fx:id="submitQueryButton" text="🚀 Submit Query" styleClass="primary-button" prefWidth="350"/>
+               
+               <VBox spacing="5" style="-fx-padding: 10; -fx-background-color: #f0f9ff; -fx-background-radius: 10;">
+                  <Label text="💡 Tips:" styleClass="feature-description"/>
+                  <Label text="• Be specific about your issue" styleClass="tip-text"/>
+                  <Label text="• Include relevant details" styleClass="tip-text"/>
+                  <Label text="• Our team will respond within 24 hours" styleClass="tip-text"/>
+               </VBox>
+            </VBox>
+            
+            <!-- Right Side: Query History -->
+            <VBox spacing="15" alignment="TOP_LEFT" styleClass="feature-card" prefWidth="500">
+               <Label text="📋 Your Support Queries" styleClass="feature-title"/>
+               
+               <!-- Queries Table -->
+               <TableView fx:id="queriesTable" prefHeight="200" prefWidth="460" styleClass="queries-table">
+                  <columns>
+                     <TableColumn fx:id="queryIdColumn" text="ID" prefWidth="60"/>
+                     <TableColumn fx:id="queryTextColumn" text="Query" prefWidth="150"/>
+                     <TableColumn fx:id="statusColumn" text="Status" prefWidth="80"/>
+                     <TableColumn fx:id="dateColumn" text="Date" prefWidth="80"/>
+                     <TableColumn fx:id="responseColumn" text="Response" prefWidth="90"/>
+                  </columns>
+               </TableView>
+               
+               <!-- Query Details -->
+               <VBox spacing="10">
+                  <Label text="📄 Query Details:" styleClass="subsection-title"/>
+                  <TextArea fx:id="queryDetailsArea" prefWidth="460" prefHeight="120" editable="false" styleClass="query-text-area" wrapText="true"/>
+               </VBox>
+            </VBox>
+         </HBox>
+
+         <!-- Action Buttons -->
+         <HBox spacing="15" alignment="CENTER">
+            <Button fx:id="refreshButton" text="🔄 Refresh" styleClass="secondary-button"/>
+            <Button fx:id="backButton" text="⬅ Back to Dashboard" styleClass="secondary-button"/>
+            <Button fx:id="logoutButton" text="🚪 Logout" styleClass="secondary-button"/>
+         </HBox>
+      </VBox>
+   </center>
+</BorderPane>

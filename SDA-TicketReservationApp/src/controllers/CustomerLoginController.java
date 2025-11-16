@@ -91,7 +91,7 @@ public class CustomerLoginController {
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
-                Platform.runLater(() -> showDashboard(loggedInUser.getUsername()));
+                Platform.runLater(() -> showDashboard(loggedInUser.getUsername(),loggedInUser));
             }).start();
         } else {
             showError("Invalid username or password");
@@ -99,10 +99,10 @@ public class CustomerLoginController {
     }
 
     // ADD THIS METHOD TO SHOW DASHBOARD
-    private void showDashboard(String username) {
+    private void showDashboard(String username,User loggedInUser) {
         try {
             Stage currentStage = (Stage) usernameField.getScene().getWindow();
-            DashboardController.show(currentStage, username);
+            DashboardController.show(currentStage, username, loggedInUser);
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("Error", "Failed to load dashboard");

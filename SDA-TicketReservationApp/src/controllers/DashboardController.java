@@ -11,10 +11,12 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import models.Customer;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import models.User;
 
 public class DashboardController implements Initializable {
 
@@ -38,16 +40,17 @@ public class DashboardController implements Initializable {
     
     private String currentUsername;
     private Stage primaryStage;
+    private User currentCustomer;
 
     // ADD THIS SHOW METHOD
-    public static void show(Stage stage, String username) {
+    public static void show(Stage stage, String username,User customer) {
         try {
             FXMLLoader loader = new FXMLLoader(DashboardController.class.getResource("/ui/dashboard.fxml"));
             Parent root = loader.load();
             
             // Get the controller and set user data
             DashboardController controller = loader.getController();
-            controller.setUserData(username, stage);
+            controller.setUserData(username, stage, customer); // Pass customer
             
             Scene scene = new Scene(root, 900, 700);
             scene.getStylesheets().add(DashboardController.class.getResource("/ui/dashboard.css").toExternalForm());
@@ -69,9 +72,11 @@ public class DashboardController implements Initializable {
         loadUserData();
     }
     
-    public void setUserData(String username, Stage stage) {
+    // Update setUserData to accept Customer
+    public void setUserData(String username, Stage stage, User customer) {
         this.currentUsername = username;
         this.primaryStage = stage;
+        this.currentCustomer = customer; // Store the actual customer
         updateUserGreeting();
     }
     
@@ -142,7 +147,24 @@ public class DashboardController implements Initializable {
     
     private void navigateToSupport() {
         System.out.println("Navigating to Support...");
-        showAlert("Feature Coming Soon", "Customer support feature will be available soon!");
+    
+         try {
+            if (currentCustomer == null) {
+                showAlert("Error", "Customer information not available. Please login again.");
+                return;
+            }
+        
+            // Get the current stage
+            Stage currentStage = (Stage) supportCard.getScene().getWindow();
+        
+            // Launch the customer support page
+            CustomerSupportController.show(currentStage, currentUsername, currentCustomer);
+        
+        } catch (Exception e) {
+            System.err.println("Error navigating to support: " + e.getMessage());
+            e.printStackTrace();
+            showAlert("Error", "Failed to load support page: " + e.getMessage());
+        }
     }
     
     private void navigateToSettings() {
