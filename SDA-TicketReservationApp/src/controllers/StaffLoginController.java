@@ -8,6 +8,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import models.SupportStaff;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -19,6 +20,7 @@ import catalogs.UserCatalog;
 public class StaffLoginController implements Initializable {
 
     private UserCatalog staff = new UserCatalog("SupportStaff");
+    private SupportStaff currentStaff;
 
     @FXML private Text staffTitle;
     @FXML private Text staffSubtitle;
@@ -54,6 +56,7 @@ public class StaffLoginController implements Initializable {
             showStatusMessage("Please enter both username and password", "error");
         } else if (staff.authenticateUser(username, password)) {
             showStatusMessage("Staff login successful! Redirecting...", "success");
+            currentStaff = (SupportStaff)staff.getUserByUsername(username);
             
             // Redirect to staff dashboard after short delay
             new Thread(() -> {
@@ -86,7 +89,7 @@ public class StaffLoginController implements Initializable {
     private void showStaffDashboard(String username) {
         try {
             Stage currentStage = (Stage) loginButton.getScene().getWindow();
-            SupportStaffDashboardController.show(currentStage, username);
+            SupportStaffDashboardController.show(currentStage, username, currentStaff);
         } catch (Exception e) {
             System.err.println("Error loading staff dashboard: " + e.getMessage());
             e.printStackTrace();

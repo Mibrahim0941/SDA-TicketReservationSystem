@@ -219,6 +219,7 @@ public class QueryCatalog {
             
             if (query.getSupportStaff() != null) {
                 stmt.setString(4, query.getSupportStaff().getUserID());
+                System.out.println("Updating SupportStaffID to: " + query.getSupportStaff().getUserID());
             } else {
                 stmt.setNull(4, java.sql.Types.VARCHAR);
             }
@@ -332,6 +333,10 @@ public class QueryCatalog {
             return updateQueryInDatabase(query);
         }
         return false;
+    }
+
+    public boolean updateQuery(SupportQuery query) {
+        return updateQueryInDatabase(query);
     }
 
     // Get unassigned queries (queries without support staff)

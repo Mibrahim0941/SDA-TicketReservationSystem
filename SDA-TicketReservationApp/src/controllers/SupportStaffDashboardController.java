@@ -57,7 +57,7 @@ public class SupportStaffDashboardController {
     @FXML private Label responseRateLabel;
     @FXML private Label avgResponseTimeLabel;
 
-    public static void show(Stage stage, String username) {
+    public static void show(Stage stage, String username, SupportStaff staff) {
         try {
             System.out.println("Loading Support Staff Dashboard...");
             
@@ -66,7 +66,7 @@ public class SupportStaffDashboardController {
             
             SupportStaffDashboardController controller = loader.getController();
             if (controller != null) {
-                controller.setStaffData(username);
+                controller.setStaffData(username, staff);
             }
             
             Scene scene = new Scene(root, 1200, 800);
@@ -92,9 +92,9 @@ public class SupportStaffDashboardController {
         }
     }
 
-    public void setStaffData(String username) {
+    public void setStaffData(String username, SupportStaff staff) {
         this.staffUsername = username;
-        this.currentStaff = new SupportStaff("STAFF001", "Support Agent", "password", username, "staff@ticketgenie.com", "1234567890");
+        this.currentStaff = staff;
         
         if (userGreeting != null) {
             userGreeting.setText("Hello, " + username + "! 👋");
