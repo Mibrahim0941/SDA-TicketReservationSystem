@@ -40,10 +40,10 @@ public class DashboardController implements Initializable {
     
     private String currentUsername;
     private Stage primaryStage;
-    private User currentCustomer;
+    private Customer currentCustomer;
 
     // ADD THIS SHOW METHOD
-    public static void show(Stage stage, String username,User customer) {
+    public static void show(Stage stage, String username,Customer customer) {
         try {
             FXMLLoader loader = new FXMLLoader(DashboardController.class.getResource("/ui/dashboard.fxml"));
             Parent root = loader.load();
@@ -73,7 +73,7 @@ public class DashboardController implements Initializable {
     }
     
     // Update setUserData to accept Customer
-    public void setUserData(String username, Stage stage, User customer) {
+    public void setUserData(String username, Stage stage, Customer customer) {
         this.currentUsername = username;
         this.primaryStage = stage;
         this.currentCustomer = customer; // Store the actual customer

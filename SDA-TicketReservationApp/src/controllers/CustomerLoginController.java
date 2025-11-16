@@ -83,6 +83,7 @@ public class CustomerLoginController {
             
             // Get the logged-in user
             User loggedInUser = users.getUserByUsername(username);
+            Customer loggedInCustomer = (Customer)loggedInUser;
             
             // Simulate brief delay before redirect
             new Thread(() -> {
@@ -91,7 +92,7 @@ public class CustomerLoginController {
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
-                Platform.runLater(() -> showDashboard(loggedInUser.getUsername(),loggedInUser));
+                Platform.runLater(() -> showDashboard(loggedInUser.getUsername(),loggedInCustomer));
             }).start();
         } else {
             showError("Invalid username or password");
@@ -99,7 +100,7 @@ public class CustomerLoginController {
     }
 
     // ADD THIS METHOD TO SHOW DASHBOARD
-    private void showDashboard(String username,User loggedInUser) {
+    private void showDashboard(String username,Customer loggedInUser) {
         try {
             Stage currentStage = (Stage) usernameField.getScene().getWindow();
             DashboardController.show(currentStage, username, loggedInUser);

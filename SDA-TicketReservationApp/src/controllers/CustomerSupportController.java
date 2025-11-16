@@ -24,7 +24,7 @@ import java.util.ResourceBundle;
 public class CustomerSupportController implements Initializable {
 
     private QueryCatalog queryCatalog = new QueryCatalog();
-    private User currentCustomer;
+    private Customer currentCustomer;
     private String currentUsername;
 
     // UI Elements
@@ -47,7 +47,7 @@ public class CustomerSupportController implements Initializable {
     @FXML private Button logoutButton;
 
     // Show method to launch the support page
-    public static void show(Stage stage, String username, User customer) {
+    public static void show(Stage stage, String username, Customer customer) {
         try {
             FXMLLoader loader = new FXMLLoader(CustomerSupportController.class.getResource("/ui/customer-support.fxml"));
             Parent root = loader.load();
@@ -75,7 +75,7 @@ public class CustomerSupportController implements Initializable {
         }
     }
 
-    public void setCustomerData(String username, User customer) {
+    public void setCustomerData(String username, Customer customer) {
         this.currentUsername = username;
         this.currentCustomer = customer;
         

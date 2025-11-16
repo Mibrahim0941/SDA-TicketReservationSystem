@@ -86,7 +86,7 @@ public class AdminLoginController implements Initializable {
     private void showAdminDashboard(String username) {
         try {
             Stage currentStage = (Stage) loginButton.getScene().getWindow();
-            DashboardController.show(currentStage, username);
+            DashboardController.show(currentStage, username, null); // Pass null for customer as it's admin
             
             // You can create a separate AdminDashboardController if needed
             // AdminDashboardController.show(currentStage, username);
