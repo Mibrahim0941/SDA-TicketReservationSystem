@@ -57,7 +57,6 @@ public class SupportStaffDashboardController {
     @FXML private Label responseRateLabel;
     @FXML private Label avgResponseTimeLabel;
 
-    // SHOW METHOD - Updated for your classes
     public static void show(Stage stage, String username) {
         try {
             System.out.println("Loading Support Staff Dashboard...");
@@ -65,7 +64,6 @@ public class SupportStaffDashboardController {
             FXMLLoader loader = new FXMLLoader(SupportStaffDashboardController.class.getResource("/ui/support-staff-dashboard.fxml"));
             Parent root = loader.load();
             
-            // Get the controller and set staff data
             SupportStaffDashboardController controller = loader.getController();
             if (controller != null) {
                 controller.setStaffData(username);
@@ -73,7 +71,6 @@ public class SupportStaffDashboardController {
             
             Scene scene = new Scene(root, 1200, 800);
             
-            // Try to load CSS
             try {
                 scene.getStylesheets().add(SupportStaffDashboardController.class.getResource("/ui/support-staff-dashboard.css").toExternalForm());
                 System.out.println("CSS loaded successfully");
@@ -97,13 +94,17 @@ public class SupportStaffDashboardController {
 
     public void setStaffData(String username) {
         this.staffUsername = username;
-        // In a real app, you'd load the actual SupportStaff object from your catalog
-        // For now, create a temporary staff object
         this.currentStaff = new SupportStaff("STAFF001", "Support Agent", "password", username, "staff@ticketgenie.com", "1234567890");
         
         if (userGreeting != null) {
             userGreeting.setText("Hello, " + username + "! 👋");
         }
+        
+        // Load data after UI is ready
+        Platform.runLater(() -> {
+            loadQueriesData();
+            loadSupportStats();
+        });
     }
 
     @FXML
@@ -111,21 +112,17 @@ public class SupportStaffDashboardController {
         System.out.println("SupportStaffDashboardController initialized");
         setupEventHandlers();
         initializeTable();
-        loadSupportStats();
     }
 
     private void setupEventHandlers() {
-        // View Queries Card
         if (viewQueriesCard != null) {
             viewQueriesCard.setOnMouseClicked(e -> showAllQueries());
         }
         
-        // Answer Queries Card
         if (answerQueriesCard != null) {
             answerQueriesCard.setOnMouseClicked(e -> focusOnResponse());
         }
         
-        // Buttons
         if (sendResponseButton != null) {
             sendResponseButton.setOnAction(e -> sendResponse());
         }
@@ -148,30 +145,28 @@ public class SupportStaffDashboardController {
 
     private void initializeTable() {
         if (queriesTable != null) {
-            // Initialize table columns to match your SupportQuery class
+            System.out.println("Initializing table with columns...");
+            
+            // Set column cell value factories
             queryIdColumn.setCellValueFactory(new PropertyValueFactory<>("queryID"));
             
-            // For customer name - we need to extract from Customer object
             customerNameColumn.setCellValueFactory(cellData -> {
                 SupportQuery query = cellData.getValue();
-                if (query.getCustomer() != null) {
+                if (query.getCustomer() != null && query.getCustomer().getName() != null) {
                     return new javafx.beans.property.SimpleStringProperty(query.getCustomer().getName());
                 }
                 return new javafx.beans.property.SimpleStringProperty("Unknown");
             });
             
-            // For query type - using text as query type
             queryTypeColumn.setCellValueFactory(cellData -> {
                 SupportQuery query = cellData.getValue();
                 String text = query.getText();
-                // Extract first few words as "query type"
                 if (text != null && text.length() > 30) {
                     return new javafx.beans.property.SimpleStringProperty(text.substring(0, 30) + "...");
                 }
                 return new javafx.beans.property.SimpleStringProperty(text != null ? text : "No description");
             });
             
-            // Status column
             statusColumn.setCellValueFactory(cellData -> {
                 SupportQuery query = cellData.getValue();
                 String status = query.isStatus() ? "Resolved" : "Pending";
@@ -181,7 +176,6 @@ public class SupportStaffDashboardController {
                 return new javafx.beans.property.SimpleStringProperty(status);
             });
             
-            // Date column
             dateColumn.setCellValueFactory(cellData -> {
                 SupportQuery query = cellData.getValue();
                 if (query.getAskedOn() != null) {
@@ -193,18 +187,56 @@ public class SupportStaffDashboardController {
             
             // Add selection listener
             queriesTable.getSelectionModel().selectedItemProperty().addListener(
-                (obs, oldSelection, newSelection) -> showQueryDetails(newSelection)
+                (obs, oldSelection, newSelection) -> {
+                    System.out.println("Table selection changed to: " + (newSelection != null ? newSelection.getQueryID() : "null"));
+                    showQueryDetails(newSelection);
+                }
             );
             
-            // Load initial data
-            loadQueriesData();
+            // Force table to show columns
+            queriesTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+            
+            System.out.println("Table initialization complete");
+        } else {
+            System.err.println("queriesTable is null during initialization!");
         }
     }
 
     private void loadQueriesData() {
         if (queryCatalog != null && queriesTable != null) {
-            ArrayList<SupportQuery> queries = queryCatalog.getAllQueries();
-            queriesTable.getItems().setAll(queries);
+            try {
+                ArrayList<SupportQuery> queries = queryCatalog.getAllQueries();
+                System.out.println("Loading " + queries.size() + " queries into table");
+                
+                // Debug: Print what we're loading
+                for (SupportQuery query : queries) {
+                    System.out.println("Adding to table: " + query.getQueryID() + " - " + 
+                                     (query.getCustomer() != null ? query.getCustomer().getName() : "No Customer"));
+                }
+                
+                queriesTable.getItems().setAll(queries);
+                
+                // Refresh the table to ensure rendering
+                queriesTable.refresh();
+                
+                System.out.println("Table now has " + queriesTable.getItems().size() + " items");
+                
+                if (queries.isEmpty()) {
+                    System.out.println("No queries found in the database");
+                    // Add a placeholder message
+                    queriesTable.setPlaceholder(new Label("No customer queries found"));
+                }
+                
+            } catch (Exception e) {
+                System.err.println("Error loading queries: " + e.getMessage());
+                e.printStackTrace();
+                queriesTable.setPlaceholder(new Label("Error loading queries: " + e.getMessage()));
+            }
+        } else {
+            System.err.println("QueryCatalog or queriesTable is null!");
+            if (queriesTable != null) {
+                queriesTable.setPlaceholder(new Label("Unable to load queries"));
+            }
         }
     }
 
@@ -217,6 +249,7 @@ public class SupportStaffDashboardController {
         if (queriesTable != null && queriesTable.getSelectionModel().getSelectedItem() != null) {
             if (responseArea != null) {
                 responseArea.requestFocus();
+                showSuccess("Ready to respond to selected query");
             }
         } else {
             showError("Please select a query first");
@@ -239,13 +272,10 @@ public class SupportStaffDashboardController {
         }
 
         try {
-            // Update the query using your catalog method
             boolean success = queryCatalog.updateQueryResponse(selectedQuery.getQueryID(), response);
             
             if (success) {
-                // Assign this staff member to the query
                 queryCatalog.assignSupportStaff(selectedQuery.getQueryID(), currentStaff);
-                
                 showSuccess("Response sent successfully!");
                 responseArea.clear();
                 refreshData();
@@ -265,7 +295,6 @@ public class SupportStaffDashboardController {
         }
 
         try {
-            // If no response exists, create an empty one to mark as resolved
             if (selectedQuery.getResponse() == null || selectedQuery.getResponse().isEmpty()) {
                 boolean success = queryCatalog.updateQueryResponse(selectedQuery.getQueryID(), "Issue resolved by support staff.");
                 if (success) {
@@ -275,9 +304,8 @@ public class SupportStaffDashboardController {
                     showError("Failed to mark query as resolved.");
                 }
             } else {
-                // Query already has response, just update status
                 selectedQuery.setStatus(true);
-                queryCatalog.updateQueryInDatabase(selectedQuery);
+                queryCatalog.updateQuery(selectedQuery);
                 showSuccess("Query marked as resolved!");
             }
             refreshData();
@@ -294,7 +322,6 @@ public class SupportStaffDashboardController {
         }
 
         try {
-            // For escalation, we'll add a note to the response
             String escalationNote = "\n\n[ESCALATED TO SENIOR SUPPORT - " + new java.util.Date() + "]";
             String newResponse = (selectedQuery.getResponse() != null ? selectedQuery.getResponse() : "") + escalationNote;
             
@@ -312,6 +339,7 @@ public class SupportStaffDashboardController {
     }
 
     private void refreshData() {
+        System.out.println("Refreshing data...");
         loadQueriesData();
         loadSupportStats();
         showSuccess("Data refreshed successfully");
@@ -323,13 +351,12 @@ public class SupportStaffDashboardController {
             int totalCount = queryCatalog.getQueryCount();
             int resolvedCount = totalCount - pendingCount;
             
-            // Calculate response rate (simplified)
             double responseRate = totalCount > 0 ? ((double) resolvedCount / totalCount) * 100 : 0;
             
             if (pendingQueriesLabel != null) pendingQueriesLabel.setText(String.valueOf(pendingCount));
             if (resolvedTodayLabel != null) resolvedTodayLabel.setText(String.valueOf(resolvedCount));
             if (responseRateLabel != null) responseRateLabel.setText(String.format("%.1f%%", responseRate));
-            if (avgResponseTimeLabel != null) avgResponseTimeLabel.setText("24h"); // Simplified
+            if (avgResponseTimeLabel != null) avgResponseTimeLabel.setText("24h");
         }
     }
 
@@ -361,7 +388,6 @@ public class SupportStaffDashboardController {
             
             queryDetailsArea.setText(details.toString());
             
-            // Clear response area for new responses
             if (!query.isStatus()) {
                 responseArea.clear();
             } else {
@@ -411,7 +437,6 @@ public class SupportStaffDashboardController {
         });
     }
 
-    // ADD THIS HELPER METHOD
     private static void showErrorAlert(String message) {
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -422,7 +447,6 @@ public class SupportStaffDashboardController {
         });
     }
 
-    // Method to get support queries (for testing/demonstration)
     public ArrayList<SupportQuery> getSupportQueries() {
         return queryCatalog.getAllQueries();
     }

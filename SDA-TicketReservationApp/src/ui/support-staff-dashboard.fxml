@@ -47,13 +47,13 @@
             <Label text="📥 Recent Customer Queries" styleClass="section-title"/>
             
             <!-- Queries Table -->
-            <TableView fx:id="queriesTable" styleClass="queries-table" prefHeight="200">
+            <TableView fx:id="queriesTable" styleClass="queries-table" prefHeight="200" minHeight="200">
                <columns>
-                  <TableColumn fx:id="queryIdColumn" text="Query ID" styleClass="table-column"/>
-                  <TableColumn fx:id="customerNameColumn" text="Customer" styleClass="table-column"/>
-                  <TableColumn fx:id="queryTypeColumn" text="Type" styleClass="table-column"/>
-                  <TableColumn fx:id="statusColumn" text="Status" styleClass="table-column"/>
-                  <TableColumn fx:id="dateColumn" text="Date" styleClass="table-column"/>
+                  <TableColumn fx:id="queryIdColumn" text="Query ID" prefWidth="100" minWidth="80" styleClass="table-column"/>
+                  <TableColumn fx:id="customerNameColumn" text="Customer" prefWidth="150" minWidth="120" styleClass="table-column"/>
+                  <TableColumn fx:id="queryTypeColumn" text="Type" prefWidth="300" minWidth="200" styleClass="table-column"/>
+                  <TableColumn fx:id="statusColumn" text="Status" prefWidth="120" minWidth="100" styleClass="table-column"/>
+                  <TableColumn fx:id="dateColumn" text="Date" prefWidth="120" minWidth="100" styleClass="table-column"/>
                </columns>
             </TableView>
             
