@@ -11,19 +11,19 @@
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" 
       fx:controller="controllers.MyBookingsController" 
-      spacing="20" style="-fx-background-color: #f8fafc;">
+      spacing="20" style="-fx-background-color: #F5EFE7;">
     
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
 
     <!-- Header Section -->
-    <HBox spacing="20" alignment="CENTER_LEFT">
+    <HBox spacing="20" alignment="CENTER_LEFT" styleClass="header-section">
         <VBox spacing="5">
-            <Text fx:id="pageTitle" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-fill: #1e293b;">
+            <Text fx:id="pageTitle" styleClass="dashboard-title">
                 My Bookings
             </Text>
-            <Text fx:id="userGreeting" style="-fx-font-size: 14px; -fx-fill: #64748b;">
+            <Text fx:id="userGreeting" styleClass="dashboard-subtitle">
                 Hello, User! 👋
             </Text>
         </VBox>
@@ -35,22 +35,22 @@
     </HBox>
 
     <!-- Filters Section -->
-    <HBox fx:id="filterContainer" spacing="15" alignment="CENTER_LEFT">
-        <Label text="Filters:" style="-fx-font-weight: bold; -fx-text-fill: #475569;"/>
+    <HBox fx:id="filterContainer" spacing="15" alignment="CENTER_LEFT" styleClass="filter-container">
+        <Label text="Filters:" styleClass="filter-label"/>
         
         <VBox spacing="5">
-            <Label text="Status" style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
-            <ComboBox fx:id="statusFilter" prefWidth="150"/>
+            <Label text="Status" styleClass="input-label"/>
+            <ComboBox fx:id="statusFilter" prefWidth="150" styleClass="combo-box"/>
         </VBox>
         
         <VBox spacing="5">
-            <Label text="Payment" style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
-            <ComboBox fx:id="paymentFilter" prefWidth="120"/>
+            <Label text="Payment" styleClass="input-label"/>
+            <ComboBox fx:id="paymentFilter" prefWidth="120" styleClass="combo-box"/>
         </VBox>
         
         <VBox spacing="5" HBox.hgrow="ALWAYS">
-            <Label text="Search" style="-fx-font-size: 12px; -fx-text-fill: #64748b;"/>
-            <TextField fx:id="searchField" prefWidth="200"/>
+            <Label text="Search" styleClass="input-label"/>
+            <TextField fx:id="searchField" prefWidth="200" styleClass="text-field"/>
         </VBox>
     </HBox>
 
@@ -58,7 +58,7 @@
     <VBox fx:id="bookingsContainer" spacing="15" VBox.vgrow="ALWAYS">
         <Text fx:id="noBookingsText" 
               text="No bookings found. Start by booking your first ticket!" 
-              style="-fx-font-size: 16px; -fx-fill: #94a3b8; -fx-text-alignment: center;" 
+              styleClass="no-bookings" 
               visible="false"/>
         <!-- Booking cards will be dynamically added here -->
     </VBox>

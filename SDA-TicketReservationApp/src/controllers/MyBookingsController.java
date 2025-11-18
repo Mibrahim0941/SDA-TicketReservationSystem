@@ -58,7 +58,7 @@ public class MyBookingsController implements Initializable {
             controller.setUserData(username, customer);
             
             Scene scene = new Scene(root, 1000, 700);
-            scene.getStylesheets().add(MyBookingsController.class.getResource("/ui/myBookings.css").toExternalForm());
+            scene.getStylesheets().add(MyBookingsController.class.getResource("/ui/MyBookings.css").toExternalForm());
             
             stage.setScene(scene);
             stage.setTitle("TicketGenie - My Bookings");
