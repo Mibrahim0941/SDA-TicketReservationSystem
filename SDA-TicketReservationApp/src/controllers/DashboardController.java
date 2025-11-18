@@ -179,7 +179,7 @@ public class DashboardController implements Initializable {
             // Pass data to controller if it exists
             Object controller = loader.getController();
             if (controller instanceof MyBookingsController) {
-                ((MyBookingsController) controller).setUserData(currentCustomer);
+                ((MyBookingsController) controller).setUserData(currentUsername,currentCustomer);
             }
             
             contentArea.getChildren().add(myBookingsContent);
