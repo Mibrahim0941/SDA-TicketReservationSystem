@@ -137,7 +137,24 @@ public class DashboardController implements Initializable {
     
     private void navigateToProfile() {
         System.out.println("Navigating to Profile...");
-        showAlert("Feature Coming Soon", "Profile management feature will be available soon!");
+    
+        try {
+            if (currentCustomer == null) {
+                showAlert("Error", "Customer information not available. Please login again.");
+                return;
+            }
+        
+            // Get the current stage
+            Stage currentStage = (Stage) profileCard.getScene().getWindow();
+        
+            // Launch the update profile page
+            UpdateProfileController.show(currentStage, currentUsername, currentCustomer);
+        
+        } catch (Exception e) {
+            System.err.println("Error navigating to profile: " + e.getMessage());
+            e.printStackTrace();
+            showAlert("Error", "Failed to load profile page: " + e.getMessage());
+        }
     }
     
     private void navigateToHistory() {

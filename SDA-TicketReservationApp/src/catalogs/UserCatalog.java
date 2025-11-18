@@ -4,6 +4,10 @@ import models.Admin;
 import models.Customer;
 import models.SupportStaff;
 import database.DatabaseConnection;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class UserCatalog {
     private java.util.ArrayList<User> users;
@@ -235,5 +239,162 @@ public class UserCatalog {
             return true;
         }
         return false;
+    }
+    
+
+    public boolean updateUser(User updatedUser) {
+        // Find the existing user in the local list by UserID (not username)
+        User existingUser = getUserByID(updatedUser.getUserID());
+        if (existingUser == null) {
+            System.out.println("User not found in catalog: " + updatedUser.getUserID());
+            return false;
+        }
+    
+        // Update the local user object
+        existingUser.setName(updatedUser.getName());
+        existingUser.setUsername(updatedUser.getUsername());
+        existingUser.setEmail(updatedUser.getEmail());
+        existingUser.setPhoneNum(updatedUser.getPhoneNum());
+    
+        // Update in database
+        return updateUserProfileInDatabase(updatedUser);
+    }
+
+    public boolean updateUserPassword(String userID, String newPassword) {
+        // Find the existing user in the local list by UserID
+        User existingUser = getUserByID(userID);
+            if (existingUser == null) {
+                System.out.println("User not found in catalog: " + userID);
+            return false;
+        }
+    
+        // Update the local user password
+        existingUser.setPassword(newPassword);
+    
+        // Update in database (only password)
+        return updatePasswordInDatabase(userID, newPassword);
+    }
+
+    // Add this helper method to UserCatalog to find user by ID
+    public User getUserByID(String userID) {
+        for (User user : users) {
+            if (user.getUserID().equals(userID)) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    private boolean updateUserProfileInDatabase(User user) {
+        Connection conn = null;
+        PreparedStatement userStmt = null;
+        PreparedStatement contactStmt = null;
+    
+        try {
+            conn = DatabaseConnection.getConnection();
+            conn.setAutoCommit(false);
+        
+            // First, get the ContactID for this user
+            int contactId = getContactIdForUser(user.getUserID());
+            if (contactId == -1) {
+                System.out.println("ContactID not found for user: " + user.getUserID());
+                return false;
+            }
+        
+            // Update ContactInfo table
+            String contactUpdate = "UPDATE ContactInfo SET Email = ?, PhoneNum = ? WHERE ContactID = ?";
+            contactStmt = conn.prepareStatement(contactUpdate);
+            contactStmt.setString(1, user.getEmail());
+            contactStmt.setString(2, user.getPhoneNum());
+            contactStmt.setInt(3, contactId);
+        
+            int contactRows = contactStmt.executeUpdate();
+            System.out.println("ContactInfo rows updated: " + contactRows);
+            
+            // Then update Users table (only name and username, not password)
+            String userUpdate = "UPDATE Users SET Name = ?, Username = ? WHERE UserID = ?";
+            userStmt = conn.prepareStatement(userUpdate);
+            userStmt.setString(1, user.getName());
+            userStmt.setString(2, user.getUsername());
+            userStmt.setString(3, user.getUserID());
+        
+            int userRows = userStmt.executeUpdate();
+            System.out.println("Users rows updated: " + userRows);
+        
+            if (contactRows > 0 && userRows > 0) {
+                conn.commit();
+                System.out.println("User profile updated successfully in database: " + user.getUsername());
+                return true;
+            } else {
+                conn.rollback();
+                System.out.println("Failed to update user profile in database - rolling back");
+                return false;
+            }
+        
+        } catch (Exception e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (Exception ex) {}
+            }
+            System.err.println("Error updating user profile in database: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        } finally {
+            try { if (contactStmt != null) contactStmt.close(); } catch (Exception e) {}
+            try { if (userStmt != null) userStmt.close(); } catch (Exception e) {}
+            try { if (conn != null) conn.setAutoCommit(true); } catch (Exception e) {}
+        }
+    }
+
+    private int getContactIdForUser(String userID) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+    
+        try {
+            conn = DatabaseConnection.getConnection();
+            String query = "SELECT ContactID FROM Users WHERE UserID = ?";
+            stmt = conn.prepareStatement(query);
+            stmt.setString(1, userID);
+        
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                int contactId = rs.getInt("ContactID");
+                System.out.println("Found ContactID: " + contactId + " for UserID: " + userID);
+                return contactId;
+            }
+            System.out.println("No ContactID found for UserID: " + userID);
+            return -1;
+        
+        } catch (Exception e) {
+            System.err.println("Error getting ContactID for user: " + e.getMessage());
+            e.printStackTrace();
+            return -1;
+        } finally {
+            try { if (rs != null) rs.close(); } catch (Exception e) {}
+            try { if (stmt != null) stmt.close(); } catch (Exception e) {}
+        }
+    }   
+    private boolean updatePasswordInDatabase(String userID, String newPassword) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+    
+        try {
+            conn = DatabaseConnection.getConnection();
+            String updateQuery = "UPDATE Users SET Password = ? WHERE UserID = ?";
+            stmt = conn.prepareStatement(updateQuery);
+            stmt.setString(1, newPassword);
+            stmt.setString(2, userID);
+            
+            int rowsAffected = stmt.executeUpdate();
+            System.out.println("Password updated in database. Rows affected: " + rowsAffected);
+            return rowsAffected > 0;
+        
+        } catch (Exception e) {
+            System.err.println("Error updating password in database: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        } finally {
+            try { if (stmt != null) stmt.close(); } catch (Exception e) {}
+        }
     }
 }
