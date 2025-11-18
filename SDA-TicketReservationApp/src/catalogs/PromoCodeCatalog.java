@@ -2,7 +2,6 @@ package catalogs;
 
 import models.PromotionalCode;
 import config.DatabaseConfig;
-
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -17,14 +16,11 @@ public class PromoCodeCatalog {
         this.databaseAvailable = false;
         
         try {
-            // Use the new DatabaseConfig methods
             String url = DatabaseConfig.getDbUrl();
             String user = DatabaseConfig.getDbUser();
             String password = DatabaseConfig.getDbPassword();
             
-            // Load SQL Server JDBC driver
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            
             this.connection = DriverManager.getConnection(url, user, password);
             this.databaseAvailable = true;
             loadPromoCodesFromDB();
@@ -41,7 +37,6 @@ public class PromoCodeCatalog {
     }
     
     private void initializeSamplePromoCodes() {
-        // Add some sample promo codes for testing
         promoCodes.add(new PromotionalCode("WELCOME10", LocalDate.now().plusDays(30), 10.0));
         promoCodes.add(new PromotionalCode("SUMMER25", LocalDate.now().plusDays(60), 25.0));
         promoCodes.add(new PromotionalCode("FALL15", LocalDate.now().plusDays(45), 15.0));
@@ -55,7 +50,6 @@ public class PromoCodeCatalog {
             return;
         }
         
-        // First, ensure the table exists
         createTableIfNotExists();
         
         String query = "SELECT * FROM PromotionalCodes ORDER BY ValidityDate DESC";
@@ -81,7 +75,6 @@ public class PromoCodeCatalog {
         } catch (SQLException e) {
             System.err.println("Error loading promotional codes from database: " + e.getMessage());
             e.printStackTrace();
-            // Fallback to sample data if database fails
             if (promoCodes.isEmpty()) {
                 initializeSamplePromoCodes();
             }
@@ -113,11 +106,12 @@ public class PromoCodeCatalog {
     }
     
     public boolean addToCatalog(PromotionalCode promoCode) {
-        // Check if promo code already exists
         if (getPromoCode(promoCode.getCode()) != null) {
             System.err.println("Promo code already exists: " + promoCode.getCode());
             return false;
         }
+        
+        promoCodes.add(promoCode);
         
         if (databaseAvailable) {
             String query = "INSERT INTO PromotionalCodes (Code, Percentage, ValidityDate, IsActive) VALUES (?, ?, ?, ?)";
@@ -131,21 +125,17 @@ public class PromoCodeCatalog {
                 int rowsAffected = pstmt.executeUpdate();
                 
                 if (rowsAffected > 0) {
-                    promoCodes.add(promoCode);
                     System.out.println("Promo code added successfully to database: " + promoCode.getCode());
                     return true;
                 }
                 
             } catch (SQLException e) {
                 System.err.println("Error adding promo code to database: " + e.getMessage());
-                e.printStackTrace();
-                // Fallback to in-memory storage
-                System.out.println("Falling back to in-memory storage");
+                promoCodes.remove(promoCode);
+                return false;
             }
         }
         
-        // Add to in-memory list if database is not available or insertion failed
-        promoCodes.add(promoCode);
         System.out.println("Promo code added to in-memory storage: " + promoCode.getCode());
         return true;
     }
@@ -196,7 +186,6 @@ public class PromoCodeCatalog {
                 int rowsAffected = pstmt.executeUpdate();
                 
                 if (rowsAffected > 0) {
-                    // Update local list
                     updateLocalPromoCode(updatedPromoCode);
                     System.out.println("Promo code updated successfully in database: " + updatedPromoCode.getCode());
                     return true;
@@ -208,7 +197,6 @@ public class PromoCodeCatalog {
             }
         }
         
-        // Update in-memory list if database is not available or update failed
         boolean updated = updateLocalPromoCode(updatedPromoCode);
         if (updated) {
             System.out.println("Promo code updated in in-memory storage: " + updatedPromoCode.getCode());
@@ -247,7 +235,6 @@ public class PromoCodeCatalog {
             }
         }
         
-        // Delete from in-memory list if database is not available or deletion failed
         boolean deleted = promoCodes.removeIf(promoCode -> promoCode.getCode().equals(code));
         if (deleted) {
             System.out.println("Promo code deleted from in-memory storage: " + code);
@@ -293,7 +280,6 @@ public class PromoCodeCatalog {
         return getActivePromoCodes().size();
     }
     
-    // Close connection when done
     public void close() {
         try {
             if (connection != null && !connection.isClosed()) {
@@ -303,11 +289,5 @@ public class PromoCodeCatalog {
         } catch (SQLException e) {
             System.err.println("Error closing connection: " + e.getMessage());
         }
-    }
-    
-    @Override
-    protected void finalize() throws Throwable {
-        close();
-        super.finalize();
     }
 }

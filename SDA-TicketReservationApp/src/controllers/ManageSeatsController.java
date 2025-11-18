@@ -7,7 +7,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import models.Admin;
@@ -20,7 +19,7 @@ import java.io.IOException;
 
 public class ManageSeatsController {
 
-    private RouteCatalog routeCatalog = new RouteCatalog();
+    private RouteCatalog routeCatalog = RouteCatalog.getInstance();
     private String currentUsername;
     private Admin currentAdmin;
 
@@ -44,8 +43,6 @@ public class ManageSeatsController {
             controller.setAdminData(username, admin);
             
             Scene scene = new Scene(root, 1200, 800);
-            scene.getStylesheets().add(ManageSeatsController.class.getResource("/ui/manage-seats.css").toExternalForm());
-            
             stage.setScene(scene);
             stage.setTitle("TicketGenie - Manage Seats");
             stage.centerOnScreen();
@@ -71,6 +68,7 @@ public class ManageSeatsController {
     public void initialize() {
         System.out.println("ManageSeatsController initialized");
         setupEventHandlers();
+        initializeComboBoxes();
     }
 
     private void setupEventHandlers() {
@@ -88,17 +86,87 @@ public class ManageSeatsController {
         }
     }
 
+    private void initializeComboBoxes() {
+        routeComboBox.setCellFactory(param -> new ListCell<Route>() {
+            @Override
+            protected void updateItem(Route item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getSource() + " → " + item.getDestination() + " (PKR " + item.getBasePrice() + ")");
+                }
+            }
+        });
+
+        routeComboBox.setButtonCell(new ListCell<Route>() {
+            @Override
+            protected void updateItem(Route item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getSource() + " → " + item.getDestination() + " (PKR " + item.getBasePrice() + ")");
+                }
+            }
+        });
+
+        scheduleComboBox.setCellFactory(param -> new ListCell<Schedule>() {
+            @Override
+            protected void updateItem(Schedule item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getDate() + " - " + item.getDepartureTime() + " to " + item.getArrivalTime());
+                }
+            }
+        });
+
+        scheduleComboBox.setButtonCell(new ListCell<Schedule>() {
+            @Override
+            protected void updateItem(Schedule item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getDate() + " - " + item.getDepartureTime() + " to " + item.getArrivalTime());
+                }
+            }
+        });
+    }
+
     private void loadRoutesData() {
         if (routeCatalog != null && routeComboBox != null) {
-            routeCatalog.refresh();
-            routeComboBox.getItems().setAll(routeCatalog.getAllRoutes());
+            try {
+                routeCatalog.refresh();
+                routeComboBox.getItems().setAll(routeCatalog.getAllRoutes());
+                System.out.println("Loaded " + routeCatalog.getAllRoutes().size() + " routes");
+            } catch (Exception e) {
+                System.err.println("Error loading routes: " + e.getMessage());
+                showError("Failed to load routes data: " + e.getMessage());
+            }
         }
     }
 
     private void handleRouteSelection() {
         Route selectedRoute = routeComboBox.getValue();
         if (selectedRoute != null && scheduleComboBox != null) {
-            scheduleComboBox.getItems().setAll(selectedRoute.getSchedules());
+            try {
+                Route currentRoute = routeCatalog.getRoute(selectedRoute.getRouteID());
+                if (currentRoute != null) {
+                    scheduleComboBox.getItems().setAll(currentRoute.getSchedules());
+                    System.out.println("Loaded " + currentRoute.getSchedules().size() + " schedules for route " + currentRoute.getRouteID());
+                }
+                
+                seatsGrid.getChildren().clear();
+                if (seatDetailsArea != null) {
+                    seatDetailsArea.clear();
+                }
+            } catch (Exception e) {
+                System.err.println("Error loading schedules: " + e.getMessage());
+                showError("Failed to load schedules: " + e.getMessage());
+            }
         }
     }
 
@@ -112,31 +180,108 @@ public class ManageSeatsController {
     private void displaySeats(Schedule schedule) {
         seatsGrid.getChildren().clear();
         
-        // Create sample seats for demonstration
-        for (int i = 0; i < 20; i++) {
-            Seat seat = new Seat("A" + (i + 1), "Economy", 1000 + (i * 50));
-            seat.setAvailability(Math.random() > 0.3); // 70% available
+        int totalSeats = 40;
+        int availableSeats = 0;
+        int occupiedSeats = 0;
+        
+        for (int i = 0; i < totalSeats; i++) {
+            String seatNumber;
+            String seatType;
+            double price;
             
-            Button seatButton = new Button(seat.getSeatNo());
-            seatButton.getStyleClass().add("seat-button");
-            if (!seat.isAvailability()) {
-                seatButton.getStyleClass().add("seat-occupied");
+            if (i < 8) {
+                seatNumber = "A" + (i + 1);
+                seatType = "Business";
+                price = 2000 + (i * 50);
+            } else if (i < 24) {
+                seatNumber = "B" + (i - 7);
+                seatType = "Economy";
+                price = 1000 + (i * 30);
+            } else {
+                seatNumber = "C" + (i - 23);
+                seatType = "Standard";
+                price = 800 + (i * 20);
             }
             
-            final int seatIndex = i;
-            seatButton.setOnAction(e -> showSeatDetails(seat));
+            Seat seat = new Seat(seatNumber, seatType, price);
+            boolean isAvailable = Math.random() > 0.3;
             
-            seatsGrid.add(seatButton, i % 5, i / 5);
+            if (isAvailable) {
+                availableSeats++;
+            } else {
+                occupiedSeats++;
+            }
+            
+            Button seatButton = createSeatButton(seatNumber, isAvailable, seat);
+            
+            int row = i / 4;
+            int col = i % 4;
+            seatsGrid.add(seatButton, col, row);
         }
+        
+        updateStatistics(totalSeats, availableSeats, occupiedSeats);
+        showSuccess("Displaying " + totalSeats + " seats for selected schedule");
+    }
+
+    private Button createSeatButton(String seatNumber, boolean isAvailable, Seat seat) {
+        Button seatButton = new Button(seatNumber);
+        
+        String baseStyle = "-fx-font-weight: bold; -fx-font-size: 10px; -fx-min-width: 35px; -fx-min-height: 35px; " +
+                          "-fx-border-radius: 5px; -fx-background-radius: 5px; -fx-cursor: hand; " +
+                          "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 3, 0, 0, 1);";
+        
+        if (isAvailable) {
+            seatButton.setStyle(baseStyle + " -fx-background-color: #27ae60; -fx-text-fill: white;");
+        } else {
+            seatButton.setStyle(baseStyle + " -fx-background-color: #e74c3c; -fx-text-fill: white;");
+        }
+        
+        seatButton.setOnMouseEntered(e -> {
+            if (isAvailable) {
+                seatButton.setStyle(baseStyle + " -fx-background-color: #2ecc71; -fx-text-fill: white; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 5, 0, 0, 2);");
+            } else {
+                seatButton.setStyle(baseStyle + " -fx-background-color: #c0392b; -fx-text-fill: white; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 5, 0, 0, 2);");
+            }
+        });
+        
+        seatButton.setOnMouseExited(e -> {
+            if (isAvailable) {
+                seatButton.setStyle(baseStyle + " -fx-background-color: #27ae60; -fx-text-fill: white; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 3, 0, 0, 1);");
+            } else {
+                seatButton.setStyle(baseStyle + " -fx-background-color: #e74c3c; -fx-text-fill: white; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 3, 0, 0, 1);");
+            }
+        });
+        
+        seatButton.setOnAction(e -> showSeatDetails(seat));
+        
+        return seatButton;
+    }
+
+    private void updateStatistics(int totalSeats, int availableSeats, int occupiedSeats) {
+        double occupancyRate = (double) occupiedSeats / totalSeats * 100;
+        System.out.println("Seat Statistics - Total: " + totalSeats + 
+                          ", Available: " + availableSeats + 
+                          ", Occupied: " + occupiedSeats + 
+                          ", Occupancy: " + String.format("%.1f", occupancyRate) + "%");
     }
 
     private void showSeatDetails(Seat seat) {
         if (seatDetailsArea != null) {
             StringBuilder details = new StringBuilder();
+            details.append("=== SEAT DETAILS ===\n\n");
             details.append("Seat Number: ").append(seat.getSeatNo()).append("\n");
             details.append("Seat Type: ").append(seat.getSeatType()).append("\n");
-            details.append("Price: PKR ").append(seat.getPrice()).append("\n");
-            details.append("Status: ").append(seat.isAvailability() ? "Available" : "Occupied").append("\n");
+            details.append("Price: PKR ").append(String.format("%.2f", seat.getPrice())).append("\n");
+            details.append("Status: ").append(seat.isAvailability() ? "✅ Available" : "❌ Occupied").append("\n");
+            details.append("\n");
+            
+            if (seat.isAvailability()) {
+                details.append("This seat is available for booking.\n");
+                details.append("Passengers can select this seat during booking.");
+            } else {
+                details.append("This seat is currently occupied.\n");
+                details.append("It cannot be selected for new bookings.");
+            }
             
             seatDetailsArea.setText(details.toString());
         }
@@ -144,7 +289,14 @@ public class ManageSeatsController {
 
     private void handleRefresh() {
         loadRoutesData();
-        showSuccess("Data refreshed");
+        seatsGrid.getChildren().clear();
+        if (seatDetailsArea != null) {
+            seatDetailsArea.clear();
+        }
+        routeComboBox.setValue(null);
+        scheduleComboBox.setValue(null);
+        scheduleComboBox.getItems().clear();
+        showSuccess("Data refreshed successfully");
     }
 
     private void handleBack() {

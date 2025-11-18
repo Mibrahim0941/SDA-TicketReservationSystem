@@ -18,7 +18,7 @@ import java.io.IOException;
 
 public class ManageRoutesController {
 
-    private RouteCatalog routeCatalog = new RouteCatalog();
+    private RouteCatalog routeCatalog = RouteCatalog.getInstance();
     private String currentUsername;
     private Admin currentAdmin;
 
@@ -123,7 +123,7 @@ public class ManageRoutesController {
         if (routeCatalog != null && routesTable != null) {
             routeCatalog.refresh();
             routesTable.getItems().setAll(routeCatalog.getAllRoutes());
-            System.out.println("Loaded " + routeCatalog.getRouteCount() + " routes");
+            System.out.println("Loaded " + routeCatalog.getAllRoutes().size() + " routes");
         }
     }
 
@@ -164,7 +164,16 @@ public class ManageRoutesController {
                 return;
             }
             
-            if (routeCatalog.checkRoute(source, destination)) {
+            // Check if route already exists using RouteCatalog
+            boolean routeExists = false;
+            for (Route existingRoute : routeCatalog.getAllRoutes()) {
+                if (existingRoute.verifySrcDst(source, destination)) {
+                    routeExists = true;
+                    break;
+                }
+            }
+            
+            if (routeExists) {
                 showError("A route from " + source + " to " + destination + " already exists");
                 return;
             }
@@ -172,7 +181,7 @@ public class ManageRoutesController {
             String routeID = IDGenerator.generateRouteID();
             Route newRoute = new Route(routeID, source, destination, basePrice);
             
-            if (routeCatalog.addToCatalog(newRoute)) {
+            if (routeCatalog.addRoute(newRoute)) {
                 showSuccess("Route added successfully!");
                 handleClear();
                 loadRoutesData();
@@ -239,11 +248,14 @@ public class ManageRoutesController {
         confirmation.setHeaderText("Delete Route");
         confirmation.setContentText("Are you sure you want to delete route from " + 
                                     selectedRoute.getSource() + " to " + 
-                                    selectedRoute.getDestination() + "?");
+                                    selectedRoute.getDestination() + "?\n" +
+                                    "This will also delete all associated schedules.");
         
         confirmation.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                if (routeCatalog.deleteRoute(selectedRoute.getRouteID())) {
+                boolean success = routeCatalog.deleteRoute(selectedRoute.getRouteID());
+                
+                if (success) {
                     showSuccess("Route deleted successfully!");
                     handleClear();
                     loadRoutesData();

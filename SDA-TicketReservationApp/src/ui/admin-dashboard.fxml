@@ -1,134 +1,287 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="controllers.AdminDashboardController">
-    
-    <!-- Top Header -->
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controllers.AdminDashboardController"
+            stylesheets="@admin-dashboard.css">
+
     <top>
-        <VBox style="-fx-background-color: #ffffff; -fx-padding: 15;">
-            <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-padding: 10;">
-                <!-- Logo placeholder -->
-                <Circle radius="20" fill="#0ea5e9"/>
-                
-                <VBox spacing="2">
-                    <Text fx:id="welcomeTitle" text="Admin Dashboard" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-fill: #1e293b;"/>
-                    <Text fx:id="userGreeting" style="-fx-font-size: 14px; -fx-fill: #64748b;"/>
+        <VBox styleClass="header" spacing="10">
+            <padding>
+                <Insets top="15" right="25" bottom="15" left="25"/>
+            </padding>
+            <HBox alignment="CENTER_LEFT" spacing="15">
+                <StackPane styleClass="header-icon-container">
+                    <Rectangle arcWidth="10" arcHeight="10" width="45" height="45" styleClass="header-icon-bg"/>
+                    <Text text="⚙️" styleClass="header-icon"/>
+                </StackPane>
+
+                <VBox spacing="3" alignment="CENTER_LEFT">
+                    <Text fx:id="welcomeTitle" styleClass="welcome-title" text="Administrator Dashboard"/>
+                    <Text fx:id="userGreeting" styleClass="user-greeting" text="Welcome, Administrator!"/>
                 </VBox>
+
                 <Region HBox.hgrow="ALWAYS"/>
-                
-                <Button fx:id="refreshButton" text="Refresh" style="-fx-background-color: #f8fafc; -fx-text-fill: #475569; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 8 12; -fx-cursor: hand;"/>
-                <Button fx:id="mainPageButton" text="Home" style="-fx-background-color: #f8fafc; -fx-text-fill: #475569; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 8 12; -fx-cursor: hand;"/>
-                <Button fx:id="logoutButton" text="Logout" style="-fx-background-color: #ef4444; -fx-text-fill: white; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 8 16; -fx-cursor: hand;"/>
+
+                <HBox spacing="12" alignment="CENTER_RIGHT">
+                    <Button fx:id="mainPageButton" text="🏠 Main Page" styleClass="nav-button"/>
+                    <Button fx:id="refreshButton" text="🔄 Refresh Data" styleClass="nav-button"/>
+                    <Button fx:id="logoutButton" text="🚪 Logout" styleClass="logout-button"/>
+                </HBox>
             </HBox>
         </VBox>
     </top>
-    
-    <!-- Center Content -->
+
     <center>
-        <ScrollPane fitToWidth="true" fitToHeight="true" style="-fx-background: #f1f5f9; -fx-border-color: transparent;">
-            <VBox spacing="30" style="-fx-padding: 30;">
-                
-                <!-- Statistics Cards -->
-                <HBox spacing="20" alignment="CENTER">
-                    <VBox style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 20; -fx-alignment: CENTER; -fx-spacing: 10; -fx-pref-width: 150;">
-                        <Circle radius="16" fill="#3b82f6"/>
-                        <Label fx:id="totalRoutesLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1e293b;"/>
-                        <Text text="Total Routes" style="-fx-font-size: 12px; -fx-fill: #64748b;"/>
-                    </VBox>
-                    
-                    <VBox style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 20; -fx-alignment: CENTER; -fx-spacing: 10; -fx-pref-width: 150;">
-                        <Circle radius="16" fill="#10b981"/>
-                        <Label fx:id="activeSchedulesLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1e293b;"/>
-                        <Text text="Active Schedules" style="-fx-font-size: 12px; -fx-fill: #64748b;"/>
-                    </VBox>
-                    
-                    <VBox style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 20; -fx-alignment: CENTER; -fx-spacing: 10; -fx-pref-width: 150;">
-                        <Circle radius="16" fill="#f59e0b"/>
-                        <Label fx:id="totalBookingsLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1e293b;"/>
-                        <Text text="Total Bookings" style="-fx-font-size: 12px; -fx-fill: #64748b;"/>
-                    </VBox>
-                    
-                    <VBox style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 20; -fx-alignment: CENTER; -fx-spacing: 10; -fx-pref-width: 150;">
-                        <Circle radius="16" fill="#ef4444"/>
-                        <Label fx:id="revenueLabel" text="PKR 0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1e293b;"/>
-                        <Text text="Revenue" style="-fx-font-size: 12px; -fx-fill: #64748b;"/>
-                    </VBox>
-                </HBox>
-                
-                <!-- Management Cards Grid -->
-                <VBox spacing="15">
-                    <Text text="Management Options" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-fill: #1e293b;"/>
-                    
-                    <GridPane hgap="20" vgap="20">
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane" vbarPolicy="AS_NEEDED" hbarPolicy="NEVER">
+            <VBox spacing="25" styleClass="main-content">
+                <padding>
+                    <Insets top="25" right="30" bottom="25" left="30"/>
+                </padding>
+
+                <!-- Quick Stats Overview -->
+                <VBox spacing="15" styleClass="stats-section">
+                    <Text text="Quick Overview" styleClass="section-header"/>
+                    <HBox spacing="20" alignment="CENTER">
+
+                        <VBox styleClass="stat-card" spacing="8" alignment="CENTER">
+                            <StackPane styleClass="stat-icon-container">
+                                <Circle radius="20" styleClass="stat-icon-bg-1"/>
+                                <Text text="🛣️" styleClass="stat-icon"/>
+                            </StackPane>
+                            <Text text="Total Routes" styleClass="stat-label"/>
+                            <Label fx:id="totalRoutesLabel" text="25" styleClass="stat-value"/>
+                            <Text text="Active transportation routes" styleClass="stat-description"/>
+                        </VBox>
+
+                        <VBox styleClass="stat-card" spacing="8" alignment="CENTER">
+                            <StackPane styleClass="stat-icon-container">
+                                <Circle radius="20" styleClass="stat-icon-bg-2"/>
+                                <Text text="🕐" styleClass="stat-icon"/>
+                            </StackPane>
+                            <Text text="Active Schedules" styleClass="stat-label"/>
+                            <Label fx:id="activeSchedulesLabel" text="48" styleClass="stat-value"/>
+                            <Text text="Currently running schedules" styleClass="stat-description"/>
+                        </VBox>
+
+                        <VBox styleClass="stat-card" spacing="8" alignment="CENTER">
+                            <StackPane styleClass="stat-icon-container">
+                                <Circle radius="20" styleClass="stat-icon-bg-3"/>
+                                <Text text="🎫" styleClass="stat-icon"/>
+                            </StackPane>
+                            <Text text="Total Bookings" styleClass="stat-label"/>
+                            <Label fx:id="totalBookingsLabel" text="1,234" styleClass="stat-value"/>
+                            <Text text="Completed reservations" styleClass="stat-description"/>
+                        </VBox>
+
+                        <VBox styleClass="stat-card" spacing="8" alignment="CENTER">
+                            <StackPane styleClass="stat-icon-container">
+                                <Circle radius="20" styleClass="stat-icon-bg-4"/>
+                                <Text text="💰" styleClass="stat-icon"/>
+                            </StackPane>
+                            <Text text="Revenue" styleClass="stat-label"/>
+                            <Label fx:id="revenueLabel" text="PKR 45,678" styleClass="stat-value"/>
+                            <Text text="Total earnings" styleClass="stat-description"/>
+                        </VBox>
+
+                    </HBox>
+                </VBox>
+
+                <!-- Management Tools Grid -->
+                <VBox spacing="15" styleClass="management-section">
+                    <Text text="Management Tools" styleClass="section-header"/>
+
+                    <GridPane hgap="20" vgap="20" alignment="CENTER">
                         <columnConstraints>
-                            <ColumnConstraints percentWidth="25"/>
-                            <ColumnConstraints percentWidth="25"/>
-                            <ColumnConstraints percentWidth="25"/>
-                            <ColumnConstraints percentWidth="25"/>
+                            <ColumnConstraints percentWidth="25" halignment="CENTER"/>
+                            <ColumnConstraints percentWidth="25" halignment="CENTER"/>
+                            <ColumnConstraints percentWidth="25" halignment="CENTER"/>
+                            <ColumnConstraints percentWidth="25" halignment="CENTER"/>
                         </columnConstraints>
                         <rowConstraints>
-                            <RowConstraints percentHeight="50"/>
-                            <RowConstraints percentHeight="50"/>
+                            <RowConstraints percentHeight="50" valignment="CENTER"/>
+                            <RowConstraints percentHeight="50" valignment="CENTER"/>
                         </rowConstraints>
-                        
+
                         <!-- Row 1 -->
-                        <VBox fx:id="manageRoutesCard" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 20; -fx-alignment: CENTER; -fx-spacing: 10; -fx-cursor: hand;" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                            <Circle radius="24" fill="#3b82f6"/>
-                            <Text text="Manage Routes" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-fill: #1e293b;"/>
-                            <Text text="Add, update, or delete routes" style="-fx-font-size: 12px; -fx-fill: #64748b; -fx-text-alignment: center;"/>
+                        <VBox fx:id="manageRoutesCard" styleClass="management-card" spacing="12" alignment="CENTER"
+                              GridPane.columnIndex="0" GridPane.rowIndex="0">
+                            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
+                            <StackPane styleClass="card-icon-container">
+                                <Circle radius="26" styleClass="card-icon-bg-1"/>
+                                <Text text="🛣️" styleClass="card-icon"/>
+                            </StackPane>
+                            <Text text="Manage Routes" styleClass="card-title"/>
+                            <Text text="Add, edit, and manage transportation routes between cities" styleClass="card-description"/>
+                            <HBox spacing="5" alignment="CENTER">
+                                <Text text="Get Started" styleClass="card-action"/>
+                                <Text text="→" styleClass="card-arrow"/>
+                            </HBox>
                         </VBox>
-                        
-                        <VBox fx:id="manageSchedulesCard" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 20; -fx-alignment: CENTER; -fx-spacing: 10; -fx-cursor: hand;" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                            <Circle radius="24" fill="#10b981"/>
-                            <Text text="Manage Schedules" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-fill: #1e293b;"/>
-                            <Text text="Create and modify schedules" style="-fx-font-size: 12px; -fx-fill: #64748b; -fx-text-alignment: center;"/>
+
+                        <VBox fx:id="manageSchedulesCard" styleClass="management-card" spacing="12" alignment="CENTER"
+                              GridPane.columnIndex="1" GridPane.rowIndex="0">
+                            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
+                            <StackPane styleClass="card-icon-container">
+                                <Circle radius="26" styleClass="card-icon-bg-2"/>
+                                <Text text="🕐" styleClass="card-icon"/>
+                            </StackPane>
+                            <Text text="Manage Schedules" styleClass="card-title"/>
+                            <Text text="Create and manage departure schedules and timetables" styleClass="card-description"/>
+                            <HBox spacing="5" alignment="CENTER">
+                                <Text text="Get Started" styleClass="card-action"/>
+                                <Text text="→" styleClass="card-arrow"/>
+                            </HBox>
                         </VBox>
-                        
-                        <VBox fx:id="managePricingCard" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 20; -fx-alignment: CENTER; -fx-spacing: 10; -fx-cursor: hand;" GridPane.columnIndex="2" GridPane.rowIndex="0">
-                            <Circle radius="24" fill="#f59e0b"/>
-                            <Text text="Pricing Management" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-fill: #1e293b;"/>
-                            <Text text="Update ticket prices" style="-fx-font-size: 12px; -fx-fill: #64748b; -fx-text-alignment: center;"/>
+
+                        <VBox fx:id="managePricingCard" styleClass="management-card" spacing="12" alignment="CENTER"
+                              GridPane.columnIndex="2" GridPane.rowIndex="0">
+                            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
+                            <StackPane styleClass="card-icon-container">
+                                <Circle radius="26" styleClass="card-icon-bg-3"/>
+                                <Text text="💰" styleClass="card-icon"/>
+                            </StackPane>
+                            <Text text="Manage Pricing" styleClass="card-title"/>
+                            <Text text="Set and update ticket prices and fare calculations" styleClass="card-description"/>
+                            <HBox spacing="5" alignment="CENTER">
+                                <Text text="Get Started" styleClass="card-action"/>
+                                <Text text="→" styleClass="card-arrow"/>
+                            </HBox>
                         </VBox>
-                        
-                        <VBox fx:id="manageSeatsCard" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 20; -fx-alignment: CENTER; -fx-spacing: 10; -fx-cursor: hand;" GridPane.columnIndex="3" GridPane.rowIndex="0">
-                            <Circle radius="24" fill="#8b5cf6"/>
-                            <Text text="Seat Management" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-fill: #1e293b;"/>
-                            <Text text="Manage seat availability" style="-fx-font-size: 12px; -fx-fill: #64748b; -fx-text-alignment: center;"/>
+
+                        <VBox fx:id="manageSeatsCard" styleClass="management-card" spacing="12" alignment="CENTER"
+                              GridPane.columnIndex="3" GridPane.rowIndex="0">
+                            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
+                            <StackPane styleClass="card-icon-container">
+                                <Circle radius="26" styleClass="card-icon-bg-4"/>
+                                <Text text="💺" styleClass="card-icon"/>
+                            </StackPane>
+                            <Text text="Manage Seats" styleClass="card-title"/>
+                            <Text text="View and manage seat availability and configurations" styleClass="card-description"/>
+                            <HBox spacing="5" alignment="CENTER">
+                                <Text text="Get Started" styleClass="card-action"/>
+                                <Text text="→" styleClass="card-arrow"/>
+                            </HBox>
                         </VBox>
-                        
+
                         <!-- Row 2 -->
-                        <VBox fx:id="reportsCard" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 20; -fx-alignment: CENTER; -fx-spacing: 10; -fx-cursor: hand;" GridPane.columnIndex="0" GridPane.rowIndex="1">
-                            <Circle radius="24" fill="#ef4444"/>
-                            <Text text="Reports" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-fill: #1e293b;"/>
-                            <Text text="View booking statistics" style="-fx-font-size: 12px; -fx-fill: #64748b; -fx-text-alignment: center;"/>
+                        <VBox fx:id="reportsCard" styleClass="management-card" spacing="12" alignment="CENTER"
+                              GridPane.columnIndex="0" GridPane.rowIndex="1">
+                            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
+                            <StackPane styleClass="card-icon-container">
+                                <Circle radius="26" styleClass="card-icon-bg-5"/>
+                                <Text text="📊" styleClass="card-icon"/>
+                            </StackPane>
+                            <Text text="Reports &amp; Analytics" styleClass="card-title"/>
+                            <Text text="View system reports, analytics and performance metrics" styleClass="card-description"/>
+                            <HBox spacing="5" alignment="CENTER">
+                                <Text text="View Reports" styleClass="card-action"/>
+                                <Text text="→" styleClass="card-arrow"/>
+                            </HBox>
                         </VBox>
-                        
-                        <VBox fx:id="policiesCard" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 20; -fx-alignment: CENTER; -fx-spacing: 10; -fx-cursor: hand;" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                            <Circle radius="24" fill="#06b6d4"/>
-                            <Text text="Policies" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-fill: #1e293b;"/>
-                            <Text text="Manage cancellation policies" style="-fx-font-size: 12px; -fx-fill: #64748b; -fx-text-alignment: center;"/>
+
+                        <VBox fx:id="policiesCard" styleClass="management-card" spacing="12" alignment="CENTER"
+                              GridPane.columnIndex="1" GridPane.rowIndex="1">
+                            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
+                            <StackPane styleClass="card-icon-container">
+                                <Circle radius="26" styleClass="card-icon-bg-6"/>
+                                <Text text="📋" styleClass="card-icon"/>
+                            </StackPane>
+                            <Text text="Cancellation Policies" styleClass="card-title"/>
+                            <Text text="Manage cancellation policies and refund rules" styleClass="card-description"/>
+                            <HBox spacing="5" alignment="CENTER">
+                                <Text text="Manage Policies" styleClass="card-action"/>
+                                <Text text="→" styleClass="card-arrow"/>
+                            </HBox>
                         </VBox>
-                        
-                        <VBox fx:id="promoCodesCard" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 20; -fx-alignment: CENTER; -fx-spacing: 10; -fx-cursor: hand;" GridPane.columnIndex="2" GridPane.rowIndex="1">
-                            <Circle radius="24" fill="#84cc16"/>
-                            <Text text="Promo Codes" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-fill: #1e293b;"/>
-                            <Text text="Manage promotional codes" style="-fx-font-size: 12px; -fx-fill: #64748b; -fx-text-alignment: center;"/>
+
+                        <VBox fx:id="promoCodesCard" styleClass="management-card" spacing="12" alignment="CENTER"
+                              GridPane.columnIndex="2" GridPane.rowIndex="1">
+                            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
+                            <StackPane styleClass="card-icon-container">
+                                <Circle radius="26" styleClass="card-icon-bg-7"/>
+                                <Text text="🎁" styleClass="card-icon"/>
+                            </StackPane>
+                            <Text text="Promo Codes" styleClass="card-title"/>
+                            <Text text="Create and manage promotional codes and discounts" styleClass="card-description"/>
+                            <HBox spacing="5" alignment="CENTER">
+                                <Text text="Manage Promos" styleClass="card-action"/>
+                                <Text text="→" styleClass="card-arrow"/>
+                            </HBox>
                         </VBox>
-                        
-                        <VBox fx:id="settingsCard" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 20; -fx-alignment: CENTER; -fx-spacing: 10; -fx-cursor: hand;" GridPane.columnIndex="3" GridPane.rowIndex="1">
-                            <Circle radius="24" fill="#64748b"/>
-                            <Text text="Settings" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-fill: #1e293b;"/>
-                            <Text text="System configuration" style="-fx-font-size: 12px; -fx-fill: #64748b; -fx-text-alignment: center;"/>
+
+                        <VBox fx:id="settingsCard" styleClass="management-card" spacing="12" alignment="CENTER"
+                              GridPane.columnIndex="3" GridPane.rowIndex="1">
+                            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
+                            <StackPane styleClass="card-icon-container">
+                                <Circle radius="26" styleClass="card-icon-bg-8"/>
+                                <Text text="⚙️" styleClass="card-icon"/>
+                            </StackPane>
+                            <Text text="System Settings" styleClass="card-title"/>
+                            <Text text="Configure system settings and administrator preferences" styleClass="card-description"/>
+                            <HBox spacing="5" alignment="CENTER">
+                                <Text text="Configure" styleClass="card-action"/>
+                                <Text text="→" styleClass="card-arrow"/>
+                            </HBox>
                         </VBox>
+
                     </GridPane>
                 </VBox>
+
+                <!-- Recent Activity Section -->
+                <VBox spacing="15" styleClass="activity-section">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Text text="Recent Activity" styleClass="section-header"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Text text="Last 24 hours" styleClass="activity-time"/>
+                    </HBox>
+
+                    <VBox styleClass="activity-container" spacing="8">
+
+                        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="activity-item">
+                            <StackPane styleClass="activity-icon-container">
+                                <Circle radius="16" styleClass="activity-icon-bg-success"/>
+                                <Text text="✓" styleClass="activity-icon"/>
+                            </StackPane>
+                            <VBox spacing="2">
+                                <Text text="New route added: Karachi to Islamabad" styleClass="activity-title"/>
+                                <Text text="2 hours ago • By Admin" styleClass="activity-time"/>
+                            </VBox>
+                        </HBox>
+
+                        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="activity-item">
+                            <StackPane styleClass="activity-icon-container">
+                                <Circle radius="16" styleClass="activity-icon-bg-info"/>
+                                <Text text="🔄" styleClass="activity-icon"/>
+                            </StackPane>
+                            <VBox spacing="2">
+                                <Text text="Price updated for Lahore to Peshawar route" styleClass="activity-title"/>
+                                <Text text="4 hours ago • By System" styleClass="activity-time"/>
+                            </VBox>
+                        </HBox>
+
+                        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="activity-item">
+                            <StackPane styleClass="activity-icon-container">
+                                <Circle radius="16" styleClass="activity-icon-bg-warning"/>
+                                <Text text="⚠️" styleClass="activity-icon"/>
+                            </StackPane>
+                            <VBox spacing="2">
+                                <Text text="Schedule conflict detected and resolved" styleClass="activity-title"/>
+                                <Text text="6 hours ago • By System" styleClass="activity-time"/>
+                            </VBox>
+                        </HBox>
+
+                    </VBox>
+                </VBox>
+
             </VBox>
         </ScrollPane>
     </center>
+
 </BorderPane>

@@ -1,283 +1,301 @@
 package catalogs;
 
 import models.Route;
+import models.Schedule;
 import config.DatabaseConfig;
-
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RouteCatalog {
-    private ArrayList<Route> routes;
+    private static RouteCatalog instance;
+    private Map<String, Route> routes;
     private Connection connection;
     private boolean databaseAvailable;
-    
-    public RouteCatalog() {
-        this.routes = new ArrayList<>();
+
+    private RouteCatalog() {
+        this.routes = new HashMap<>();
         this.databaseAvailable = false;
-        
+        initializeDatabase();
+        loadRoutesFromDB();
+    }
+
+    public static RouteCatalog getInstance() {
+        if (instance == null) {
+            instance = new RouteCatalog();
+        }
+        return instance;
+    }
+
+    private void initializeDatabase() {
         try {
-            // Use the new DatabaseConfig methods
             String url = DatabaseConfig.getDbUrl();
             String user = DatabaseConfig.getDbUser();
             String password = DatabaseConfig.getDbPassword();
             
-            // Load SQL Server JDBC driver
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            
             this.connection = DriverManager.getConnection(url, user, password);
             this.databaseAvailable = true;
-            loadRoutesFromDB();
+            createTables();
             
-        } catch (ClassNotFoundException e) {
-            System.err.println("SQL Server JDBC driver not found: " + e.getMessage());
-            System.out.println("Using in-memory storage instead");
-            initializeSampleRoutes();
-        } catch (SQLException e) {
-            System.err.println("Failed to initialize RouteCatalog with database: " + e.getMessage());
-            System.out.println("Using in-memory storage instead");
+        } catch (ClassNotFoundException | SQLException e) {
+            System.err.println("Database connection failed: " + e.getMessage());
+            System.out.println("Using in-memory storage for routes");
             initializeSampleRoutes();
         }
     }
-    
+
     private void initializeSampleRoutes() {
-        // Add some sample routes for testing
-        routes.add(new Route("R001", "Lahore", "Karachi", 3500.0));
-        routes.add(new Route("R002", "Lahore", "Islamabad", 1500.0));
-        routes.add(new Route("R003", "Karachi", "Islamabad", 4000.0));
-        routes.add(new Route("R004", "Islamabad", "Peshawar", 1200.0));
-        routes.add(new Route("R005", "Karachi", "Quetta", 3200.0));
-        System.out.println("Initialized with " + routes.size() + " sample routes");
+        Route route1 = new Route("R001", "Lahore", "Islamabad", 1500.0);
+        Route route2 = new Route("R002", "Karachi", "Lahore", 2500.0);
+        Route route3 = new Route("R003", "Islamabad", "Peshawar", 1200.0);
+        
+        routes.put(route1.getRouteID(), route1);
+        routes.put(route2.getRouteID(), route2);
+        routes.put(route3.getRouteID(), route3);
     }
-    
+
+    private void createTables() {
+        if (!databaseAvailable) return;
+        
+        String createRoutesTable = """
+            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Route' AND xtype='U')
+            CREATE TABLE Route (
+                RouteID NVARCHAR(50) PRIMARY KEY,
+                Source NVARCHAR(100) NOT NULL,
+                Destination NVARCHAR(100) NOT NULL,
+                BasePrice DECIMAL(10,2) NOT NULL,
+                IsActive BIT DEFAULT 1,
+                CreatedAt DATETIME DEFAULT GETDATE()
+            )
+            """;
+
+        String createSchedulesTable = """
+            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Schedule' AND xtype='U')
+            CREATE TABLE Schedule (
+                ScheduleID NVARCHAR(50) PRIMARY KEY,
+                RouteID NVARCHAR(50) NOT NULL,
+                Date DATE NOT NULL,
+                DepartureTime TIME NOT NULL,
+                ArrivalTime TIME NOT NULL,
+                Class NVARCHAR(20) NOT NULL,
+                TypePercentage DECIMAL(5,2) DEFAULT 100.0,
+                IsActive BIT DEFAULT 1,
+                CreatedAt DATETIME DEFAULT GETDATE(),
+                FOREIGN KEY (RouteID) REFERENCES Route(RouteID) ON DELETE CASCADE
+            )
+            """;
+
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute(createRoutesTable);
+            stmt.execute(createSchedulesTable);
+            System.out.println("Route and Schedule tables ensured to exist");
+        } catch (SQLException e) {
+            System.err.println("Table creation failed: " + e.getMessage());
+        }
+    }
+
+    public Route getRoute(String routeId) {
+        return routes.get(routeId);
+    }
+
+    public List<Route> getAllRoutes() {
+        return new ArrayList<>(routes.values());
+    }
+
+    public boolean addRoute(Route route) {
+        if (route == null || routes.containsKey(route.getRouteID())) {
+            return false;
+        }
+        
+        routes.put(route.getRouteID(), route);
+        
+        if (databaseAvailable) {
+            return saveRouteToDB(route);
+        }
+        return true;
+    }
+
+    public boolean addScheduleToRoute(String routeId, Schedule schedule) {
+        Route route = getRoute(routeId);
+        if (route == null) {
+            return false;
+        }
+        
+        route.addSchedule(schedule);
+        
+        if (databaseAvailable) {
+            return saveScheduleToDB(routeId, schedule);
+        }
+        return true;
+    }
+
+    public List<Schedule> getRouteSchedules(String routeId) {
+        Route route = getRoute(routeId);
+        return route != null ? route.getAllSchedules() : new ArrayList<>();
+    }
+
+    public boolean updateRoute(Route route) {
+        if (route == null || !routes.containsKey(route.getRouteID())) {
+            return false;
+        }
+        
+        routes.put(route.getRouteID(), route);
+        
+        if (databaseAvailable) {
+            return updateRouteInDB(route);
+        }
+        return true;
+    }
+
+    public void refresh() {
+        loadRoutesFromDB();
+    }
+
+    private boolean saveRouteToDB(Route route) {
+        String sql = "INSERT INTO Route (RouteID, Source, Destination, BasePrice) VALUES (?, ?, ?, ?)";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, route.getRouteID());
+            pstmt.setString(2, route.getSource());
+            pstmt.setString(3, route.getDestination());
+            pstmt.setDouble(4, route.getBasePrice());
+            pstmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Save route failed: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean saveScheduleToDB(String routeId, Schedule schedule) {
+        String sql = "INSERT INTO Schedule (ScheduleID, RouteID, Date, DepartureTime, ArrivalTime, Class, TypePercentage) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, schedule.getScheduleID());
+            pstmt.setString(2, routeId);
+            pstmt.setDate(3, Date.valueOf(schedule.getDate()));
+            pstmt.setTime(4, Time.valueOf(schedule.getDepartureTime()));
+            pstmt.setTime(5, Time.valueOf(schedule.getArrivalTime()));
+            pstmt.setString(6, schedule.getScheduleClass());
+            pstmt.setDouble(7, schedule.getTypePercentage());
+            pstmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Save schedule failed: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean updateRouteInDB(Route route) {
+        String sql = "UPDATE Route SET Source = ?, Destination = ?, BasePrice = ? WHERE RouteID = ?";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, route.getSource());
+            pstmt.setString(2, route.getDestination());
+            pstmt.setDouble(3, route.getBasePrice());
+            pstmt.setString(4, route.getRouteID());
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.err.println("Update route failed: " + e.getMessage());
+            return false;
+        }
+    }
+
     private void loadRoutesFromDB() {
         if (!databaseAvailable) {
-            System.out.println("Database not available, using in-memory data");
+            System.out.println("Database not available, using in-memory routes");
             return;
         }
         
-        // First, ensure the table exists
-        createTableIfNotExists();
-        
-        String query = "SELECT * FROM Routes ORDER BY RouteID";
+        String routesSql = "SELECT * FROM Route WHERE IsActive = 1";
         
         try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
+             ResultSet rs = stmt.executeQuery(routesSql)) {
             
             routes.clear();
             
             while (rs.next()) {
-                String routeID = rs.getString("RouteID");
+                String routeId = rs.getString("RouteID");
                 String source = rs.getString("Source");
                 String destination = rs.getString("Destination");
                 double basePrice = rs.getDouble("BasePrice");
                 
-                Route route = new Route(routeID, source, destination, basePrice);
-                routes.add(route);
+                Route route = new Route(routeId, source, destination, basePrice);
+                loadSchedulesForRouteFromDB(route);
+                routes.put(routeId, route);
             }
-            
             System.out.println("Loaded " + routes.size() + " routes from database");
             
         } catch (SQLException e) {
-            System.err.println("Error loading routes from database: " + e.getMessage());
-            e.printStackTrace();
-            // Fallback to sample data if database fails
+            System.err.println("Load routes failed: " + e.getMessage());
             if (routes.isEmpty()) {
                 initializeSampleRoutes();
             }
         }
     }
-    
-    private void createTableIfNotExists() {
-        if (!databaseAvailable) {
-            return;
-        }
+
+    private void loadSchedulesForRouteFromDB(Route route) {
+        String sql = "SELECT * FROM Schedule WHERE RouteID = ? AND IsActive = 1";
         
-        String createTableSQL = "IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Routes' AND xtype='U') " +
-                               "CREATE TABLE Routes (" +
-                               "RouteID VARCHAR(20) PRIMARY KEY, " +
-                               "Source VARCHAR(100) NOT NULL, " +
-                               "Destination VARCHAR(100) NOT NULL, " +
-                               "BasePrice DECIMAL(10,2) NOT NULL, " +
-                               "CreatedAt DATETIME DEFAULT GETDATE(), " +
-                               "UpdatedAt DATETIME DEFAULT GETDATE(), " +
-                               "UNIQUE(Source, Destination)" +
-                               ")";
-        
-        try (Statement stmt = connection.createStatement()) {
-            stmt.execute(createTableSQL);
-            System.out.println("Routes table ensured to exist");
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, route.getRouteID());
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+                String scheduleId = rs.getString("ScheduleID");
+                LocalDate date = rs.getDate("Date").toLocalDate();
+                LocalTime departureTime = rs.getTime("DepartureTime").toLocalTime();
+                LocalTime arrivalTime = rs.getTime("ArrivalTime").toLocalTime();
+                String scheduleClass = rs.getString("Class");
+                double typePercentage = rs.getDouble("TypePercentage");
+                
+                Schedule schedule = new Schedule(scheduleId, date, departureTime, arrivalTime, scheduleClass);
+                schedule.setTypePercentage(typePercentage);
+                route.addSchedule(schedule);
+            }
         } catch (SQLException e) {
-            System.err.println("Error creating Routes table: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Load schedules failed for route " + route.getRouteID() + ": " + e.getMessage());
         }
     }
-    
-    public boolean addToCatalog(Route route) {
-        // Check if route already exists
-        if (checkRoute(route.getSource(), route.getDestination())) {
-            System.err.println("Route already exists: " + route.getSource() + " -> " + route.getDestination());
+
+    public boolean routeExists(String routeId) {
+        return routes.containsKey(routeId);
+    }
+
+    public boolean deleteRoute(String routeId) {
+        if (!routes.containsKey(routeId)) {
             return false;
         }
         
         if (databaseAvailable) {
-            String query = "INSERT INTO Routes (RouteID, Source, Destination, BasePrice) VALUES (?, ?, ?, ?)";
-            
-            try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-                pstmt.setString(1, route.getRouteID());
-                pstmt.setString(2, route.getSource());
-                pstmt.setString(3, route.getDestination());
-                pstmt.setDouble(4, route.getBasePrice());
-                
+            String sql = "UPDATE Route SET IsActive = 0 WHERE RouteID = ?";
+            try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                pstmt.setString(1, routeId);
                 int rowsAffected = pstmt.executeUpdate();
-                
                 if (rowsAffected > 0) {
-                    routes.add(route);
-                    System.out.println("Route added successfully to database: " + route.getRouteID());
+                    routes.remove(routeId);
                     return true;
                 }
-                
             } catch (SQLException e) {
-                System.err.println("Error adding route to database: " + e.getMessage());
-                e.printStackTrace();
-                // Fallback to in-memory storage
-                System.out.println("Falling back to in-memory storage");
+                System.err.println("Delete route failed: " + e.getMessage());
             }
-        }
-        
-        // Add to in-memory list if database is not available or insertion failed
-        routes.add(route);
-        System.out.println("Route added to in-memory storage: " + route.getRouteID());
-        return true;
-    }
-    
-    public boolean checkRoute(String source, String destination) {
-        return routes.stream().anyMatch(route -> 
-            route.verifySrcDst(source, destination));
-    }
-    
-    public Route getRoute(String routeID) {
-        return routes.stream()
-                .filter(route -> route.getRouteID().equals(routeID))
-                .findFirst()
-                .orElse(null);
-    }
-    
-    public ArrayList<Route> getAllRoutes() {
-        return new ArrayList<>(routes);
-    }
-    
-    public ArrayList<Route> getRoutesBySource(String source) {
-        ArrayList<Route> result = new ArrayList<>();
-        for (Route route : routes) {
-            if (route.getSource().equalsIgnoreCase(source)) {
-                result.add(route);
-            }
-        }
-        return result;
-    }
-    
-    public ArrayList<Route> getRoutesByDestination(String destination) {
-        ArrayList<Route> result = new ArrayList<>();
-        for (Route route : routes) {
-            if (route.getDestination().equalsIgnoreCase(destination)) {
-                result.add(route);
-            }
-        }
-        return result;
-    }
-    
-    public boolean updateRoute(Route updatedRoute) {
-        if (databaseAvailable) {
-            String query = "UPDATE Routes SET Source = ?, Destination = ?, BasePrice = ?, UpdatedAt = GETDATE() WHERE RouteID = ?";
-            
-            try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-                pstmt.setString(1, updatedRoute.getSource());
-                pstmt.setString(2, updatedRoute.getDestination());
-                pstmt.setDouble(3, updatedRoute.getBasePrice());
-                pstmt.setString(4, updatedRoute.getRouteID());
-                
-                int rowsAffected = pstmt.executeUpdate();
-                
-                if (rowsAffected > 0) {
-                    // Update local list
-                    updateLocalRoute(updatedRoute);
-                    System.out.println("Route updated successfully in database: " + updatedRoute.getRouteID());
-                    return true;
-                }
-                
-            } catch (SQLException e) {
-                System.err.println("Error updating route in database: " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
-        
-        // Update in-memory list if database is not available or update failed
-        boolean updated = updateLocalRoute(updatedRoute);
-        if (updated) {
-            System.out.println("Route updated in in-memory storage: " + updatedRoute.getRouteID());
-        }
-        return updated;
-    }
-    
-    private boolean updateLocalRoute(Route updatedRoute) {
-        for (int i = 0; i < routes.size(); i++) {
-            if (routes.get(i).getRouteID().equals(updatedRoute.getRouteID())) {
-                routes.set(i, updatedRoute);
-                return true;
-            }
+        } else {
+            routes.remove(routeId);
+            return true;
         }
         return false;
     }
-    
-    public boolean deleteRoute(String routeID) {
-        if (databaseAvailable) {
-            String query = "DELETE FROM Routes WHERE RouteID = ?";
-            
-            try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-                pstmt.setString(1, routeID);
-                
-                int rowsAffected = pstmt.executeUpdate();
-                
-                if (rowsAffected > 0) {
-                    routes.removeIf(route -> route.getRouteID().equals(routeID));
-                    System.out.println("Route deleted successfully from database: " + routeID);
-                    return true;
-                }
-                
-            } catch (SQLException e) {
-                System.err.println("Error deleting route from database: " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
-        
-        // Delete from in-memory list if database is not available or deletion failed
-        boolean deleted = routes.removeIf(route -> route.getRouteID().equals(routeID));
-        if (deleted) {
-            System.out.println("Route deleted from in-memory storage: " + routeID);
-        }
-        return deleted;
-    }
-    
-    public void refresh() {
-        if (databaseAvailable) {
-            loadRoutesFromDB();
-        }
-    }
-    
-    public boolean isDatabaseAvailable() {
-        return databaseAvailable;
-    }
-    
-    public int getRouteCount() {
-        return routes.size();
-    }
-    
-    // Close connection when done
-    public void close() {
+
+    public void closeConnection() {
         try {
             if (connection != null && !connection.isClosed()) {
                 connection.close();
-                System.out.println("Database connection closed");
             }
         } catch (SQLException e) {
             System.err.println("Error closing connection: " + e.getMessage());

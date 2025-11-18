@@ -4,113 +4,176 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.shape.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" 
+            xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controllers.ManageRoutesController"
             stylesheets="@manage-routes.css">
-    
-    <!-- Top Header -->
+
     <top>
         <VBox styleClass="header">
+            <padding>
+                <Insets top="15" right="25" bottom="15" left="25"/>
+            </padding>
             <HBox alignment="CENTER_LEFT" spacing="20" styleClass="header-content">
-                <Button fx:id="backButton" text="Back to Dashboard" styleClass="back-button"/>
-                <VBox spacing="2">
+                <Button fx:id="backButton" text="⬅️ Back to Dashboard" styleClass="back-button"/>
+                <VBox spacing="3" alignment="CENTER_LEFT">
                     <Text fx:id="welcomeTitle" text="Manage Routes" styleClass="title"/>
                     <Text fx:id="userGreeting" styleClass="greeting"/>
                 </VBox>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button fx:id="refreshButton" text="Refresh" styleClass="icon-button"/>
+                <HBox spacing="10" alignment="CENTER_RIGHT">
+                    <Button fx:id="refreshButton" text="🔄 Refresh" styleClass="icon-button"/>
+                </HBox>
             </HBox>
         </VBox>
     </top>
-    
-    <!-- Center Content -->
+
     <center>
-        <BorderPane styleClass="main-content">
-            <padding>
-                <Insets top="20" right="20" bottom="20" left="20"/>
-            </padding>
-            
-            <!-- Left: Form -->
-            <left>
+        <SplitPane dividerPositions="0.4" styleClass="main-split-pane">
+
+            <!-- Left Section -->
+            <VBox styleClass="form-section">
+                <padding>
+                    <Insets top="25" right="25" bottom="25" left="25"/>
+                </padding>
+
                 <VBox spacing="25" styleClass="form-container">
-                    <padding>
-                        <Insets top="0" right="20" bottom="0" left="0"/>
-                    </padding>
-                    
-                    <VBox spacing="15" styleClass="form-section">
-                        <HBox spacing="10" alignment="CENTER_LEFT">
-                            <Text text="Route Information" styleClass="section-title"/>
-                        </HBox>
-                        
-                        <VBox spacing="12">
-                            <VBox spacing="5">
-                                <Label text="Source City" styleClass="form-label"/>
-                                <TextField fx:id="sourceField" promptText="Enter source city" styleClass="modern-field"/>
-                                <Text text="e.g., Lahore, Karachi" styleClass="field-hint"/>
-                            </VBox>
-                            
-                            <VBox spacing="5">
-                                <Label text="Destination City" styleClass="form-label"/>
-                                <TextField fx:id="destinationField" promptText="Enter destination city" styleClass="modern-field"/>
-                                <Text text="e.g., Islamabad, Peshawar" styleClass="field-hint"/>
-                            </VBox>
-                            
-                            <VBox spacing="5">
-                                <Label text="Base Price (PKR)" styleClass="form-label"/>
-                                <TextField fx:id="basePriceField" promptText="Enter base price" styleClass="modern-field"/>
-                                <Text text="Must be greater than 0" styleClass="field-hint"/>
-                            </VBox>
+
+                    <!-- Form Header -->
+                    <VBox spacing="8" styleClass="form-header">
+                        <StackPane styleClass="form-icon-container">
+                            <Rectangle arcWidth="12" arcHeight="12" width="50" height="50" styleClass="form-icon-bg"/>
+                            <Text text="🛣️" styleClass="form-icon"/>
+                        </StackPane>
+                        <Text text="Route Information" styleClass="section-title"/>
+                        <Text text="Add new routes or modify existing ones" styleClass="section-subtitle"/>
+                    </VBox>
+
+                    <!-- Form Fields -->
+                    <VBox spacing="20" styleClass="form-fields">
+
+                        <VBox spacing="8">
+                            <HBox spacing="8" alignment="CENTER_LEFT">
+                                <Text text="Source City" styleClass="form-label"/>
+                                <Text text="*" styleClass="required-indicator"/>
+                            </HBox>
+                            <TextField fx:id="sourceField" promptText="Enter source city (e.g., Lahore)" styleClass="modern-field"/>
+                            <Text text="Starting point of the route" styleClass="field-hint"/>
                         </VBox>
+
+                        <VBox spacing="8">
+                            <HBox spacing="8" alignment="CENTER_LEFT">
+                                <Text text="Destination City" styleClass="form-label"/>
+                                <Text text="*" styleClass="required-indicator"/>
+                            </HBox>
+                            <TextField fx:id="destinationField" promptText="Enter destination city (e.g., Karachi)" styleClass="modern-field"/>
+                            <Text text="Ending point of the route" styleClass="field-hint"/>
+                        </VBox>
+
+                        <VBox spacing="8">
+                            <HBox spacing="8" alignment="CENTER_LEFT">
+                                <Text text="Base Price (PKR)" styleClass="form-label"/>
+                                <Text text="*" styleClass="required-indicator"/>
+                            </HBox>
+                            <TextField fx:id="basePriceField" promptText="Enter base price (e.g., 1500)" styleClass="modern-field"/>
+                            <Text text="Starting price for this route" styleClass="field-hint"/>
+                        </VBox>
+
                     </VBox>
-                    
+
                     <!-- Action Buttons -->
-                    <VBox spacing="10" styleClass="actions-section">
-                        <Button fx:id="addRouteButton" text="Add New Route" styleClass="primary-button" maxWidth="Infinity"/>
-                        <Button fx:id="updateRouteButton" text="Update Route" styleClass="secondary-button" maxWidth="Infinity"/>
-                        <Button fx:id="deleteRouteButton" text="Delete Route" styleClass="danger-button" maxWidth="Infinity"/>
+                    <VBox spacing="12" styleClass="actions-section">
+                        <Button fx:id="addRouteButton" text="➕ Add New Route" styleClass="primary-button" maxWidth="Infinity"/>
+                        <Button fx:id="updateRouteButton" text="✏️ Update Selected Route" styleClass="secondary-button" maxWidth="Infinity"/>
+                        <Button fx:id="deleteRouteButton" text="🗑️ Delete Selected Route" styleClass="danger-button" maxWidth="Infinity"/>
                         <HBox spacing="10">
-                            <Button fx:id="clearButton" text="Clear Form" styleClass="outline-button" HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="clearButton" text="🧹 Clear Form" styleClass="outline-button" HBox.hgrow="ALWAYS"/>
                         </HBox>
                     </VBox>
-                    
+
                     <!-- Route Details -->
                     <VBox spacing="12" styleClass="details-section">
-                        <HBox spacing="10" alignment="CENTER_LEFT">
+                        <HBox spacing="8" alignment="CENTER_LEFT">
                             <Text text="Route Details" styleClass="section-title"/>
+                            <Text text="(Read-only)" styleClass="read-only-indicator"/>
                         </HBox>
-                        <TextArea fx:id="routeDetailsArea" editable="false" wrapText="true" 
-                                 styleClass="details-area" prefHeight="180"/>
+
+                        <TextArea fx:id="routeDetailsArea" editable="false" wrapText="true"
+                                  styleClass="details-area" prefHeight="180"
+                                  promptText="Select a route from the table to view details..."/>
                     </VBox>
+
                 </VBox>
-            </left>
-            
-            <!-- Center: Routes Table -->
-            <center>
-                <VBox spacing="20" styleClass="table-section">
-                    <HBox spacing="10" alignment="CENTER_LEFT">
-                        <Text text="All Routes" styleClass="section-title"/>
-                        <Region HBox.hgrow="ALWAYS"/>
-                        <Text text="Click on a route to view details" styleClass="hint-text"/>
-                    </HBox>
-                    
+            </VBox>
+
+            <!-- Right Section -->
+            <VBox styleClass="table-section">
+                <padding>
+                    <Insets top="25" right="25" bottom="25" left="25"/>
+                </padding>
+
+                <VBox spacing="20" styleClass="table-container">
+
+                    <!-- Header -->
+                    <VBox spacing="12">
+                        <HBox spacing="12" alignment="CENTER_LEFT">
+                            <StackPane styleClass="table-icon-container">
+                                <Rectangle arcWidth="8" arcHeight="8" width="40" height="40" styleClass="table-icon-bg"/>
+                                <Text text="📋" styleClass="table-icon"/>
+                            </StackPane>
+
+                            <VBox spacing="2">
+                                <Text text="All Routes" styleClass="section-title"/>
+                                <Text text="Manage your transportation routes" styleClass="section-subtitle"/>
+                            </VBox>
+
+                            <Region HBox.hgrow="ALWAYS"/>
+
+                            <VBox spacing="2" alignment="CENTER_RIGHT">
+                                <Text fx:id="tableCount" text="Showing 0 routes" styleClass="table-count"/>
+                                <Text text="Click on a route to view details" styleClass="table-hint"/>
+                            </VBox>
+                        </HBox>
+
+                        <!-- Filters -->
+                        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="table-controls">
+                            <TextField promptText="Search routes..." styleClass="search-field" HBox.hgrow="ALWAYS"/>
+                            <ComboBox promptText="Filter by source" styleClass="filter-combo"/>
+                            <ComboBox promptText="Filter by destination" styleClass="filter-combo"/>
+                        </HBox>
+
+                    </VBox>
+
+                    <!-- Routes Table -->
                     <TableView fx:id="routesTable" styleClass="modern-table" VBox.vgrow="ALWAYS">
+
                         <columns>
                             <TableColumn fx:id="routeIdColumn" text="ROUTE ID" styleClass="table-column"/>
-                            <TableColumn fx:id="sourceColumn" text="SOURCE" styleClass="table-column"/>
-                            <TableColumn fx:id="destinationColumn" text="DESTINATION" styleClass="table-column"/>
+                            <TableColumn fx:id="sourceColumn" text="SOURCE CITY" styleClass="table-column"/>
+                            <TableColumn fx:id="destinationColumn" text="DESTINATION CITY" styleClass="table-column"/>
                             <TableColumn fx:id="basePriceColumn" text="BASE PRICE (PKR)" styleClass="table-column"/>
                         </columns>
+
                         <columnResizePolicy>
-                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
                         </columnResizePolicy>
+
                     </TableView>
-                    
-                    <HBox spacing="10" alignment="CENTER_RIGHT" styleClass="table-footer">
-                        <Text fx:id="tableCount" text="Showing 0 routes" styleClass="count-text"/>
+
+                    <!-- Footer -->
+                    <HBox spacing="15" alignment="CENTER_RIGHT" styleClass="table-footer">
+                        <Text text="Total routes in system:" styleClass="footer-text"/>
+                        <Text fx:id="totalRoutesCount" text="0" styleClass="footer-count"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="Export to CSV" styleClass="outline-button"/>
+                        <Button text="Print Report" styleClass="outline-button"/>
                     </HBox>
+
                 </VBox>
-            </center>
-        </BorderPane>
+            </VBox>
+
+        </SplitPane>
     </center>
 </BorderPane>

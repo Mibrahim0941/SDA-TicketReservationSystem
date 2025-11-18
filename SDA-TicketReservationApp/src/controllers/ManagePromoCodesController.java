@@ -119,12 +119,10 @@ public class ManagePromoCodesController {
     }
 
     private void loadPromoCodesData() {
-        // Load sample data for demonstration
-        promoTable.getItems().addAll(
-            new PromotionalCode("WELCOME10", LocalDate.now().plusDays(30), 10.0),
-            new PromotionalCode("SUMMER25", LocalDate.now().plusDays(60), 25.0),
-            new PromotionalCode("FIRST15", LocalDate.now().plusDays(15), 15.0)
-        );
+        if (promoCatalog != null && promoTable != null) {
+            promoCatalog.refresh();
+            promoTable.getItems().setAll(promoCatalog.getAllPromoCodes());
+        }
     }
 
     private void showPromoDetails(PromotionalCode promo) {
@@ -170,10 +168,14 @@ public class ManagePromoCodesController {
             }
             
             PromotionalCode newPromo = new PromotionalCode(code, validity, percentage);
-            promoTable.getItems().add(newPromo);
             
-            showSuccess("Promo code added successfully!");
-            handleClear();
+            if (promoCatalog.addToCatalog(newPromo)) {
+                showSuccess("Promo code added successfully!");
+                handleClear();
+                loadPromoCodesData();
+            } else {
+                showError("Failed to add promo code. It may already exist.");
+            }
             
         } catch (NumberFormatException e) {
             showError("Invalid percentage format");
@@ -189,8 +191,13 @@ public class ManagePromoCodesController {
         }
         
         selectedPromo.setActive(!selectedPromo.isActive());
-        promoTable.refresh();
-        showSuccess("Promo code status updated!");
+        
+        if (promoCatalog.updatePromoCode(selectedPromo)) {
+            promoTable.refresh();
+            showSuccess("Promo code status updated!");
+        } else {
+            showError("Failed to update promo code status");
+        }
     }
 
     private void handleDeletePromo() {
@@ -208,15 +215,19 @@ public class ManagePromoCodesController {
         
         confirmation.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                promoTable.getItems().remove(selectedPromo);
-                showSuccess("Promo code deleted successfully!");
-                handleClear();
+                if (promoCatalog.deletePromoCode(selectedPromo.getCode())) {
+                    showSuccess("Promo code deleted successfully!");
+                    handleClear();
+                    loadPromoCodesData();
+                } else {
+                    showError("Failed to delete promo code");
+                }
             }
         });
     }
 
     private void handleRefresh() {
-        promoTable.refresh();
+        loadPromoCodesData();
         showSuccess("Data refreshed");
     }
 

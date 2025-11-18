@@ -23,7 +23,6 @@ public class AdminDashboardController implements Initializable {
     @FXML private Text welcomeTitle;
     @FXML private Text userGreeting;
     
-    // Dashboard Cards
     @FXML private VBox manageRoutesCard;
     @FXML private VBox manageSchedulesCard;
     @FXML private VBox managePricingCard;
@@ -33,13 +32,11 @@ public class AdminDashboardController implements Initializable {
     @FXML private VBox promoCodesCard;
     @FXML private VBox settingsCard;
     
-    // Statistics Labels
     @FXML private Label totalRoutesLabel;
     @FXML private Label activeSchedulesLabel;
     @FXML private Label totalBookingsLabel;
     @FXML private Label revenueLabel;
     
-    // Buttons
     @FXML private Button logoutButton;
     @FXML private Button mainPageButton;
     @FXML private Button refreshButton;
@@ -50,21 +47,40 @@ public class AdminDashboardController implements Initializable {
 
     public static void show(Stage stage, String username, Admin admin) {
         try {
-            FXMLLoader loader = new FXMLLoader(AdminDashboardController.class.getResource("/ui/admin-dashboard.fxml"));
+            System.out.println("Attempting to load admin dashboard...");
+            
+            // Use the class loader to get the resource
+            URL resourceUrl = AdminDashboardController.class.getClassLoader().getResource("ui/admin-dashboard.fxml");
+            System.out.println("Resource URL: " + resourceUrl);
+            
+            if (resourceUrl == null) {
+                showErrorAlert("FXML file not found at: ui/admin-dashboard.fxml");
+                return;
+            }
+            
+            FXMLLoader loader = new FXMLLoader(resourceUrl);
             Parent root = loader.load();
+            System.out.println("FXML loaded successfully");
             
             AdminDashboardController controller = loader.getController();
             controller.setAdminData(username, stage, admin);
             
             Scene scene = new Scene(root, 1200, 800);
-            // REMOVED CSS REFERENCE - This was causing the image loading errors
-            // scene.getStylesheets().add(AdminDashboardController.class.getResource("/ui/admin-dashboard.css").toExternalForm());
+            
+            // Load CSS
+            URL cssUrl = AdminDashboardController.class.getClassLoader().getResource("ui/admin-dashboard.css");
+            if (cssUrl != null) {
+                scene.getStylesheets().add(cssUrl.toExternalForm());
+                System.out.println("CSS loaded successfully");
+            } else {
+                System.out.println("CSS file not found, continuing without styles");
+            }
             
             stage.setScene(scene);
             stage.setTitle("TicketGenie - Admin Dashboard");
             stage.centerOnScreen();
             
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             showErrorAlert("Failed to load admin dashboard: " + e.getMessage());
         }
@@ -90,7 +106,6 @@ public class AdminDashboardController implements Initializable {
     }
 
     private void setupEventHandlers() {
-        // Card click handlers
         if (manageRoutesCard != null) {
             manageRoutesCard.setOnMouseClicked(e -> navigateToRouteManagement());
         }
@@ -116,7 +131,6 @@ public class AdminDashboardController implements Initializable {
             settingsCard.setOnMouseClicked(e -> navigateToSettings());
         }
         
-        // Button handlers
         if (logoutButton != null) {
             logoutButton.setOnAction(e -> handleLogout());
         }
@@ -144,7 +158,6 @@ public class AdminDashboardController implements Initializable {
             }
         }
         
-        // Setup button hover effects
         if (refreshButton != null) {
             refreshButton.setOnMouseEntered(e -> refreshButton.setStyle("-fx-background-color: #f1f5f9; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 8 12;"));
             refreshButton.setOnMouseExited(e -> refreshButton.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 8 12;"));
@@ -162,7 +175,6 @@ public class AdminDashboardController implements Initializable {
     }
 
     private void loadStatistics() {
-        // Load statistics from database
         if (totalRoutesLabel != null) totalRoutesLabel.setText("25");
         if (activeSchedulesLabel != null) activeSchedulesLabel.setText("48");
         if (totalBookingsLabel != null) totalBookingsLabel.setText("1,234");
@@ -218,11 +230,11 @@ public class AdminDashboardController implements Initializable {
     }
 
     private void navigateToPromoCodes() {
-    try {
-        ManagePromoCodesController.show(primaryStage, currentUsername, currentAdmin);
-    } catch (Exception e) {
-        showAlert("Error", "Failed to load promo codes management: " + e.getMessage());
-    }
+        try {
+            ManagePromoCodesController.show(primaryStage, currentUsername, currentAdmin);
+        } catch (Exception e) {
+            showAlert("Error", "Failed to load promo codes management: " + e.getMessage());
+        }
     }
 
     private void navigateToSettings() {

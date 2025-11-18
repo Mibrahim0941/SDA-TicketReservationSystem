@@ -107,7 +107,7 @@ public class AdminLoginController implements Initializable {
         } catch (Exception e) {
             System.err.println("Error loading admin dashboard: " + e.getMessage());
             e.printStackTrace();
-            showAlert("Error", "Failed to load admin dashboard");
+            showAlert("Error", "Failed to load admin dashboard: " + e.getMessage());
         }
     }
 

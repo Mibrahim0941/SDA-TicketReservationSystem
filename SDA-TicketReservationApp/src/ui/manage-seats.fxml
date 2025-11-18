@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.shape.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="controllers.ManageSeatsController">
+    <stylesheets>
+        <URL value="@manage-seats.css" />
+    </stylesheets>
+    
+    <top>
+        <VBox styleClass="header">
+            <padding>
+                <Insets top="15" right="25" bottom="15" left="25"/>
+            </padding>
+            <HBox alignment="CENTER_LEFT" spacing="20" styleClass="header-content">
+                <Button fx:id="backButton" text="⬅️ Back to Dashboard" styleClass="back-button"/>
+                <VBox spacing="3" alignment="CENTER_LEFT">
+                    <Text fx:id="welcomeTitle" text="Manage Seats" styleClass="title"/>
+                    <Text fx:id="userGreeting" styleClass="greeting"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <HBox spacing="10" alignment="CENTER_RIGHT">
+                    <Button fx:id="refreshButton" text="🔄 Refresh" styleClass="icon-button"/>
+                </HBox>
+            </HBox>
+        </VBox>
+    </top>
+    
+    <center>
+        <SplitPane dividerPositions="0.35" styleClass="main-split-pane">
+            <!-- Left: Controls Panel -->
+            <VBox styleClass="controls-section">
+                <padding>
+                    <Insets top="25" right="25" bottom="25" left="25"/>
+                </padding>
+                <VBox spacing="25" styleClass="controls-container">
+                    <!-- Selection Header -->
+                    <VBox spacing="8" styleClass="selection-header">
+                        <StackPane styleClass="selection-icon-container">
+                            <Rectangle arcWidth="12" arcHeight="12" width="50" height="50" styleClass="selection-icon-bg"/>
+                            <Text text="💺" styleClass="selection-icon"/>
+                        </StackPane>
+                        <Text text="Seat Selection" styleClass="section-title"/>
+                        <Text text="Choose a route and schedule to view seats" styleClass="section-subtitle"/>
+                    </VBox>
+                    
+                    <!-- Route and Schedule Selection -->
+                    <VBox spacing="20" styleClass="selection-fields">
+                        <VBox spacing="8">
+                            <HBox spacing="8" alignment="CENTER_LEFT">
+                                <Text text="Select Route" styleClass="form-label"/>
+                                <Text text="*" styleClass="required-indicator"/>
+                            </HBox>
+                            <ComboBox fx:id="routeComboBox" styleClass="modern-combo" promptText="Choose a route..."/>
+                            <Text text="Select the route to view schedules" styleClass="field-hint"/>
+                        </VBox>
+                        
+                        <VBox spacing="8">
+                            <HBox spacing="8" alignment="CENTER_LEFT">
+                                <Text text="Select Schedule" styleClass="form-label"/>
+                                <Text text="*" styleClass="required-indicator"/>
+                            </HBox>
+                            <ComboBox fx:id="scheduleComboBox" styleClass="modern-combo" promptText="Choose a schedule..."/>
+                            <Text text="Select schedule to view seat layout" styleClass="field-hint"/>
+                        </VBox>
+                    </VBox>
+                    
+                    <!-- Seat Details -->
+                    <VBox spacing="12" styleClass="details-section">
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <Text text="Seat Details" styleClass="section-title"/>
+                            <Text text="(Read-only)" styleClass="read-only-indicator"/>
+                        </HBox>
+                        <TextArea fx:id="seatDetailsArea" editable="false" wrapText="true" 
+                                 styleClass="details-area" prefHeight="200" promptText="Click on a seat to view details..."/>
+                    </VBox>
+                    
+                    <!-- Legend -->
+                    <VBox spacing="12" styleClass="legend-section">
+                        <Text text="Seat Status Legend" styleClass="section-title"/>
+                        <VBox spacing="8" styleClass="legend-container">
+                            <HBox spacing="12" alignment="CENTER_LEFT">
+                                <StackPane styleClass="legend-icon available">
+                                    <Rectangle width="20" height="20" arcWidth="4" arcHeight="4" styleClass="legend-rect"/>
+                                    <Text text="✓" styleClass="legend-text"/>
+                                </StackPane>
+                                <VBox spacing="2">
+                                    <Text text="Available" styleClass="legend-label"/>
+                                    <Text text="Seat is free for booking" styleClass="legend-description"/>
+                                </VBox>
+                            </HBox>
+                            <HBox spacing="12" alignment="CENTER_LEFT">
+                                <StackPane styleClass="legend-icon occupied">
+                                    <Rectangle width="20" height="20" arcWidth="4" arcHeight="4" styleClass="legend-rect"/>
+                                    <Text text="✗" styleClass="legend-text"/>
+                                </StackPane>
+                                <VBox spacing="2">
+                                    <Text text="Occupied" styleClass="legend-label"/>
+                                    <Text text="Seat is already booked" styleClass="legend-description"/>
+                                </VBox>
+                            </HBox>
+                            <HBox spacing="12" alignment="CENTER_LEFT">
+                                <StackPane styleClass="legend-icon selected">
+                                    <Rectangle width="20" height="20" arcWidth="4" arcHeight="4" styleClass="legend-rect"/>
+                                    <Text text="★" styleClass="legend-text"/>
+                                </StackPane>
+                                <VBox spacing="2">
+                                    <Text text="Selected" styleClass="legend-label"/>
+                                    <Text text="Currently selected seat" styleClass="legend-description"/>
+                                </VBox>
+                            </HBox>
+                        </VBox>
+                    </VBox>
+                    
+                    <!-- Quick Actions -->
+                    <VBox spacing="12" styleClass="actions-section">
+                        <Text text="Quick Actions" styleClass="section-title"/>
+                        <HBox spacing="10">
+                            <Button text="📊 View Report" styleClass="outline-button" HBox.hgrow="ALWAYS"/>
+                            <Button text="🖨️ Print Layout" styleClass="outline-button" HBox.hgrow="ALWAYS"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+            </VBox>
+            
+            <!-- Right: Seat Layout -->
+            <VBox styleClass="layout-section">
+                <padding>
+                    <Insets top="25" right="25" bottom="25" left="25"/>
+                </padding>
+                <VBox spacing="20" styleClass="layout-container">
+                    <!-- Layout Header -->
+                    <VBox spacing="12">
+                        <HBox spacing="12" alignment="CENTER_LEFT">
+                            <StackPane styleClass="layout-icon-container">
+                                <Rectangle arcWidth="8" arcHeight="8" width="40" height="40" styleClass="layout-icon-bg"/>
+                                <Text text="🚌" styleClass="layout-icon"/>
+                            </StackPane>
+                            <VBox spacing="2">
+                                <Text text="Bus Seat Layout" styleClass="section-title"/>
+                                <Text text="Interactive seat map for selected schedule" styleClass="section-subtitle"/>
+                            </VBox>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <VBox spacing="2" alignment="CENTER_RIGHT">
+                                <Text fx:id="layoutStatus" text="No schedule selected" styleClass="layout-status"/>
+                                <Text text="Click seats for details" styleClass="layout-hint"/>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+                    
+                    <!-- Bus Layout Container -->
+                    <VBox spacing="20" styleClass="bus-layout-container" alignment="TOP_CENTER">
+                        <!-- Driver Section -->
+                        <VBox spacing="5" alignment="CENTER">
+                            <Rectangle width="120" height="30" arcWidth="10" arcHeight="10" styleClass="driver-cabin"/>
+                            <Text text="🚗 DRIVER'S CABIN" styleClass="driver-text"/>
+                        </VBox>
+                        
+                        <!-- Seats Grid Container -->
+                        <VBox spacing="15" alignment="CENTER" styleClass="seats-container">
+                            <Text text="BUS SEATING LAYOUT" styleClass="layout-title"/>
+                            
+                            <!-- Seats Grid -->
+                            <GridPane fx:id="seatsGrid" hgap="15" vgap="10" alignment="CENTER" styleClass="seats-grid">
+                                <padding>
+                                    <Insets top="20" right="30" bottom="20" left="30"/>
+                                </padding>
+                            </GridPane>
+                            
+                            <!-- Aisle -->
+                            <Rectangle width="300" height="8" styleClass="aisle"/>
+                            <Text text="⬆️ AISLE ⬆️" styleClass="aisle-text"/>
+                        </VBox>
+                        
+                        <!-- Back of Bus -->
+                        <VBox spacing="5" alignment="CENTER">
+                            <Rectangle width="200" height="20" arcWidth="5" arcHeight="5" styleClass="bus-back"/>
+                            <Text text="BACK OF BUS" styleClass="back-text"/>
+                        </VBox>
+                    </VBox>
+                    
+                    <!-- Statistics -->
+                    <HBox spacing="20" alignment="CENTER" styleClass="stats-section">
+                        <VBox alignment="CENTER" spacing="5" styleClass="stat-card">
+                            <Text text="Total Seats" styleClass="stat-label"/>
+                            <Text fx:id="totalSeatsLabel" text="40" styleClass="stat-value"/>
+                        </VBox>
+                        <VBox alignment="CENTER" spacing="5" styleClass="stat-card available">
+                            <Text text="Available" styleClass="stat-label"/>
+                            <Text fx:id="availableSeatsLabel" text="28" styleClass="stat-value"/>
+                        </VBox>
+                        <VBox alignment="CENTER" spacing="5" styleClass="stat-card occupied">
+                            <Text text="Occupied" styleClass="stat-label"/>
+                            <Text fx:id="occupiedSeatsLabel" text="12" styleClass="stat-value"/>
+                        </VBox>
+                        <VBox alignment="CENTER" spacing="5" styleClass="stat-card">
+                            <Text text="Occupancy Rate" styleClass="stat-label"/>
+                            <Text fx:id="occupancyRateLabel" text="70%" styleClass="stat-value"/>
+                        </VBox>
+                    </HBox>
+                    
+                    <!-- Additional Info -->
+                    <HBox spacing="20" alignment="CENTER" styleClass="info-section">
+                        <VBox spacing="5" alignment="CENTER" styleClass="info-card">
+                            <Text text="🟦 Business Class" styleClass="info-title"/>
+                            <Text text="Seats A1-A8" styleClass="info-detail"/>
+                        </VBox>
+                        <VBox spacing="5" alignment="CENTER" styleClass="info-card">
+                            <Text text="🟩 Economy Class" styleClass="info-title"/>
+                            <Text text="Seats B1-B16" styleClass="info-detail"/>
+                        </VBox>
+                        <VBox spacing="5" alignment="CENTER" styleClass="info-card">
+                            <Text text="⬜ Standard Class" styleClass="info-title"/>
+                            <Text text="Seats C1-C16" styleClass="info-detail"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </SplitPane>
+    </center>
+</BorderPane>

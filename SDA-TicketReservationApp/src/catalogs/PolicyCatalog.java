@@ -2,7 +2,6 @@ package catalogs;
 
 import models.CancellationPolicy;
 import config.DatabaseConfig;
-
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -16,14 +15,11 @@ public class PolicyCatalog {
         this.databaseAvailable = false;
         
         try {
-            // Use the new DatabaseConfig methods
             String url = DatabaseConfig.getDbUrl();
             String user = DatabaseConfig.getDbUser();
             String password = DatabaseConfig.getDbPassword();
             
-            // Load SQL Server JDBC driver
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            
             this.connection = DriverManager.getConnection(url, user, password);
             this.databaseAvailable = true;
             loadPoliciesFromDB();
@@ -40,7 +36,6 @@ public class PolicyCatalog {
     }
     
     private void initializeDefaultPolicies() {
-        // Add default cancellation policies
         policies.add(new CancellationPolicy("POL001", 100.0, 24, "Full refund if cancelled 24+ hours before departure"));
         policies.add(new CancellationPolicy("POL002", 50.0, 12, "50% refund if cancelled 12-24 hours before departure"));
         policies.add(new CancellationPolicy("POL003", 0.0, 0, "No refund if cancelled less than 12 hours before departure"));
@@ -54,7 +49,6 @@ public class PolicyCatalog {
             return;
         }
         
-        // First, ensure the table exists
         createTableIfNotExists();
         
         String query = "SELECT * FROM CancellationPolicies ORDER BY TimeBeforeDeparture DESC";
@@ -79,7 +73,6 @@ public class PolicyCatalog {
         } catch (SQLException e) {
             System.err.println("Error loading cancellation policies from database: " + e.getMessage());
             e.printStackTrace();
-            // Fallback to default policies if database fails
             if (policies.isEmpty()) {
                 initializeDefaultPolicies();
             }
@@ -112,8 +105,7 @@ public class PolicyCatalog {
     }
     
     public boolean addToCatalog(CancellationPolicy policy) {
-        // Check if policy already exists for this time frame
-        if (validateExistence(policy)) {
+        if (getPolicyByTimeFrame(policy.getTimeBeforeDeparture()) != null) {
             System.err.println("Policy already exists for time frame: " + policy.getTimeBeforeDeparture() + " hours");
             return false;
         }
@@ -122,6 +114,8 @@ public class PolicyCatalog {
             System.err.println("Invalid policy data");
             return false;
         }
+        
+        policies.add(policy);
         
         if (databaseAvailable) {
             String query = "INSERT INTO CancellationPolicies (PolicyID, RefundAmount, TimeBeforeDeparture, Description) VALUES (?, ?, ?, ?)";
@@ -135,23 +129,26 @@ public class PolicyCatalog {
                 int rowsAffected = pstmt.executeUpdate();
                 
                 if (rowsAffected > 0) {
-                    policies.add(policy);
                     System.out.println("Policy added successfully to database: " + policy.getPolicyID());
                     return true;
                 }
                 
             } catch (SQLException e) {
                 System.err.println("Error adding policy to database: " + e.getMessage());
-                e.printStackTrace();
-                // Fallback to in-memory storage
-                System.out.println("Falling back to in-memory storage");
+                policies.remove(policy);
+                return false;
             }
         }
         
-        // Add to in-memory list if database is not available or insertion failed
-        policies.add(policy);
         System.out.println("Policy added to in-memory storage: " + policy.getPolicyID());
         return true;
+    }
+    
+    private CancellationPolicy getPolicyByTimeFrame(int timeBeforeDeparture) {
+        return policies.stream()
+                .filter(policy -> policy.getTimeBeforeDeparture() == timeBeforeDeparture)
+                .findFirst()
+                .orElse(null);
     }
     
     public boolean validateExistence(CancellationPolicy data) {
@@ -179,13 +176,12 @@ public class PolicyCatalog {
     }
     
     public CancellationPolicy getApplicablePolicy(int hoursBeforeDeparture) {
-        // Find the policy that matches the cancellation time
         for (CancellationPolicy policy : policies) {
             if (policy.match(hoursBeforeDeparture)) {
                 return policy;
             }
         }
-        return null; // No policy found for this time frame
+        return null;
     }
     
     public boolean updatePolicy(CancellationPolicy updatedPolicy) {
@@ -206,7 +202,6 @@ public class PolicyCatalog {
                 int rowsAffected = pstmt.executeUpdate();
                 
                 if (rowsAffected > 0) {
-                    // Update local list
                     updateLocalPolicy(updatedPolicy);
                     System.out.println("Policy updated successfully in database: " + updatedPolicy.getPolicyID());
                     return true;
@@ -218,7 +213,6 @@ public class PolicyCatalog {
             }
         }
         
-        // Update in-memory list if database is not available or update failed
         boolean updated = updateLocalPolicy(updatedPolicy);
         if (updated) {
             System.out.println("Policy updated in in-memory storage: " + updatedPolicy.getPolicyID());
@@ -257,7 +251,6 @@ public class PolicyCatalog {
             }
         }
         
-        // Delete from in-memory list if database is not available or deletion failed
         boolean deleted = policies.removeIf(policy -> policy.getPolicyID().equals(policyID));
         if (deleted) {
             System.out.println("Policy deleted from in-memory storage: " + policyID);
@@ -279,7 +272,6 @@ public class PolicyCatalog {
         return policies.size();
     }
     
-    // Close connection when done
     public void close() {
         try {
             if (connection != null && !connection.isClosed()) {

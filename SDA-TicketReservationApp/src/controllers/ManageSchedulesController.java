@@ -18,10 +18,11 @@ import helpers.IDGenerator;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 public class ManageSchedulesController {
 
-    private RouteCatalog routeCatalog = new RouteCatalog();
+    private RouteCatalog routeCatalog = RouteCatalog.getInstance();
     private String currentUsername;
     private Admin currentAdmin;
 
@@ -109,6 +110,10 @@ public class ManageSchedulesController {
         if (backButton != null) {
             backButton.setOnAction(e -> handleBack());
         }
+
+        if (routeComboBox != null) {
+            routeComboBox.setOnAction(e -> handleRouteSelection());
+        }
     }
 
     private void initializeTable() {
@@ -129,12 +134,58 @@ public class ManageSchedulesController {
         if (classComboBox != null) {
             classComboBox.getItems().addAll("Economy", "Business", "First Class");
         }
+        
+        if (routeComboBox != null) {
+            routeComboBox.setCellFactory(param -> new ListCell<Route>() {
+                @Override
+                protected void updateItem(Route item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.getSource() + " → " + item.getDestination() + " (PKR " + item.getBasePrice() + ")");
+                    }
+                }
+            });
+
+            routeComboBox.setButtonCell(new ListCell<Route>() {
+                @Override
+                protected void updateItem(Route item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.getSource() + " → " + item.getDestination() + " (PKR " + item.getBasePrice() + ")");
+                    }
+                }
+            });
+        }
     }
 
     private void loadData() {
         if (routeCatalog != null && routeComboBox != null) {
             routeCatalog.refresh();
             routeComboBox.getItems().setAll(routeCatalog.getAllRoutes());
+        }
+    }
+
+    private void handleRouteSelection() {
+        Route selectedRoute = routeComboBox.getValue();
+        if (selectedRoute != null) {
+            refreshSchedulesTable(selectedRoute.getRouteID());
+        } else {
+            schedulesTable.getItems().clear();
+        }
+    }
+
+    private void refreshSchedulesTable(String routeId) {
+        if (routeCatalog != null) {
+            List<Schedule> schedules = routeCatalog.getRouteSchedules(routeId);
+            if (schedules != null) {
+                schedulesTable.getItems().setAll(schedules);
+            } else {
+                schedulesTable.getItems().clear();
+            }
         }
     }
 
@@ -184,12 +235,15 @@ public class ManageSchedulesController {
             String scheduleID = IDGenerator.generateScheduleID();
             Schedule newSchedule = new Schedule(scheduleID, date, departureTime, arrivalTime, scheduleClass);
             
-            selectedRoute.addSchedule(newSchedule);
-            routeCatalog.updateRoute(selectedRoute);
+            boolean success = routeCatalog.addScheduleToRoute(selectedRoute.getRouteID(), newSchedule);
             
-            showSuccess("Schedule added successfully!");
-            handleClear();
-            loadData();
+            if (success) {
+                showSuccess("Schedule added successfully!");
+                handleClear();
+                refreshSchedulesTable(selectedRoute.getRouteID());
+            } else {
+                showError("Failed to add schedule");
+            }
             
         } catch (Exception e) {
             showError("Invalid time format. Use HH:mm format (e.g., 14:30)");
@@ -197,17 +251,89 @@ public class ManageSchedulesController {
     }
 
     private void handleUpdateSchedule() {
-        // Implementation for updating schedule
-        showInfo("Update Schedule", "Schedule update functionality will be available in the next update");
+        Schedule selectedSchedule = schedulesTable.getSelectionModel().getSelectedItem();
+        Route selectedRoute = routeComboBox.getValue();
+        
+        if (selectedSchedule == null || selectedRoute == null) {
+            showError("Please select a schedule to update");
+            return;
+        }
+        
+        LocalDate date = datePicker.getValue();
+        String departureText = departureField.getText().trim();
+        String arrivalText = arrivalField.getText().trim();
+        String scheduleClass = classComboBox.getValue();
+        
+        if (date == null || departureText.isEmpty() || arrivalText.isEmpty() || scheduleClass == null) {
+            showError("Please fill in all fields");
+            return;
+        }
+        
+        try {
+            LocalTime departureTime = LocalTime.parse(departureText);
+            LocalTime arrivalTime = LocalTime.parse(arrivalText);
+            
+            if (arrivalTime.isBefore(departureTime)) {
+                showError("Arrival time must be after departure time");
+                return;
+            }
+            
+            selectedSchedule.setDate(date);
+            selectedSchedule.setDepartureTime(departureTime);
+            selectedSchedule.setArrivalTime(arrivalTime);
+            selectedSchedule.setScheduleClass(scheduleClass);
+            
+            boolean success = routeCatalog.updateRoute(selectedRoute);
+            
+            if (success) {
+                showSuccess("Schedule updated successfully!");
+                refreshSchedulesTable(selectedRoute.getRouteID());
+            } else {
+                showError("Failed to update schedule");
+            }
+            
+        } catch (Exception e) {
+            showError("Invalid time format. Use HH:mm format (e.g., 14:30)");
+        }
     }
 
     private void handleDeleteSchedule() {
-        // Implementation for deleting schedule
-        showInfo("Delete Schedule", "Schedule deletion functionality will be available in the next update");
+        Schedule selectedSchedule = schedulesTable.getSelectionModel().getSelectedItem();
+        Route selectedRoute = routeComboBox.getValue();
+        
+        if (selectedSchedule == null || selectedRoute == null) {
+            showError("Please select a schedule to delete");
+            return;
+        }
+        
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirm Deletion");
+        alert.setHeaderText("Delete Schedule");
+        alert.setContentText("Are you sure you want to delete this schedule?\n" + selectedSchedule);
+        
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                selectedRoute.getSchedules().remove(selectedSchedule);
+                
+                boolean success = routeCatalog.updateRoute(selectedRoute);
+                
+                if (success) {
+                    showSuccess("Schedule deleted successfully!");
+                    refreshSchedulesTable(selectedRoute.getRouteID());
+                    handleClear();
+                } else {
+                    showError("Failed to delete schedule");
+                }
+            }
+        });
     }
 
     private void handleRefresh() {
         loadData();
+        Route selectedRoute = routeComboBox.getValue();
+        if (selectedRoute != null) {
+            refreshSchedulesTable(selectedRoute.getRouteID());
+        }
         showSuccess("Data refreshed");
     }
 
@@ -237,10 +363,6 @@ public class ManageSchedulesController {
 
     private void showSuccess(String message) {
         showAlert("Success", message, Alert.AlertType.INFORMATION);
-    }
-
-    private void showInfo(String title, String message) {
-        showAlert(title, message, Alert.AlertType.INFORMATION);
     }
 
     private void showAlert(String title, String message, Alert.AlertType type) {

@@ -17,7 +17,7 @@ import java.io.IOException;
 
 public class ManagePricingController {
 
-    private RouteCatalog routeCatalog = new RouteCatalog();
+    private RouteCatalog routeCatalog = RouteCatalog.getInstance();
     private String currentUsername;
     private Admin currentAdmin;
 
@@ -36,6 +36,7 @@ public class ManagePricingController {
     @FXML private Button updatePriceButton;
     @FXML private Button applyPercentageButton;
     @FXML private Button refreshButton;
+    @FXML private Button refreshDataButton;
     @FXML private Button backButton;
     
     @FXML private TextArea priceDetailsArea;
@@ -49,8 +50,6 @@ public class ManagePricingController {
             controller.setAdminData(username, admin);
             
             Scene scene = new Scene(root, 1200, 800);
-            scene.getStylesheets().add(ManagePricingController.class.getResource("/ui/manage-pricing.css").toExternalForm());
-            
             stage.setScene(scene);
             stage.setTitle("TicketGenie - Manage Pricing");
             stage.centerOnScreen();
@@ -88,6 +87,9 @@ public class ManagePricingController {
         }
         if (refreshButton != null) {
             refreshButton.setOnAction(e -> handleRefresh());
+        }
+        if (refreshDataButton != null) {
+            refreshDataButton.setOnAction(e -> handleRefresh());
         }
         if (backButton != null) {
             backButton.setOnAction(e -> handleBack());
@@ -151,14 +153,19 @@ public class ManagePricingController {
                 return;
             }
             
-            selectedRoute.setBasePrice(newPrice);
-            
-            if (routeCatalog.updateRoute(selectedRoute)) {
-                showSuccess("Price updated successfully!");
-                loadRoutesData();
-                newPriceField.clear();
+            Route currentRoute = routeCatalog.getRoute(selectedRoute.getRouteID());
+            if (currentRoute != null) {
+                currentRoute.setBasePrice(newPrice);
+                
+                if (routeCatalog.updateRoute(currentRoute)) {
+                    showSuccess("Price updated successfully!");
+                    loadRoutesData();
+                    newPriceField.clear();
+                } else {
+                    showError("Failed to update price");
+                }
             } else {
-                showError("Failed to update price");
+                showError("Route not found in catalog");
             }
             
         } catch (NumberFormatException e) {
@@ -177,15 +184,26 @@ public class ManagePricingController {
         try {
             double percentage = Double.parseDouble(percentageText);
             
+            boolean allUpdated = true;
             for (Route route : routesTable.getItems()) {
-                double newPrice = route.getBasePrice() * (1 + percentage/100);
-                route.setBasePrice(Math.round(newPrice * 100.0) / 100.0);
-                routeCatalog.updateRoute(route);
+                Route currentRoute = routeCatalog.getRoute(route.getRouteID());
+                if (currentRoute != null) {
+                    double newPrice = currentRoute.getBasePrice() * (1 + percentage/100);
+                    currentRoute.setBasePrice(Math.round(newPrice * 100.0) / 100.0);
+                    
+                    if (!routeCatalog.updateRoute(currentRoute)) {
+                        allUpdated = false;
+                    }
+                }
             }
             
-            showSuccess("Applied " + percentage + "% change to all routes!");
-            loadRoutesData();
-            percentageField.clear();
+            if (allUpdated) {
+                showSuccess("Applied " + percentage + "% change to all routes!");
+                loadRoutesData();
+                percentageField.clear();
+            } else {
+                showError("Some routes failed to update");
+            }
             
         } catch (NumberFormatException e) {
             showError("Invalid percentage format");
