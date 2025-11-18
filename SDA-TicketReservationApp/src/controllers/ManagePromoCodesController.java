@@ -1,0 +1,269 @@
+package controllers;
+
+import javafx.application.Platform;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+import models.Admin;
+import models.PromotionalCode;
+import catalogs.PromoCodeCatalog;
+import helpers.IDGenerator;
+
+import java.io.IOException;
+import java.time.LocalDate;
+
+public class ManagePromoCodesController {
+
+    private PromoCodeCatalog promoCatalog = new PromoCodeCatalog();
+    private String currentUsername;
+    private Admin currentAdmin;
+
+    @FXML private Text welcomeTitle;
+    @FXML private Text userGreeting;
+    
+    @FXML private TableView<PromotionalCode> promoTable;
+    @FXML private TableColumn<PromotionalCode, String> codeColumn;
+    @FXML private TableColumn<PromotionalCode, LocalDate> validityColumn;
+    @FXML private TableColumn<PromotionalCode, Double> percentageColumn;
+    @FXML private TableColumn<PromotionalCode, Boolean> statusColumn;
+    
+    @FXML private TextField codeField;
+    @FXML private DatePicker validityField;
+    @FXML private TextField percentageField;
+    
+    @FXML private Button addPromoButton;
+    @FXML private Button toggleStatusButton;
+    @FXML private Button deletePromoButton;
+    @FXML private Button refreshButton;
+    @FXML private Button clearButton;
+    @FXML private Button backButton;
+    
+    @FXML private TextArea promoDetailsArea;
+
+    public static void show(Stage stage, String username, Admin admin) {
+        try {
+            FXMLLoader loader = new FXMLLoader(ManagePromoCodesController.class.getResource("/ui/manage-promocodes.fxml"));
+            Parent root = loader.load();
+            
+            ManagePromoCodesController controller = loader.getController();
+            controller.setAdminData(username, admin);
+            
+            Scene scene = new Scene(root, 1200, 800);
+            scene.getStylesheets().add(ManagePromoCodesController.class.getResource("/ui/manage-promocodes.css").toExternalForm());
+            
+            stage.setScene(scene);
+            stage.setTitle("TicketGenie - Manage Promo Codes");
+            stage.centerOnScreen();
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+            showErrorAlert("Failed to load promo codes management page: " + e.getMessage());
+        }
+    }
+
+    public void setAdminData(String username, Admin admin) {
+        this.currentUsername = username;
+        this.currentAdmin = admin;
+        
+        if (userGreeting != null) {
+            userGreeting.setText("Manage Promo Codes - " + username);
+        }
+        
+        Platform.runLater(this::loadPromoCodesData);
+    }
+
+    @FXML
+    public void initialize() {
+        System.out.println("ManagePromoCodesController initialized");
+        setupEventHandlers();
+        initializeTable();
+    }
+
+    private void setupEventHandlers() {
+        if (addPromoButton != null) {
+            addPromoButton.setOnAction(e -> handleAddPromo());
+        }
+        if (toggleStatusButton != null) {
+            toggleStatusButton.setOnAction(e -> handleToggleStatus());
+        }
+        if (deletePromoButton != null) {
+            deletePromoButton.setOnAction(e -> handleDeletePromo());
+        }
+        if (refreshButton != null) {
+            refreshButton.setOnAction(e -> handleRefresh());
+        }
+        if (clearButton != null) {
+            clearButton.setOnAction(e -> handleClear());
+        }
+        if (backButton != null) {
+            backButton.setOnAction(e -> handleBack());
+        }
+    }
+
+    private void initializeTable() {
+        if (promoTable != null) {
+            codeColumn.setCellValueFactory(new PropertyValueFactory<>("code"));
+            validityColumn.setCellValueFactory(new PropertyValueFactory<>("validity"));
+            percentageColumn.setCellValueFactory(new PropertyValueFactory<>("percentage"));
+            statusColumn.setCellValueFactory(new PropertyValueFactory<>("active"));
+            
+            promoTable.getSelectionModel().selectedItemProperty().addListener(
+                (obs, oldSelection, newSelection) -> showPromoDetails(newSelection)
+            );
+        }
+    }
+
+    private void loadPromoCodesData() {
+        // Load sample data for demonstration
+        promoTable.getItems().addAll(
+            new PromotionalCode("WELCOME10", LocalDate.now().plusDays(30), 10.0),
+            new PromotionalCode("SUMMER25", LocalDate.now().plusDays(60), 25.0),
+            new PromotionalCode("FIRST15", LocalDate.now().plusDays(15), 15.0)
+        );
+    }
+
+    private void showPromoDetails(PromotionalCode promo) {
+        if (promo != null) {
+            codeField.setText(promo.getCode());
+            validityField.setValue(promo.getValidity());
+            percentageField.setText(String.valueOf(promo.getPercentage()));
+            
+            if (promoDetailsArea != null) {
+                StringBuilder details = new StringBuilder();
+                details.append("Promo Code: ").append(promo.getCode()).append("\n");
+                details.append("Discount: ").append(promo.getPercentage()).append("%\n");
+                details.append("Valid Until: ").append(promo.getValidity()).append("\n");
+                details.append("Status: ").append(promo.isActive() ? "Active" : "Inactive").append("\n");
+                details.append("Currently Valid: ").append(promo.checkValidity() ? "Yes" : "No").append("\n");
+                
+                promoDetailsArea.setText(details.toString());
+            }
+        }
+    }
+
+    private void handleAddPromo() {
+        String code = codeField.getText().trim().toUpperCase();
+        LocalDate validity = validityField.getValue();
+        String percentageText = percentageField.getText().trim();
+        
+        if (code.isEmpty() || validity == null || percentageText.isEmpty()) {
+            showError("Please fill in all fields");
+            return;
+        }
+        
+        try {
+            double percentage = Double.parseDouble(percentageText);
+            
+            if (percentage <= 0 || percentage > 100) {
+                showError("Percentage must be between 1 and 100");
+                return;
+            }
+            
+            if (validity.isBefore(LocalDate.now())) {
+                showError("Validity date must be in the future");
+                return;
+            }
+            
+            PromotionalCode newPromo = new PromotionalCode(code, validity, percentage);
+            promoTable.getItems().add(newPromo);
+            
+            showSuccess("Promo code added successfully!");
+            handleClear();
+            
+        } catch (NumberFormatException e) {
+            showError("Invalid percentage format");
+        }
+    }
+
+    private void handleToggleStatus() {
+        PromotionalCode selectedPromo = promoTable.getSelectionModel().getSelectedItem();
+        
+        if (selectedPromo == null) {
+            showError("Please select a promo code");
+            return;
+        }
+        
+        selectedPromo.setActive(!selectedPromo.isActive());
+        promoTable.refresh();
+        showSuccess("Promo code status updated!");
+    }
+
+    private void handleDeletePromo() {
+        PromotionalCode selectedPromo = promoTable.getSelectionModel().getSelectedItem();
+        
+        if (selectedPromo == null) {
+            showError("Please select a promo code to delete");
+            return;
+        }
+        
+        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmation.setTitle("Confirm Deletion");
+        confirmation.setHeaderText("Delete Promo Code");
+        confirmation.setContentText("Are you sure you want to delete promo code: " + selectedPromo.getCode() + "?");
+        
+        confirmation.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                promoTable.getItems().remove(selectedPromo);
+                showSuccess("Promo code deleted successfully!");
+                handleClear();
+            }
+        });
+    }
+
+    private void handleRefresh() {
+        promoTable.refresh();
+        showSuccess("Data refreshed");
+    }
+
+    private void handleClear() {
+        codeField.clear();
+        validityField.setValue(null);
+        percentageField.clear();
+        if (promoDetailsArea != null) {
+            promoDetailsArea.clear();
+        }
+        promoTable.getSelectionModel().clearSelection();
+    }
+
+    private void handleBack() {
+        try {
+            Stage currentStage = (Stage) backButton.getScene().getWindow();
+            AdminDashboardController.show(currentStage, currentUsername, currentAdmin);
+        } catch (Exception e) {
+            showError("Failed to go back: " + e.getMessage());
+        }
+    }
+
+    private void showError(String message) {
+        showAlert("Error", message, Alert.AlertType.ERROR);
+    }
+
+    private void showSuccess(String message) {
+        showAlert("Success", message, Alert.AlertType.INFORMATION);
+    }
+
+    private void showAlert(String title, String message, Alert.AlertType type) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(type);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setContentText(message);
+            alert.showAndWait();
+        });
+    }
+
+    private static void showErrorAlert(String message) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText(null);
+            alert.setContentText(message);
+            alert.showAndWait();
+        });
+    }
+}

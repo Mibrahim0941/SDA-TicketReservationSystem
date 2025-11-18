@@ -9,6 +9,9 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         try {
+            // Initialize catalogs with sample data
+            initializeSampleData();
+            
             // Load the FXML file
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/mainpage.fxml"));
             Parent root = loader.load();
@@ -26,6 +29,14 @@ public class Main extends Application {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void initializeSampleData() {
+        // Initialize some sample data for testing
+        System.out.println("Initializing sample data...");
+        
+        // Sample routes, schedules, policies, etc.
+        // This would typically be loaded from a database
     }
 
     public static void main(String[] args) {

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controllers.ManageSchedulesController"
+            stylesheets="@manage-schedules.css">
+    
+    <top>
+        <VBox styleClass="header">
+            <HBox alignment="CENTER_LEFT" spacing="20" styleClass="header-content">
+                <Button fx:id="backButton" text="Back to Dashboard" styleClass="back-button"/>
+                <VBox spacing="2">
+                    <Text fx:id="welcomeTitle" text="Manage Schedules" styleClass="title"/>
+                    <Text fx:id="userGreeting" styleClass="greeting"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="refreshButton" text="Refresh" styleClass="icon-button"/>
+            </HBox>
+        </VBox>
+    </top>
+    
+    <center>
+        <BorderPane styleClass="main-content">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+            
+            <left>
+                <VBox spacing="25" styleClass="form-container">
+                    <VBox spacing="15" styleClass="form-section">
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Text text="Schedule Information" styleClass="section-title"/>
+                        </HBox>
+                        
+                        <VBox spacing="12">
+                            <VBox spacing="5">
+                                <Label text="Select Route" styleClass="form-label"/>
+                                <ComboBox fx:id="routeComboBox" styleClass="modern-combo" promptText="Choose a route"/>
+                            </VBox>
+                            
+                            <VBox spacing="5">
+                                <Label text="Schedule Date" styleClass="form-label"/>
+                                <DatePicker fx:id="datePicker" styleClass="modern-datepicker"/>
+                            </VBox>
+                            
+                            <VBox spacing="5">
+                                <Label text="Departure Time" styleClass="form-label"/>
+                                <TextField fx:id="departureField" promptText="HH:mm (e.g., 14:30)" styleClass="modern-field"/>
+                            </VBox>
+                            
+                            <VBox spacing="5">
+                                <Label text="Arrival Time" styleClass="form-label"/>
+                                <TextField fx:id="arrivalField" promptText="HH:mm (e.g., 16:45)" styleClass="modern-field"/>
+                            </VBox>
+                            
+                            <VBox spacing="5">
+                                <Label text="Class Type" styleClass="form-label"/>
+                                <ComboBox fx:id="classComboBox" styleClass="modern-combo" promptText="Select class"/>
+                            </VBox>
+                        </VBox>
+                    </VBox>
+                    
+                    <VBox spacing="10" styleClass="actions-section">
+                        <Button fx:id="addScheduleButton" text="Add Schedule" styleClass="primary-button" maxWidth="Infinity"/>
+                        <Button fx:id="updateScheduleButton" text="Update Schedule" styleClass="secondary-button" maxWidth="Infinity"/>
+                        <Button fx:id="deleteScheduleButton" text="Delete Schedule" styleClass="danger-button" maxWidth="Infinity"/>
+                        <HBox spacing="10">
+                            <Button fx:id="clearButton" text="Clear Form" styleClass="outline-button" HBox.hgrow="ALWAYS"/>
+                        </HBox>
+                    </VBox>
+                    
+                    <VBox spacing="12" styleClass="details-section">
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Text text="Schedule Details" styleClass="section-title"/>
+                        </HBox>
+                        <TextArea fx:id="scheduleDetailsArea" editable="false" wrapText="true" 
+                                 styleClass="details-area" prefHeight="180"/>
+                    </VBox>
+                </VBox>
+            </left>
+            
+            <center>
+                <VBox spacing="20" styleClass="table-section">
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Text text="All Schedules" styleClass="section-title"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Text text="Click on a schedule to view details" styleClass="hint-text"/>
+                    </HBox>
+                    
+                    <TableView fx:id="schedulesTable" styleClass="modern-table" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="scheduleIdColumn" text="SCHEDULE ID" styleClass="table-column"/>
+                            <TableColumn fx:id="dateColumn" text="DATE" styleClass="table-column"/>
+                            <TableColumn fx:id="departureColumn" text="DEPARTURE" styleClass="table-column"/>
+                            <TableColumn fx:id="arrivalColumn" text="ARRIVAL" styleClass="table-column"/>
+                            <TableColumn fx:id="classColumn" text="CLASS" styleClass="table-column"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </center>
+        </BorderPane>
+    </center>
+</BorderPane>

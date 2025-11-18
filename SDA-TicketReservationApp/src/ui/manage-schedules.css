@@ -1,0 +1,52 @@
+/* Manage Schedules Styles */
+.modern-combo {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 2;
+    -fx-padding: 12 15;
+    -fx-font-size: 14px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.02), 5, 0, 0, 2);
+    -fx-transition: all 0.3s ease;
+}
+
+.modern-combo:focused {
+    -fx-background-color: white;
+    -fx-border-color: #0ea5e9;
+    -fx-effect: dropshadow(three-pass-box, rgba(14, 165, 233, 0.2), 10, 0, 0, 3);
+}
+
+.modern-combo .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.modern-combo .arrow {
+    -fx-background-color: #64748b;
+}
+
+.modern-datepicker {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 2;
+    -fx-padding: 12 15;
+    -fx-font-size: 14px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.02), 5, 0, 0, 2);
+    -fx-transition: all 0.3s ease;
+}
+
+.modern-datepicker:focused {
+    -fx-background-color: white;
+    -fx-border-color: #0ea5e9;
+    -fx-effect: dropshadow(three-pass-box, rgba(14, 165, 233, 0.2), 10, 0, 0, 3);
+}
+
+.date-picker-popup {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #e2e8f0;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 10, 0, 0, 5);
+}

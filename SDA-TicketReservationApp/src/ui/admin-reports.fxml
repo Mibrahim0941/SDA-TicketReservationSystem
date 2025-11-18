@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controllers.AdminReportsController"
+            stylesheets="@admin-reports.css">
+    
+    <!-- Top Header -->
+    <top>
+        <VBox styleClass="header">
+            <HBox alignment="CENTER_LEFT" spacing="20" styleClass="header-content">
+                <Button fx:id="backButton" text="Back" styleClass="back-button"/>
+                <Text fx:id="welcomeTitle" text="Reports &amp; Analytics" styleClass="title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Text fx:id="userGreeting" styleClass="greeting"/>
+            </HBox>
+        </VBox>
+    </top>
+    
+    <!-- Center Content -->
+    <center>
+        <BorderPane styleClass="main-content">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+            
+            <!-- Left: Report Options -->
+            <left>
+                <VBox spacing="15" styleClass="options-container">
+                    <padding>
+                        <Insets top="0" right="20" bottom="0" left="0"/>
+                    </padding>
+                    
+                    <Text text="Report Types" styleClass="section-title"/>
+                    
+                    <VBox spacing="10">
+                        <Button fx:id="generateBookingReportButton" text="Booking Statistics" 
+                               styleClass="report-button" maxWidth="Infinity"/>
+                        <Button fx:id="generateRevenueReportButton" text="Revenue Report" 
+                               styleClass="report-button" maxWidth="Infinity"/>
+                        <Button fx:id="generateRouteReportButton" text="Route Performance" 
+                               styleClass="report-button" maxWidth="Infinity"/>
+                    </VBox>
+                    
+                    <Separator/>
+                    
+                    <Text text="Actions" styleClass="section-title"/>
+                    
+                    <Button fx:id="exportReportButton" text="Export Report" 
+                           styleClass="export-button" maxWidth="Infinity"/>
+                    
+                    <VBox spacing="8" styleClass="info-box">
+                        <Text text="Report Information" styleClass="info-title"/>
+                        <Text text="Click any report type to generate" styleClass="info-text" wrappingWidth="200"/>
+                        <Text text="Reports show real-time data" styleClass="info-text" wrappingWidth="200"/>
+                        <Text text="Export functionality coming soon" styleClass="info-text" wrappingWidth="200"/>
+                    </VBox>
+                </VBox>
+            </left>
+            
+            <!-- Center: Report Display -->
+            <center>
+                <VBox spacing="15" styleClass="report-container">
+                    <HBox alignment="CENTER_LEFT" spacing="15">
+                        <Text text="Report Preview" styleClass="section-title"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="Select a report type to view" styleClass="hint-label"/>
+                    </HBox>
+                    
+                    <TextArea fx:id="reportArea" editable="false" wrapText="false" 
+                             styleClass="report-area" VBox.vgrow="ALWAYS"
+                             promptText="Select a report type from the left menu to generate and view the report here..."/>
+                </VBox>
+            </center>
+        </BorderPane>
+    </center>
+</BorderPane>

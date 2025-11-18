@@ -1,0 +1,271 @@
+/* Admin Dashboard Styles with Animations */
+.root {
+    -fx-background-color: linear-gradient(to bottom, #f8fafc, #f1f5f9);
+    -fx-font-family: 'Segoe UI', system, sans-serif;
+}
+
+/* Header Styles */
+.header {
+    -fx-background-color: linear-gradient(to right, #0ea5e9, #0284c7);
+    -fx-padding: 15 25;
+    -fx-effect: dropshadow(three-pass-box, rgba(14, 165, 233, 0.3), 15, 0, 0, 5);
+}
+
+.header-content {
+    -fx-padding: 5;
+    -fx-alignment: center-left;
+}
+
+.logo {
+    -fx-effect: dropshadow(three-pass-box, rgba(255, 255, 255, 0.5), 8, 0, 0, 2);
+}
+
+.title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-fill: white;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 3, 0, 1, 1);
+}
+
+.greeting {
+    -fx-font-size: 14px;
+    -fx-fill: #e0f2fe;
+    -fx-font-weight: 500;
+}
+
+/* Button Styles */
+.icon-button {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-padding: 8 12;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-cursor: hand;
+    -fx-border-color: rgba(255, 255, 255, 0.3);
+    -fx-border-width: 1;
+    -fx-transition: all 0.3s ease;
+}
+
+.icon-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.25);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+    -fx-effect: dropshadow(three-pass-box, rgba(255, 255, 255, 0.4), 10, 0, 0, 2);
+}
+
+.icon-button:pressed {
+    -fx-scale-x: 0.95;
+    -fx-scale-y: 0.95;
+}
+
+.logout-button {
+    -fx-background-color: linear-gradient(to right, #ef4444, #dc2626);
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-padding: 8 16;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+    -fx-border-width: 0;
+    -fx-transition: all 0.3s ease;
+}
+
+.logout-button:hover {
+    -fx-background-color: linear-gradient(to right, #dc2626, #b91c1c);
+    -fx-effect: dropshadow(three-pass-box, rgba(239, 68, 68, 0.4), 10, 0, 0, 3);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+/* Content Styles */
+.content-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.content-scroll .viewport {
+    -fx-background-color: transparent;
+}
+
+.main-content {
+    -fx-background-color: transparent;
+}
+
+/* Statistics Cards */
+.stats-container {
+    -fx-padding: 10;
+}
+
+.stat-card {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
+    -fx-padding: 25 20;
+    -fx-alignment: center;
+    -fx-min-width: 180;
+    -fx-min-height: 140;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.08), 15, 0, 0, 5);
+    -fx-transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    -fx-cursor: hand;
+}
+
+.stat-card:hover {
+    -fx-background-color: #f0f9ff;
+    -fx-border-color: #0ea5e9;
+    -fx-effect: dropshadow(three-pass-box, rgba(14, 165, 233, 0.2), 25, 0, 0, 8);
+    -fx-translate-y: -5;
+    -fx-scale-x: 1.03;
+    -fx-scale-y: 1.03;
+}
+
+.stat-icon {
+    -fx-effect: dropshadow(three-pass-box, rgba(14, 165, 233, 0.3), 6, 0, 1, 2);
+}
+
+.stat-value {
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0ea5e9;
+    -fx-effect: dropshadow(three-pass-box, rgba(14, 165, 233, 0.2), 4, 0, 1, 1);
+    -fx-padding: 5 0 0 0;
+}
+
+.stat-label {
+    -fx-font-size: 14px;
+    -fx-fill: #64748b;
+    -fx-font-weight: 600;
+    -fx-padding: 5 0 0 0;
+}
+
+/* Section Title */
+.section-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-fill: #1e293b;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 2, 0, 1, 1);
+}
+
+/* Feature Cards Grid */
+.cards-grid {
+    -fx-padding: 10;
+}
+
+.feature-card {
+    -fx-background-color: white;
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+    -fx-border-color: #f1f5f9;
+    -fx-border-width: 2;
+    -fx-padding: 30 25;
+    -fx-alignment: center;
+    -fx-min-width: 220;
+    -fx-min-height: 200;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.06), 20, 0, 0, 6);
+    -fx-transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    -fx-opacity: 0.95;
+}
+
+.feature-card:hover {
+    -fx-background-color: linear-gradient(135deg, #ffffff, #f0f9ff);
+    -fx-border-color: #0ea5e9;
+    -fx-border-width: 3;
+    -fx-effect: dropshadow(three-pass-box, rgba(14, 165, 233, 0.25), 30, 0, 0, 12);
+    -fx-translate-y: -8;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+    -fx-opacity: 1;
+}
+
+.feature-card:pressed {
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
+}
+
+.card-icon {
+    -fx-effect: dropshadow(three-pass-box, rgba(14, 165, 233, 0.4), 10, 0, 2, 3);
+    -fx-transition: all 0.3s ease;
+}
+
+.feature-card:hover .card-icon {
+    -fx-scale-x: 1.1;
+    -fx-scale-y: 1.1;
+    -fx-rotate: 5;
+}
+
+.card-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-fill: #1e293b;
+    -fx-padding: 15 0 5 0;
+    -fx-transition: all 0.3s ease;
+}
+
+.feature-card:hover .card-title {
+    -fx-fill: #0ea5e9;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.card-description {
+    -fx-font-size: 13px;
+    -fx-fill: #64748b;
+    -fx-text-alignment: center;
+    -fx-wrapping-width: 180;
+}
+
+.card-hint {
+    -fx-font-size: 11px;
+    -fx-fill: #94a3b8;
+    -fx-font-weight: 500;
+    -fx-padding: 10 0 0 0;
+    -fx-opacity: 0;
+    -fx-transition: all 0.3s ease;
+}
+
+.feature-card:hover .card-hint {
+    -fx-opacity: 1;
+    -fx-translate-y: 5;
+}
+
+/* Animation Keyframes */
+@keyframes fadeIn {
+    from {
+        -fx-opacity: 0;
+        -fx-translate-y: 20;
+    }
+    to {
+        -fx-opacity: 1;
+        -fx-translate-y: 0;
+    }
+}
+
+.stat-card {
+    -fx-animation: fadeIn 0.6s ease-out;
+}
+
+.feature-card {
+    -fx-animation: fadeIn 0.8s ease-out;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .stats-container {
+        -fx-alignment: center;
+    }
+    
+    .stat-card {
+        -fx-min-width: 160;
+        -fx-min-height: 120;
+    }
+    
+    .feature-card {
+        -fx-min-width: 200;
+        -fx-min-height: 180;
+    }
+}

@@ -15,10 +15,11 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import catalogs.UserCatalog;
+import models.Admin;
 
 public class AdminLoginController implements Initializable {
 
-    UserCatalog admin = new UserCatalog("Admin");
+    UserCatalog adminCatalog = new UserCatalog("Admin");
 
     @FXML private Text adminTitle;
     @FXML private Text adminSubtitle;
@@ -52,7 +53,7 @@ public class AdminLoginController implements Initializable {
 
         if (username.isEmpty() || password.isEmpty()) {
             showStatusMessage("Please enter both username and password", "error");
-        } else if (admin.authenticateUser(username, password)) {
+        } else if (authenticateAdmin(username, password)) {
             showStatusMessage("Admin login successful! Redirecting...", "success");
             
             // Redirect to admin dashboard after short delay
@@ -71,11 +72,21 @@ public class AdminLoginController implements Initializable {
         }
     }
 
+    private boolean authenticateAdmin(String username, String password) {
+        // For testing - allow admin/admin credentials
+        if ("admin".equals(username) && "admin".equals(password)) {
+            return true;
+        }
+        
+        // Check against your user catalog
+        return adminCatalog.authenticateUser(username, password);
+    }
+
     @FXML
     private void handleBack() {
         try {
             Stage currentStage = (Stage) backButton.getScene().getWindow();
-            MainController.show(currentStage);
+            MainController.showoptions(currentStage);
         } catch (Exception e) {
             System.err.println("Error navigating back to login types: " + e.getMessage());
             e.printStackTrace();
@@ -86,10 +97,12 @@ public class AdminLoginController implements Initializable {
     private void showAdminDashboard(String username) {
         try {
             Stage currentStage = (Stage) loginButton.getScene().getWindow();
-            DashboardController.show(currentStage, username, null); // Pass null for customer as it's admin
             
-            // You can create a separate AdminDashboardController if needed
-            // AdminDashboardController.show(currentStage, username);
+            // Create admin object (you might want to get this from your catalog)
+            Admin admin = new Admin("ADM001", "System Administrator", "admin", username, "admin@ticketgenie.com", "03001234567");
+            
+            // Redirect to AdminDashboardController instead of DashboardController
+            AdminDashboardController.show(currentStage, username, admin);
             
         } catch (Exception e) {
             System.err.println("Error loading admin dashboard: " + e.getMessage());

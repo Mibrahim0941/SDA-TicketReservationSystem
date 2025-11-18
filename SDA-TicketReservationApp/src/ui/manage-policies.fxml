@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="controllers.ManagePoliciesController"
+            stylesheets="@manage-policies.css">
+    
+    <!-- Top Header -->
+    <top>
+        <VBox styleClass="header">
+            <HBox alignment="CENTER_LEFT" spacing="20" styleClass="header-content">
+                <Button fx:id="backButton" text="Back" styleClass="back-button"/>
+                <Text fx:id="welcomeTitle" text="Manage Cancellation Policies" styleClass="title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Text fx:id="userGreeting" styleClass="greeting"/>
+            </HBox>
+        </VBox>
+    </top>
+    
+    <!-- Center Content -->
+    <center>
+        <BorderPane styleClass="main-content">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+            
+            <!-- Left: Form -->
+            <left>
+                <VBox spacing="20" styleClass="form-container">
+                    <padding>
+                        <Insets top="0" right="20" bottom="0" left="0"/>
+                    </padding>
+                    
+                    <Text text="Policy Information" styleClass="section-title"/>
+                    
+                    <VBox spacing="15">
+                        <VBox spacing="5">
+                            <Label text="Time Before Departure (hours)" styleClass="form-label"/>
+                            <TextField fx:id="timeField" promptText="Enter hours" styleClass="form-field"/>
+                        </VBox>
+                        
+                        <VBox spacing="5">
+                            <Label text="Refund Percentage" styleClass="form-label"/>
+                            <TextField fx:id="refundField" promptText="Enter percentage (0-100)" styleClass="form-field"/>
+                        </VBox>
+                        
+                        <VBox spacing="5">
+                            <Label text="Description" styleClass="form-label"/>
+                            <TextArea fx:id="descriptionArea" promptText="Enter policy description" styleClass="form-textarea" prefRowCount="3"/>
+                        </VBox>
+                    </VBox>
+                    
+                    <VBox spacing="10">
+                        <Button fx:id="addPolicyButton" text="Add Policy" styleClass="primary-button" maxWidth="Infinity"/>
+                        <Button fx:id="updatePolicyButton" text="Update Policy" styleClass="secondary-button" maxWidth="Infinity"/>
+                        <Button fx:id="deletePolicyButton" text="Delete Policy" styleClass="danger-button" maxWidth="Infinity"/>
+                        <HBox spacing="10">
+                            <Button fx:id="refreshButton" text="Refresh" styleClass="outline-button" HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="clearButton" text="Clear" styleClass="outline-button" HBox.hgrow="ALWAYS"/>
+                        </HBox>
+                    </VBox>
+                    
+                    <!-- Policy Details -->
+                    <VBox spacing="10" styleClass="details-container">
+                        <Text text="Policy Details" styleClass="section-title"/>
+                        <TextArea fx:id="policyDetailsArea" editable="false" wrapText="true" 
+                                 styleClass="details-area" prefHeight="150"/>
+                    </VBox>
+                </VBox>
+            </left>
+            
+            <!-- Center: Policies Table -->
+            <center>
+                <VBox spacing="15" styleClass="table-container">
+                    <Text text="Cancellation Policies" styleClass="section-title"/>
+                    <TableView fx:id="policyTable" styleClass="data-table" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="policyIdColumn" text="Policy ID" styleClass="table-column"/>
+                            <TableColumn fx:id="timeColumn" text="Time (hours)" styleClass="table-column"/>
+                            <TableColumn fx:id="refundColumn" text="Refund %" styleClass="table-column"/>
+                            <TableColumn fx:id="descriptionColumn" text="Description" styleClass="table-column"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </center>
+        </BorderPane>
+    </center>
+</BorderPane>

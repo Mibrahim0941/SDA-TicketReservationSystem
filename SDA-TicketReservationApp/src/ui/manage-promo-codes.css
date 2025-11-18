@@ -1,0 +1,74 @@
+/* Manage Promo Codes Styles - Same as manage-schedules.css */
+.header {
+    -fx-background-color: #0ea5e9;
+    -fx-padding: 20;
+}
+
+.header-content {
+    -fx-padding: 10;
+}
+
+.title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-fill: white;
+    -fx-font-family: 'Segoe UI', system, sans-serif;
+}
+
+.greeting {
+    -fx-font-size: 14px;
+    -fx-fill: white;
+    -fx-font-family: 'Segoe UI', system, sans-serif;
+}
+
+.back-button {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 8 16;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+    -fx-font-family: 'Segoe UI', system, sans-serif;
+}
+
+.back-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.3);
+}
+
+.main-content {
+    -fx-background-color: #ffffff;
+}
+
+.section-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-fill: #1e293b;
+    -fx-font-family: 'Segoe UI', system, sans-serif;
+}
+
+.info-text {
+    -fx-font-size: 18px;
+    -fx-fill: #64748b;
+    -fx-font-family: 'Segoe UI', system, sans-serif;
+}
+
+.subtitle {
+    -fx-font-size: 14px;
+    -fx-fill: #94a3b8;
+    -fx-font-family: 'Segoe UI', system, sans-serif;
+}
+
+.primary-button {
+    -fx-background-color: #0ea5e9;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 24;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+    -fx-font-family: 'Segoe UI', system, sans-serif;
+}
+
+.primary-button:hover {
+    -fx-background-color: #0284c7;
+}

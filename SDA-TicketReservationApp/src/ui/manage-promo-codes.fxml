@@ -1,0 +1,22 @@
+public static void show(Stage stage, String username, Admin admin) {
+    try {
+        FXMLLoader loader = new FXMLLoader(ManagePromoCodesController.class.getResource("/ui/manage-promo-codes.fxml"));
+        Parent root = loader.load();
+        
+        ManagePromoCodesController controller = loader.getController();
+        controller.setAdminData(username, admin);
+        
+        Scene scene = new Scene(root, 1200, 800);
+        
+        // REMOVED CSS loading
+        // scene.getStylesheets().add(ManagePromoCodesController.class.getResource("/ui/manage-promocodes.css").toExternalForm());
+        
+        stage.setScene(scene);
+        stage.setTitle("TicketGenie - Manage Promo Codes");
+        stage.centerOnScreen();
+        
+    } catch (IOException e) {
+        e.printStackTrace();
+        showErrorAlert("Failed to load promo codes management page: " + e.getMessage());
+    }
+}
