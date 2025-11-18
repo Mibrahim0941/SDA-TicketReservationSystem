@@ -12,11 +12,12 @@
    </padding>
    <maxWidth>500.0</maxWidth>
    
+   
    <!-- Header Section -->
    <VBox alignment="CENTER" spacing="20.0">
       <Text styleClass="main-title" text="🎫 Welcome to TicketGenie" textAlignment="CENTER" />
       <Text styleClass="main-subtitle" text="Your Ultimate Ticket Booking Partner" textAlignment="CENTER" />
-      <Text styleClass="welcome-text" text="Book tickets for movies, events, and more with ease!" textAlignment="CENTER" />
+      <Text styleClass="welcome-text" text="Book tickets with ease!" textAlignment="CENTER" />
    </VBox>
    
    <!-- Get Started Button -->

@@ -8,6 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -17,42 +18,47 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-
 public class DashboardController implements Initializable {
 
     @FXML private Text welcomeTitle;
     @FXML private Text userGreeting;
     
-    @FXML private VBox bookTicketsCard;
-    @FXML private VBox myBookingsCard;
-    @FXML private VBox profileCard;
-    @FXML private VBox historyCard;
-    @FXML private VBox supportCard;
-    @FXML private VBox settingsCard;
-    
-    @FXML private Button bookNowButton;
-    @FXML private Button logoutButton;
-    @FXML private Button mainPageButton;
-    
+    // Sidebar elements
+    @FXML private Label customerIdLabel;
+    @FXML private Label memberSinceLabel;
+    @FXML private Label statusLabel;
     @FXML private Label totalBookingsLabel;
     @FXML private Label upcomingTripsLabel;
     @FXML private Label pointsLabel;
+    
+    // Navigation buttons
+    @FXML private Button homeButton;
+    @FXML private Button bookTicketsButton;
+    @FXML private Button myBookingsButton;
+    @FXML private Button historyButton;
+    @FXML private Button profileButton;
+    @FXML private Button settingsButton;
+    @FXML private Button supportButton;
+    @FXML private Button logoutButton;
+    
+    // Content area
+    @FXML private VBox contentArea;
+    @FXML private VBox homeContent;
+    @FXML private ScrollPane contentScrollPane;
     
     private String currentUsername;
     private Stage primaryStage;
     private Customer currentCustomer;
 
-    // ADD THIS SHOW METHOD
-    public static void show(Stage stage, String username,Customer customer) {
+    public static void show(Stage stage, String username, Customer customer) {
         try {
             FXMLLoader loader = new FXMLLoader(DashboardController.class.getResource("/ui/dashboard.fxml"));
             Parent root = loader.load();
             
-            // Get the controller and set user data
             DashboardController controller = loader.getController();
-            controller.setUserData(username, stage, customer); // Pass customer
+            controller.setUserData(username, stage, customer);
             
-            Scene scene = new Scene(root, 900, 700);
+            Scene scene = new Scene(root, 1200, 800);
             scene.getStylesheets().add(DashboardController.class.getResource("/ui/dashboard.css").toExternalForm());
             
             stage.setScene(scene);
@@ -69,160 +75,226 @@ public class DashboardController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         System.out.println("DashboardController initialized");
         setupEventHandlers();
-        loadUserData();
+        
+        // Configure scroll pane
+        if (contentScrollPane != null) {
+            contentScrollPane.setFitToWidth(true);
+            contentScrollPane.setFitToHeight(true);
+            contentScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            contentScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        }
     }
     
-    // Update setUserData to accept Customer
     public void setUserData(String username, Stage stage, Customer customer) {
         this.currentUsername = username;
         this.primaryStage = stage;
-        this.currentCustomer = customer; // Store the actual customer
+        this.currentCustomer = customer;
         updateUserGreeting();
+        loadCustomerData();
+        showHome(); // Show home content by default
     }
     
     private void updateUserGreeting() {
         if (currentUsername != null && !currentUsername.isEmpty()) {
-            userGreeting.setText("Hello, " + currentUsername + "! 👋");
+            userGreeting.setText("Hello, " + currentUsername + "! Ready to book your next journey? 🚌");
+        }
+    }
+    
+    private void loadCustomerData() {
+        if (currentCustomer != null) {
+            // Display ONLY username and email - nothing else
+            String displayName = currentCustomer.getUsername() != null ? 
+                currentCustomer.getUsername() : "User";
+            welcomeTitle.setText("Welcome, " + displayName + "!");
+            
+            // Only set username and email - remove all other data
+            customerIdLabel.setText("Username: " + displayName);
+            
+            if (currentCustomer.getEmail() != null) {
+                memberSinceLabel.setText("Email: " + currentCustomer.getEmail());
+            } else {
+                memberSinceLabel.setText("Email: Not provided");
+            }
+            
+            // Remove status and stats since you said NOTHING ELSE
+            statusLabel.setText("");
+            totalBookingsLabel.setText("");
+            upcomingTripsLabel.setText("");
+            pointsLabel.setText("");
         }
     }
     
     private void setupEventHandlers() {
-        // Card click handlers
-        bookTicketsCard.setOnMouseClicked(e -> navigateToBookingPage());
-        myBookingsCard.setOnMouseClicked(e -> navigateToMyBookings());
-        profileCard.setOnMouseClicked(e -> navigateToProfile());
-        historyCard.setOnMouseClicked(e -> navigateToHistory());
-        supportCard.setOnMouseClicked(e -> navigateToSupport());
-        settingsCard.setOnMouseClicked(e -> navigateToSettings());
-        
-        // Button handlers
-        bookNowButton.setOnAction(e -> navigateToBookingPage());
+        // Navigation button handlers
+        homeButton.setOnAction(e -> showHome());
+        bookTicketsButton.setOnAction(e -> showBookTickets());
+        myBookingsButton.setOnAction(e -> showMyBookings());
+        historyButton.setOnAction(e -> showHistory());
+        profileButton.setOnAction(e -> showProfile());
+        settingsButton.setOnAction(e -> showSettings());
+        supportButton.setOnAction(e -> showSupport());
         logoutButton.setOnAction(e -> handleLogout());
-        mainPageButton.setOnAction(e -> navigateToMainPage());
-        
-        // Add hover effects to cards
-        setupCardHoverEffects();
     }
     
-    private void setupCardHoverEffects() {
-        VBox[] cards = {bookTicketsCard, myBookingsCard, profileCard, historyCard, supportCard, settingsCard};
+    @FXML
+    private void showHome() {
+        clearContentArea();
+        contentArea.getChildren().add(homeContent);
+        homeContent.setVisible(true);
+        homeContent.setManaged(true);
         
-        for (VBox card : cards) {
-            card.setOnMouseEntered(e -> {
-                card.setStyle("-fx-background-color: #f0f9ff; -fx-border-color: #bae6fd;");
-            });
+        // Update home content with actual user data
+        updateHomeContent();
+    }
+    
+    private void updateHomeContent() {
+        if (currentCustomer != null) {
+            String displayName = currentCustomer.getUsername() != null ? 
+                currentCustomer.getUsername() : "User";
+            welcomeTitle.setText("Welcome Back, " + displayName + "!");
+            userGreeting.setText("Hello, " + displayName + "! Ready to book your next journey? 🚌");
+        }
+    }
+    
+    @FXML
+    private void showBookTickets() {
+        clearContentArea();
+        showAlert("Feature Coming Soon", "Book Tickets feature will be available soon!");
+        showHome(); // Fall back to home
+    }
+    
+    @FXML
+    private void showMyBookings() {
+        clearContentArea();
+        try {
+            if (currentCustomer == null) {
+                showAlert("Error", "Customer information not available.");
+                return;
+            }
             
-            card.setOnMouseExited(e -> {
-                card.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0;");
-            });
+            // Load the FXML file directly into content area
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/myBookings.fxml"));
+            Parent myBookingsContent = loader.load();
+            
+            // Pass data to controller if it exists
+            Object controller = loader.getController();
+            if (controller instanceof MyBookingsController) {
+                ((MyBookingsController) controller).setUserData(currentCustomer);
+            }
+            
+            contentArea.getChildren().add(myBookingsContent);
+            System.out.println("My Bookings loaded successfully in content area!");
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Error", "Failed to load My Bookings: " + e.getMessage());
+            showHome();
         }
     }
     
-    private void loadUserData() {
-        // Simulate loading user data - replace with actual database calls
-        totalBookingsLabel.setText("12");
-        upcomingTripsLabel.setText("3");
-        pointsLabel.setText("450");
-    }
-    
-    private void navigateToBookingPage() {
-        System.out.println("Navigating to Booking Page...");
-        showAlert("Feature Coming Soon", "Booking feature will be available soon!");
-    }
-    
-    private void navigateToMyBookings() {
-        System.out.println("Navigating to My Bookings...");
+    @FXML
+    private void showHistory() {
+        clearContentArea();
         try {
             if (currentCustomer == null) {
-                showAlert("Error", "Customer information not available. Please login again.");
+                showAlert("Error", "Customer information not available.");
                 return;
             }
-        
-            // Get the current stage
-            Stage currentStage = (Stage) myBookingsCard.getScene().getWindow();
-        
-            // Launch the My Bookings page
-            MyBookingsController.show(currentStage, currentUsername, currentCustomer);
-        
+            
+            // Load the FXML file directly
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/booking-history.fxml"));
+            Parent historyContent = loader.load();
+            
+            // Pass data to controller if it exists
+            Object controller = loader.getController();
+            if (controller instanceof BookingHistoryController) {
+                ((BookingHistoryController) controller).setUserData(currentCustomer);
+            }
+            
+            contentArea.getChildren().add(historyContent);
+            System.out.println("Booking History loaded successfully!");
+            
         } catch (Exception e) {
-            System.err.println("Error navigating to My Bookings: " + e.getMessage());
             e.printStackTrace();
-            showAlert("Error", "Failed to load My Bookings page: " + e.getMessage());
+            showAlert("Error", "Failed to load Booking History: " + e.getMessage());
+            showHome();
         }
     }
     
-    private void navigateToProfile() {
-        System.out.println("Navigating to Profile...");
-    
+    @FXML
+    private void showProfile() {
+        clearContentArea();
         try {
             if (currentCustomer == null) {
-                showAlert("Error", "Customer information not available. Please login again.");
+                showAlert("Error", "Customer information not available.");
                 return;
             }
-        
-            // Get the current stage
-            Stage currentStage = (Stage) profileCard.getScene().getWindow();
-        
-            // Launch the update profile page
-            UpdateProfileController.show(currentStage, currentUsername, currentCustomer);
-        
+            
+            // Load the FXML file directly
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/update-profile.fxml"));
+            Parent profileContent = loader.load();
+            
+            // Pass data to controller if it exists
+            Object controller = loader.getController();
+            if (controller instanceof UpdateProfileController) {
+                ((UpdateProfileController) controller).setUserData(currentUsername, primaryStage, currentCustomer);
+            }
+            
+            contentArea.getChildren().add(profileContent);
+            System.out.println("Profile loaded successfully!");
+            
         } catch (Exception e) {
-            System.err.println("Error navigating to profile: " + e.getMessage());
             e.printStackTrace();
-            showAlert("Error", "Failed to load profile page: " + e.getMessage());
+            showAlert("Error", "Failed to load Profile: " + e.getMessage());
+            showHome();
         }
     }
     
-    private void navigateToHistory() {
-        System.out.println("Navigating to Booking History...");
-        showAlert("Feature Coming Soon", "Booking history feature will be available soon!");
-    }
-    
-    private void navigateToSupport() {
-        System.out.println("Navigating to Support...");
-    
-         try {
+    @FXML
+    private void showSupport() {
+        clearContentArea();
+        try {
             if (currentCustomer == null) {
-                showAlert("Error", "Customer information not available. Please login again.");
+                showAlert("Error", "Customer information not available.");
                 return;
             }
-        
-            // Get the current stage
-            Stage currentStage = (Stage) supportCard.getScene().getWindow();
-        
-            // Launch the customer support page
-            CustomerSupportController.show(currentStage, currentUsername, currentCustomer);
-        
+            
+            // Load the FXML file directly
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/customer-support.fxml"));
+            Parent supportContent = loader.load();
+            
+            // Pass data to controller if it exists
+            Object controller = loader.getController();
+            if (controller instanceof CustomerSupportController) {
+                ((CustomerSupportController) controller).setCustomerData(currentUsername, currentCustomer);
+            }
+            
+            contentArea.getChildren().add(supportContent);
+            System.out.println("Support loaded successfully!");
+            
         } catch (Exception e) {
-            System.err.println("Error navigating to support: " + e.getMessage());
             e.printStackTrace();
-            showAlert("Error", "Failed to load support page: " + e.getMessage());
+            showAlert("Error", "Failed to load Support: " + e.getMessage());
+            showHome();
         }
     }
     
-    private void navigateToSettings() {
-        System.out.println("Navigating to Settings...");
+    @FXML
+    private void showSettings() {
+        clearContentArea();
         showAlert("Feature Coming Soon", "Settings feature will be available soon!");
+        showHome(); // Fall back to home
     }
     
-    private void navigateToMainPage() {
-        try {
-            // Use the static show method from MainController
-            MainController.show(primaryStage);
-            
-        } catch (Exception e) {
-            System.err.println("Error navigating to main page: " + e.getMessage());
-            e.printStackTrace();
-        }
+    private void clearContentArea() {
+        contentArea.getChildren().clear();
     }
     
+    @FXML
     private void handleLogout() {
         try {
             System.out.println("Logging out user: " + currentUsername);
-            
-            // Use the static show method from LoginController
             CustomerLoginController.show(primaryStage);
-            
         } catch (Exception e) {
             System.err.println("Error during logout: " + e.getMessage());
             e.printStackTrace();
@@ -237,7 +309,6 @@ public class DashboardController implements Initializable {
         alert.showAndWait();
     }
 
-    // ADD THIS HELPER METHOD
     private static void showErrorAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");

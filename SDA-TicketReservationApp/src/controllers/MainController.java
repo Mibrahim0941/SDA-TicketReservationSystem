@@ -38,6 +38,7 @@ public class MainController {
             Scene scene = new Scene(root, 900, 700);
             
             // Load CSS styles
+            
             scene.getStylesheets().add(MainController.class.getResource("/ui/style.css").toExternalForm());
             scene.getStylesheets().add(MainController.class.getResource("/ui/mainpage.css").toExternalForm());
             

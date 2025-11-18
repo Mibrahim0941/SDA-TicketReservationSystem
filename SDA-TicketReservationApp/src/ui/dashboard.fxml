@@ -3,8 +3,9 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
@@ -13,79 +14,135 @@
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" 
             fx:controller="controllers.DashboardController" stylesheets="@dashboard.css">
    
-   <center>
-      <VBox spacing="30" alignment="TOP_CENTER" style="-fx-padding: 50;">
-         <!-- Header Section -->
-         <VBox spacing="15" alignment="CENTER">
-            <Text fx:id="welcomeTitle" text="Welcome to Dashboard" styleClass="dashboard-title"/>
-            <Text fx:id="userGreeting" text="Hello, User! 👋" styleClass="dashboard-subtitle"/>
-         </VBox>
-
-         <!-- Features Grid -->
-         <GridPane fx:id="featuresGrid" hgap="20" vgap="20" alignment="CENTER">
+   <!-- Left Sidebar -->
+   <left>
+      <ScrollPane styleClass="sidebar-scroll" fitToWidth="true" vbarPolicy="AS_NEEDED" hbarPolicy="NEVER">
+         <VBox fx:id="sidebar" spacing="20" styleClass="sidebar" prefWidth="280">
             <padding>
-               <Insets top="30" bottom="30" />
+               <Insets top="30" bottom="30" left="25" right="25"/>
             </padding>
             
-            <!-- Row 1 -->
-            <VBox fx:id="bookTicketsCard" styleClass="feature-card" GridPane.columnIndex="0" GridPane.rowIndex="0">
-               <Label text="🎫 Book Tickets" styleClass="feature-title"/>
-               <Label text="Browse and book tickets for events, movies, and more" styleClass="feature-description" wrapText="true"/>
+            <!-- User Info Section -->
+            <VBox spacing="15" alignment="CENTER_LEFT">
+               <Text text="Customer Profile" styleClass="sidebar-main-title"/>
+               <Separator prefWidth="230"/>
+               
+               <VBox spacing="8" styleClass="user-info-section">
+                  <Text text="Personal Information" styleClass="sidebar-section-title"/>
+                  <VBox spacing="4" styleClass="info-item">
+                     <Label text="Customer ID:" styleClass="info-label"/>
+                     <Label fx:id="customerIdLabel" text="Loading..." styleClass="info-value"/>
+                  </VBox>
+                  <VBox spacing="4" styleClass="info-item">
+                     <Label text="Member Since:" styleClass="info-label"/>
+                     <Label fx:id="memberSinceLabel" text="Loading..." styleClass="info-value"/>
+                  </VBox>
+                  <VBox spacing="4" styleClass="info-item">
+                     <Label text="Status:" styleClass="info-label"/>
+                     <Label fx:id="statusLabel" text="Loading..." styleClass="info-value status-active"/>
+                  </VBox>
+               </VBox>
+               
+               <Separator prefWidth="230"/>
             </VBox>
-            
-            <VBox fx:id="myBookingsCard" styleClass="feature-card" GridPane.columnIndex="1" GridPane.rowIndex="0">
-               <Label text="📋 My Bookings" styleClass="feature-title"/>
-               <Label text="View and manage your existing bookings" styleClass="feature-description" wrapText="true"/>
-            </VBox>
-            
-            <!-- Row 2 -->
-            <VBox fx:id="profileCard" styleClass="feature-card" GridPane.columnIndex="0" GridPane.rowIndex="1">
-               <Label text="👤 My Profile" styleClass="feature-title"/>
-               <Label text="Update your personal information and preferences" styleClass="feature-description" wrapText="true"/>
-            </VBox>
-            
-            <VBox fx:id="historyCard" styleClass="feature-card" GridPane.columnIndex="1" GridPane.rowIndex="1">
-               <Label text="📊 Booking History" styleClass="feature-title"/>
-               <Label text="View your past bookings and transactions" styleClass="feature-description" wrapText="true"/>
-            </VBox>
-            
-            <!-- Row 3 - Additional Features -->
-            <VBox fx:id="supportCard" styleClass="feature-card" GridPane.columnIndex="0" GridPane.rowIndex="2">
-               <Label text="💬 Support" styleClass="feature-title"/>
-               <Label text="Get help and contact customer support" styleClass="feature-description" wrapText="true"/>
-            </VBox>
-            
-            <VBox fx:id="settingsCard" styleClass="feature-card" GridPane.columnIndex="1" GridPane.rowIndex="2">
-               <Label text="⚙️ Settings" styleClass="feature-title"/>
-               <Label text="Customize your app preferences" styleClass="feature-description" wrapText="true"/>
-            </VBox>
-         </GridPane>
 
-         <!-- Action Buttons -->
-         <HBox spacing="15" alignment="CENTER">
-            <Button fx:id="bookNowButton" text="🎟️ Book Now" styleClass="primary-button"/>
-            <Button fx:id="logoutButton" text="🚪 Logout" styleClass="secondary-button"/>
-            <Button fx:id="mainPageButton" text="🏠 Main Page" styleClass="secondary-button"/>
-         </HBox>
+            <!-- Navigation Menu -->
+            <VBox spacing="12" styleClass="nav-menu">
+               <Text text="Navigation" styleClass="sidebar-section-title"/>
+               
+               <VBox spacing="8">
+                  <!-- Home/Overview -->
+                  <Button fx:id="homeButton" text="🏠 Home" styleClass="nav-button"/>
+                  
+                  <!-- Bookings Section -->
+                  <VBox spacing="4" styleClass="nav-subsection">
+                     <Text text="Bookings" styleClass="nav-subsection-title"/>
+                     <Button fx:id="bookTicketsButton" text="🎫 Book Tickets" styleClass="nav-button"/>
+                     <Button fx:id="myBookingsButton" text="📋 My Bookings" styleClass="nav-button"/>
+                     <Button fx:id="historyButton" text="📊 Booking History" styleClass="nav-button"/>
+                  </VBox>
+                  
+                  <!-- Account Section -->
+                  <VBox spacing="4" styleClass="nav-subsection">
+                     <Text text="Account" styleClass="nav-subsection-title"/>
+                     <Button fx:id="profileButton" text="👤 My Profile" styleClass="nav-button"/>
+                     <Button fx:id="settingsButton" text="⚙️ Settings" styleClass="nav-button"/>
+                  </VBox>
+                  
+                  <!-- Support Section -->
+                  <VBox spacing="4" styleClass="nav-subsection">
+                     <Text text="Support" styleClass="nav-subsection-title"/>
+                     <Button fx:id="supportButton" text="💬 Customer Support" styleClass="nav-button"/>
+                  </VBox>
+               </VBox>
+            </VBox>
 
-         <!-- Quick Stats -->
-         <VBox spacing="10" alignment="CENTER" style="-fx-padding: 20; -fx-background-color: #f8fafc; -fx-background-radius: 15;">
-            <Label text="Quick Stats" styleClass="stats-title"/>
-            <HBox spacing="30" alignment="CENTER">
-               <VBox alignment="CENTER" spacing="5">
-                  <Label fx:id="totalBookingsLabel" text="0" styleClass="stat-number"/>
-                  <Label text="Total Bookings" styleClass="stat-label"/>
+            <!-- Quick Stats in Sidebar -->
+            <VBox spacing="12" styleClass="sidebar-stats">
+               <Text text="Quick Stats" styleClass="sidebar-section-title"/>
+               <VBox spacing="8">
+                  <HBox spacing="15" alignment="CENTER_LEFT">
+                     <VBox alignment="CENTER_LEFT" spacing="2">
+                        <Label fx:id="totalBookingsLabel" text="0" styleClass="sidebar-stat-number"/>
+                        <Label text="Total Bookings" styleClass="sidebar-stat-label"/>
+                     </VBox>
+                     <VBox alignment="CENTER_LEFT" spacing="2">
+                        <Label fx:id="upcomingTripsLabel" text="0" styleClass="sidebar-stat-number"/>
+                        <Label text="Upcoming Trips" styleClass="sidebar-stat-label"/>
+                     </VBox>
+                  </HBox>
+                  <HBox spacing="15" alignment="CENTER_LEFT">
+                     <VBox alignment="CENTER_LEFT" spacing="2">
+                        <Label fx:id="pointsLabel" text="0" styleClass="sidebar-stat-number"/>
+                        <Label text="Reward Points" styleClass="sidebar-stat-label"/>
+                     </VBox>
+                  </HBox>
                </VBox>
-               <VBox alignment="CENTER" spacing="5">
-                  <Label fx:id="upcomingTripsLabel" text="0" styleClass="stat-number"/>
-                  <Label text="Upcoming Trips" styleClass="stat-label"/>
-               </VBox>
-               <VBox alignment="CENTER" spacing="5">
-                  <Label fx:id="pointsLabel" text="0" styleClass="stat-number"/>
-                  <Label text="Reward Points" styleClass="stat-label"/>
-               </VBox>
-            </HBox>
+            </VBox>
+
+            <!-- Logout Button -->
+            <Button fx:id="logoutButton" text="🚪 Logout" styleClass="logout-button"/>
          </VBox>
-      </VBox>
+      </ScrollPane>
+   </left>
+
+   <!-- Main Content Area -->
+   <center>
+      <ScrollPane fx:id="contentScrollPane" fitToWidth="true" fitToHeight="true" 
+                  vbarPolicy="AS_NEEDED" hbarPolicy="NEVER" styleClass="content-scroll">
+         <VBox fx:id="contentArea" spacing="25" alignment="TOP_LEFT" styleClass="content-area">
+            <padding>
+               <Insets top="40" right="40" bottom="40" left="40"/>
+            </padding>
+            
+            <!-- Home Content (Default) -->
+            <VBox fx:id="homeContent" styleClass="content-section">
+               <!-- Welcome Section -->
+               <VBox spacing="15" alignment="TOP_LEFT">
+                  <Text fx:id="welcomeTitle" text="Welcome Back!" styleClass="content-main-title"/>
+                  <Text fx:id="userGreeting" text="Hello, Customer! Ready to book your next journey? 🚌" styleClass="content-subtitle"/>
+               </VBox>
+
+               <!-- Quick Actions -->
+               <VBox spacing="15" styleClass="quick-actions-section">
+                  <Text text="Quick Actions" styleClass="section-title"/>
+                  <HBox spacing="15" alignment="CENTER_LEFT">
+                     <Button fx:id="bookNowButton" text="🎟️ Book Tickets Now" styleClass="primary-button" onAction="#showBookTickets"/>
+                     <Button fx:id="viewBookingsButton" text="📋 View My Bookings" styleClass="secondary-button" onAction="#showMyBookings"/>
+                  </HBox>
+               </VBox>
+
+               <!-- Recent Activity -->
+               <VBox spacing="15" styleClass="activity-section">
+                  <Text text="Recent Activity" styleClass="section-title"/>
+                  <VBox fx:id="recentActivityContainer" spacing="10" styleClass="activity-list">
+                     <Text text="• Booked trip to Islamabad - 2 days ago" styleClass="activity-item"/>
+                     <Text text="• Updated profile information - 1 week ago" styleClass="activity-item"/>
+                     <Text text="• Earned 50 reward points - 2 weeks ago" styleClass="activity-item"/>
+                  </VBox>
+               </VBox>
+            </VBox>
+         </VBox>
+      </ScrollPane>
    </center>
 </BorderPane>

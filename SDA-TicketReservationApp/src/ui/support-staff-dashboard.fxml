@@ -30,16 +30,7 @@
                <Insets top="10" bottom="10" />
             </padding>
             
-            <!-- Row 1 -->
-            <VBox fx:id="viewQueriesCard" styleClass="feature-card" GridPane.columnIndex="0" GridPane.rowIndex="0">
-               <Label text="📋 View Queries" styleClass="feature-title"/>
-               <Label text="Browse customer inquiries" styleClass="feature-description" wrapText="true"/>
-            </VBox>
-            
-            <VBox fx:id="answerQueriesCard" styleClass="feature-card" GridPane.columnIndex="1" GridPane.rowIndex="0">
-               <Label text="💬 Answer Queries" styleClass="feature-title"/>
-               <Label text="Respond to questions" styleClass="feature-description" wrapText="true"/>
-            </VBox>
+           
          </GridPane>
 
          <!-- Customer Queries Section -->

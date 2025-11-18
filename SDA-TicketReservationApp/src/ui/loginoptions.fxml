@@ -12,7 +12,7 @@
       <Insets bottom="50.0" left="50.0" right="50.0" top="50.0" />
    </padding>
    <style>
-      -fx-background-color: linear-gradient(to bottom right, #f0f9ff, #e0f2fe);
+      -fx-background-color: linear-gradient(to bottom right, #F5EFE7, #FFFDF9);
    </style>
    
    <!-- Login Type Container -->
