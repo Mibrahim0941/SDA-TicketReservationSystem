@@ -1,0 +1,197 @@
+/* Main container styling */
+.root {
+    -fx-background-color: #f8fafc;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+/* Booking Card Styling */
+.booking-card {
+    -fx-background-color: white;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 2);
+    -fx-padding: 20px;
+    -fx-spacing: 15px;
+}
+
+.booking-card:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 15, 0, 0, 3);
+    -fx-border-color: #cbd5e1;
+}
+
+/* Header Section */
+.booking-header {
+    -fx-spacing: 10px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.booking-id {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1e293b;
+}
+
+.status-badges {
+    -fx-spacing: 8px;
+}
+
+.status {
+    -fx-padding: 4px 12px;
+    -fx-background-radius: 20px;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+/* Status Colors */
+.status-confirmed {
+    -fx-background-color: #10b981;
+}
+
+.status-pending {
+    -fx-background-color: #f59e0b;
+}
+
+.status-cancelled {
+    -fx-background-color: #ef4444;
+}
+
+.status-completed {
+    -fx-background-color: #3b82f6;
+}
+
+.status-paid {
+    -fx-background-color: #10b981;
+}
+
+.status-unpaid {
+    -fx-background-color: #ef4444;
+}
+
+.status-pending-payment {
+    -fx-background-color: #f59e0b;
+}
+
+/* Route Information */
+.route-info {
+    -fx-spacing: 8px;
+}
+
+.route {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1e293b;
+}
+
+.schedule {
+    -fx-font-size: 14px;
+    -fx-text-fill: #475569;
+}
+
+.class {
+    -fx-font-size: 14px;
+    -fx-text-fill: #64748b;
+    -fx-font-style: italic;
+}
+
+/* Details Section */
+.booking-details {
+    -fx-spacing: 10px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.details-left {
+    -fx-spacing: 5px;
+}
+
+.booking-date {
+    -fx-font-size: 13px;
+    -fx-text-fill: #64748b;
+}
+
+.price {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #059669;
+}
+
+/* Action Buttons */
+.action-buttons {
+    -fx-spacing: 10px;
+}
+
+.btn-primary {
+    -fx-background-color: #3b82f6;
+    -fx-text-fill: white;
+    -fx-background-radius: 8px;
+    -fx-padding: 8px 16px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.btn-primary:hover {
+    -fx-background-color: #2563eb;
+}
+
+.btn-pay {
+    -fx-background-color: #10b981;
+    -fx-text-fill: white;
+    -fx-background-radius: 8px;
+    -fx-padding: 8px 16px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.btn-pay:hover {
+    -fx-background-color: #059669;
+}
+
+.btn-danger {
+    -fx-background-color: #ef4444;
+    -fx-text-fill: white;
+    -fx-background-radius: 8px;
+    -fx-padding: 8px 16px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.btn-danger:hover {
+    -fx-background-color: #dc2626;
+}
+
+.btn-secondary {
+    -fx-background-color: #64748b;
+    -fx-text-fill: white;
+    -fx-background-radius: 8px;
+    -fx-padding: 8px 16px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.btn-secondary:hover {
+    -fx-background-color: #475569;
+}
+
+/* Filter Controls */
+.combo-box {
+    -fx-background-color: white;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+}
+
+.text-field {
+    -fx-background-color: white;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px;
+}
+
+/* No Bookings Text */
+.no-bookings {
+    -fx-text-alignment: center;
+    -fx-alignment: center;
+}

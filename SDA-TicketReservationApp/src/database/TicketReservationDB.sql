@@ -361,3 +361,7 @@ INSERT INTO Booking (CustomerID, ReservationID, TotalAmount, Status, PaymentID) 
 ('CUST-7a8a92bf-26a2-4f39-8fc1-075e151af615', 9, 190.00, 'Confirmed', 9),
 ('CUST-029de333-c535-4172-953c-37dee5231046', 10, 460.00, 'Confirmed', 10);
 GO
+
+select*from Users
+select * from booking
+select * from Reservation

@@ -132,7 +132,23 @@ public class DashboardController implements Initializable {
     
     private void navigateToMyBookings() {
         System.out.println("Navigating to My Bookings...");
-        showAlert("Feature Coming Soon", "My Bookings feature will be available soon!");
+        try {
+            if (currentCustomer == null) {
+                showAlert("Error", "Customer information not available. Please login again.");
+                return;
+            }
+        
+            // Get the current stage
+            Stage currentStage = (Stage) myBookingsCard.getScene().getWindow();
+        
+            // Launch the My Bookings page
+            MyBookingsController.show(currentStage, currentUsername, currentCustomer);
+        
+        } catch (Exception e) {
+            System.err.println("Error navigating to My Bookings: " + e.getMessage());
+            e.printStackTrace();
+            showAlert("Error", "Failed to load My Bookings page: " + e.getMessage());
+        }
     }
     
     private void navigateToProfile() {

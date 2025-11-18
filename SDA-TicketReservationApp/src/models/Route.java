@@ -75,6 +75,7 @@ public class Route {
         if (schedule != null && !schedules.contains(schedule)) {
             schedules.add(schedule);
         }
+        
     }
     
     public ArrayList<Schedule> getAllSchedules() {
