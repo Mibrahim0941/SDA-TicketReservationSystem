@@ -8,9 +8,6 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" 
             fx:controller="controllers.ManageSchedulesController">
-    <stylesheets>
-        <URL value="@manage-schedules.css" />
-    </stylesheets>
     
     <top>
         <VBox styleClass="header">
@@ -53,11 +50,11 @@
                     <VBox spacing="15" styleClass="route-selection">
                         <VBox spacing="8">
                             <HBox spacing="8" alignment="CENTER_LEFT">
-                                <Text text="Select Route" styleClass="form-label"/>
+                                <Label text="Select Route" styleClass="form-label"/>
                                 <Text text="*" styleClass="required-indicator"/>
                             </HBox>
                             <ComboBox fx:id="routeComboBox" styleClass="modern-combo" promptText="Choose a route..."/>
-                            <Text text="Select the route for this schedule" styleClass="field-hint"/>
+                            <Label text="Select the route for this schedule" styleClass="field-hint"/>
                         </VBox>
                     </VBox>
                     
@@ -65,40 +62,40 @@
                     <VBox spacing="20" styleClass="form-fields">
                         <VBox spacing="8">
                             <HBox spacing="8" alignment="CENTER_LEFT">
-                                <Text text="Schedule Date" styleClass="form-label"/>
+                                <Label text="Schedule Date" styleClass="form-label"/>
                                 <Text text="*" styleClass="required-indicator"/>
                             </HBox>
                             <DatePicker fx:id="datePicker" styleClass="modern-datepicker"/>
-                            <Text text="Select the departure date" styleClass="field-hint"/>
+                            <Label text="Select the departure date" styleClass="field-hint"/>
                         </VBox>
                         
                         <HBox spacing="15" alignment="CENTER_LEFT">
                             <VBox spacing="8" HBox.hgrow="ALWAYS">
                                 <HBox spacing="8" alignment="CENTER_LEFT">
-                                    <Text text="Departure Time" styleClass="form-label"/>
+                                    <Label text="Departure Time" styleClass="form-label"/>
                                     <Text text="*" styleClass="required-indicator"/>
                                 </HBox>
                                 <TextField fx:id="departureField" promptText="HH:mm (e.g., 14:30)" styleClass="modern-field"/>
-                                <Text text="24-hour format" styleClass="field-hint"/>
+                                <Label text="24-hour format" styleClass="field-hint"/>
                             </VBox>
                             
                             <VBox spacing="8" HBox.hgrow="ALWAYS">
                                 <HBox spacing="8" alignment="CENTER_LEFT">
-                                    <Text text="Arrival Time" styleClass="form-label"/>
+                                    <Label text="Arrival Time" styleClass="form-label"/>
                                     <Text text="*" styleClass="required-indicator"/>
                                 </HBox>
                                 <TextField fx:id="arrivalField" promptText="HH:mm (e.g., 16:45)" styleClass="modern-field"/>
-                                <Text text="24-hour format" styleClass="field-hint"/>
+                                <Label text="24-hour format" styleClass="field-hint"/>
                             </VBox>
                         </HBox>
                         
                         <VBox spacing="8">
                             <HBox spacing="8" alignment="CENTER_LEFT">
-                                <Text text="Class Type" styleClass="form-label"/>
+                                <Label text="Class Type" styleClass="form-label"/>
                                 <Text text="*" styleClass="required-indicator"/>
                             </HBox>
                             <ComboBox fx:id="classComboBox" styleClass="modern-combo" promptText="Select class type..."/>
-                            <Text text="Choose the service class" styleClass="field-hint"/>
+                            <Label text="Choose the service class" styleClass="field-hint"/>
                         </VBox>
                     </VBox>
                     
@@ -115,7 +112,7 @@
                     <!-- Schedule Details -->
                     <VBox spacing="12" styleClass="details-section">
                         <HBox spacing="8" alignment="CENTER_LEFT">
-                            <Text text="Schedule Details" styleClass="section-title"/>
+                            <Label text="Schedule Details" styleClass="section-title"/>
                             <Text text="(Read-only)" styleClass="read-only-indicator"/>
                         </HBox>
                         <TextArea fx:id="scheduleDetailsArea" editable="false" wrapText="true" 
@@ -138,13 +135,13 @@
                                 <Text text="📅" styleClass="table-icon"/>
                             </StackPane>
                             <VBox spacing="2">
-                                <Text text="All Schedules" styleClass="section-title"/>
-                                <Text text="Manage your departure schedules" styleClass="section-subtitle"/>
+                                <Label text="All Schedules" styleClass="section-title"/>
+                                <Label text="Manage your departure schedules" styleClass="section-subtitle"/>
                             </VBox>
                             <Region HBox.hgrow="ALWAYS"/>
                             <VBox spacing="2" alignment="CENTER_RIGHT">
-                                <Text fx:id="tableCount" text="Showing 0 schedules" styleClass="table-count"/>
-                                <Text text="Click on a schedule to view details" styleClass="table-hint"/>
+                                <Label fx:id="tableCount" text="Showing 0 schedules" styleClass="table-count"/>
+                                <Label text="Click on a schedule to view details" styleClass="table-hint"/>
                             </VBox>
                         </HBox>
                         
@@ -172,8 +169,8 @@
                     
                     <!-- Table Footer -->
                     <HBox spacing="15" alignment="CENTER_RIGHT" styleClass="table-footer">
-                        <Text text="Total schedules in system:" styleClass="footer-text"/>
-                        <Text fx:id="totalSchedulesCount" text="0" styleClass="footer-count"/>
+                        <Label text="Total schedules in system:" styleClass="footer-text"/>
+                        <Label fx:id="totalSchedulesCount" text="0" styleClass="footer-count"/>
                         <Region HBox.hgrow="ALWAYS"/>
                         <Button text="Export to CSV" styleClass="outline-button"/>
                         <Button text="Print Report" styleClass="outline-button"/>
