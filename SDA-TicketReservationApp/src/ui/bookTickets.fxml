@@ -12,7 +12,9 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<BorderPane style="-fx-background-color: #F5EFE7;" stylesheets="@../ui/BookTickets.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.BookTicketsController">
+<BorderPane style="-fx-background-color: #F5EFE7;" stylesheets="@../ui/BookTickets.css" 
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="controllers.BookTicketsController">
 
     <padding>
         <Insets bottom="20" left="20" right="20" top="20" />
@@ -21,16 +23,15 @@
     <top>
         <VBox spacing="15">
             <HBox alignment="CENTER_LEFT" spacing="15">
-                <Button fx:id="backToRoutesButton" styleClass="btn-icon" text="← Routes" visible="false" managed="false" />
-                <Button fx:id="backToSchedulesButton" styleClass="btn-icon" text="← Schedules" visible="false" managed="false" />
+                <Button fx:id="backButton" styleClass="btn-icon" text="← Back" visible="false" managed="false" />
                 
                 <VBox>
                     <Text fx:id="pageTitle" styleClass="page-title" text="Book Tickets" />
-                    <Label text="Find your next journey" styleClass="page-subtitle"/>
+                    <Label fx:id="subTitle" styleClass="page-subtitle" text="Select a Route" />
                 </VBox>
             </HBox>
 
-            <HBox fx:id="searchBarContainer" alignment="CENTER_LEFT" spacing="15" styleClass="search-card">
+            <HBox fx:id="searchLayer" alignment="CENTER_LEFT" spacing="15" styleClass="search-card">
                 <padding>
                     <Insets bottom="15" left="20" right="20" top="15" />
                 </padding>
@@ -46,11 +47,11 @@
                 </VBox>
 
                 <VBox alignment="BOTTOM_LEFT">
-                    <Button fx:id="searchButton" styleClass="btn-primary" text="Search Routes" />
+                    <Button fx:id="searchButton" styleClass="btn-primary" text="Search" />
                 </VBox>
 
                 <VBox alignment="BOTTOM_LEFT">
-                    <Button fx:id="clearSearchButton" styleClass="btn-secondary" text="Clear" />
+                    <Button fx:id="clearButton" styleClass="btn-secondary" text="Reset" />
                 </VBox>
             </HBox>
             <Separator />
@@ -58,50 +59,39 @@
     </top>
 
     <center>
-        <StackPane fx:id="contentArea" style="-fx-padding: 10 0 10 0;">
+        <StackPane fx:id="mainStack" style="-fx-padding: 10 0 0 0;">
             
-            <ScrollPane fitToWidth="true" styleClass="transparent-scroll">
+            <ScrollPane fx:id="routeLayer" fitToWidth="true" styleClass="transparent-scroll">
                 <VBox fx:id="routesContainer" spacing="15" />
             </ScrollPane>
 
-            <ScrollPane fitToWidth="true" styleClass="transparent-scroll">
-                <VBox fx:id="schedulesContainer" spacing="15" visible="false" />
+            <ScrollPane fx:id="scheduleLayer" fitToWidth="true" styleClass="transparent-scroll" visible="false">
+                <VBox fx:id="schedulesContainer" spacing="15" />
             </ScrollPane>
 
-            <VBox fx:id="seatsContainer" alignment="TOP_CENTER" spacing="15" visible="false" />
-            
+            <ScrollPane fx:id="seatLayer" fitToWidth="true" styleClass="transparent-scroll" visible="false">
+                <VBox fx:id="seatsContainer" alignment="TOP_CENTER" spacing="15" />
+            </ScrollPane>
+
         </StackPane>
     </center>
 
     <bottom>
-        <VBox styleClass="summary-card">
+        <VBox fx:id="summaryLayer" styleClass="summary-card" visible="false">
             <padding>
                 <Insets bottom="15" left="20" right="20" top="15" />
             </padding>
-            
-            <HBox alignment="CENTER_LEFT" spacing="30">
+            <HBox alignment="CENTER_LEFT" spacing="20">
                 <VBox spacing="2">
-                    <Label styleClass="summary-label" text="SELECTED ROUTE" />
-                    <Text fx:id="selectedRouteText" styleClass="summary-value" text="Route: Not selected" />
-                </VBox>
-                
-                <Separator orientation="VERTICAL" />
-                
-                <VBox spacing="2">
-                    <Label styleClass="summary-label" text="SELECTED SCHEDULE" />
-                    <Text fx:id="selectedScheduleText" styleClass="summary-value" text="Schedule: Not selected" />
-                </VBox>
-                
-                <Separator orientation="VERTICAL" />
-
-                <VBox spacing="2" HBox.hgrow="ALWAYS">
                     <Label styleClass="summary-label" text="SELECTED SEATS" />
-                    <Text fx:id="selectedSeatsText" styleClass="summary-value" text="Seats: None" />
+                    <Text fx:id="lblSelectedSeats" styleClass="summary-value" text="None" />
                 </VBox>
-
+                
+                <HBox HBox.hgrow="ALWAYS" />
+                
                 <VBox alignment="CENTER_RIGHT" spacing="5">
-                    <Text fx:id="totalPriceText" styleClass="total-price" text="Total: PKR 0.00" />
-                    <Button fx:id="bookNowButton" disable="true" styleClass="btn-confirm" text="Book Now" />
+                    <Text fx:id="lblTotalPrice" styleClass="total-price" text="PKR 0.00" />
+                    <Button fx:id="btnConfirm" disable="true" styleClass="btn-confirm" text="Confirm Booking" />
                 </VBox>
             </HBox>
         </VBox>

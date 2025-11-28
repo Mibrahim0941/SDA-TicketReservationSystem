@@ -246,17 +246,17 @@ public class RouteCatalog {
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, route.getRouteID());
             ResultSet rs = pstmt.executeQuery();
-            
+            System.out.println("Loading schedules for route " + route.getRouteID());
             while (rs.next()) {
                 String scheduleId = rs.getString("ScheduleID");
                 LocalDate date = rs.getDate("Date").toLocalDate();
                 LocalTime departureTime = rs.getTime("DepartureTime").toLocalTime();
                 LocalTime arrivalTime = rs.getTime("ArrivalTime").toLocalTime();
                 String scheduleClass = rs.getString("Class");
-                double typePercentage = rs.getDouble("TypePercentage");
-                
+                //double typePercentage = rs.getDouble("TypePercentage");
+                System.out.println("  Loaded schedule " + scheduleId + " for route " + route.getRouteID());
                 Schedule schedule = new Schedule(scheduleId, date, departureTime, arrivalTime, scheduleClass);
-                schedule.setTypePercentage(typePercentage);
+                //schedule.setTypePercentage(typePercentage);
                 route.addSchedule(schedule);
             }
         } catch (SQLException e) {

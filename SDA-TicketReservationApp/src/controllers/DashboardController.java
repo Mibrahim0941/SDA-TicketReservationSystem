@@ -160,6 +160,7 @@ public class DashboardController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/bookTickets.fxml"));
             Parent bookTicketsContent = loader.load();
             
+<<<<<<< Updated upstream
             // Note: Ensure BookTicketsController class exists and has setUserData
             // If you don't have this controller yet, remove this block
              Object controller = loader.getController();
@@ -170,6 +171,15 @@ public class DashboardController implements Initializable {
              } catch (Exception ex) {
                  System.out.println("Controller does not have setUserData method or class mismatch: " + ex.getMessage());
              }
+=======
+            // Apply CSS
+            bookTicketsContent.getStylesheets().add(getClass().getResource("/ui/BookTickets.css").toExternalForm());
+            
+            Object controller = loader.getController();
+            if (controller instanceof BookTicketsController) {
+                ((BookTicketsController) controller).setUserData(currentUsername, currentCustomer);
+            }
+>>>>>>> Stashed changes
             
             contentArea.getChildren().add(bookTicketsContent);
             

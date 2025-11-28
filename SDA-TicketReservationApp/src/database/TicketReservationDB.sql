@@ -130,6 +130,7 @@ CREATE TABLE Route (
 );
 GO
 
+
 -- Schedule Table
 CREATE TABLE Schedule (
     ScheduleID INT IDENTITY(1,1) PRIMARY KEY,
@@ -222,9 +223,9 @@ GO
 -- Insert into Schedule Table
 INSERT INTO Schedule (RouteID, Date, DepartureTime, ArrivalTime, Class) VALUES
 -- Route 1: New York to Los Angeles
-(1, '2024-02-15', '08:00', '11:00', 'Economy'),
-(1, '2024-02-15', '14:00', '17:00', 'Business'),
-(1, '2024-02-16', '09:00', '12:00', 'First'),
+(17, '2026-02-15', '08:00', '11:00', 'Economy'),
+(17, '2026-02-15', '14:00', '17:00', 'Business'),
+(17, '2026-02-16', '09:00', '12:00', 'First')
 
 -- Route 2: Chicago to Miami
 (2, '2024-02-16', '10:30', '13:30', 'Economy'),
@@ -244,15 +245,15 @@ GO
 -- Insert into Seat Table
 -- Schedule 1 (Economy)
 INSERT INTO Seat (ScheduleID, SeatNumber, SeatType, Availability, PriceAdjustment) VALUES
-(1, '1A', 'Economy', 1, 0.0),
-(1, '1B', 'Economy', 1, 0.0),
-(1, '1C', 'Economy', 0, 0.0),
-(1, '2A', 'Economy', 1, 0.0),
-(1, '2B', 'Economy', 1, 0.0),
-(1, '2C', 'Economy', 1, 0.0),
-(1, '3A', 'Economy', 1, 0.0),
-(1, '3B', 'Economy', 1, 0.0),
-(1, '3C', 'Economy', 0, 0.0);
+(13, '1A', 'Economy', 1, 0.0),
+(13, '1B', 'Economy', 1, 0.0),
+(13, '1C', 'Economy', 0, 0.0),
+(13, '2A', 'Economy', 1, 0.0),
+(13, '2B', 'Economy', 1, 0.0),
+(13, '2C', 'Economy', 1, 0.0),
+(13, '3A', 'Economy', 1, 0.0),
+(13, '3B', 'Economy', 1, 0.0),
+(13, '3C', 'Economy', 0, 0.0);
 
 -- Schedule 2 (Business)
 INSERT INTO Seat (ScheduleID, SeatNumber, SeatType, Availability, PriceAdjustment) VALUES
@@ -365,3 +366,9 @@ GO
 select*from Users
 select * from booking
 select * from Reservation
+Delete from Route
+Select*from Route
+Select* from Schedule
+
+INSERT INTO Route (Source, Destination, BasePrice) VALUES
+('Lahore', 'Islamabad', 2500)

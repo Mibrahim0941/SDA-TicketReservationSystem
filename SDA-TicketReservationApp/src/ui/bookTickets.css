@@ -1,271 +1,75 @@
-/* GLOBAL THEME */
 .root {
     -fx-background-color: #F5EFE7;
     -fx-font-family: 'Segoe UI', Arial, sans-serif;
 }
 
-/* TEXT STYLES */
-.page-title {
-    -fx-font-size: 26px;
-    -fx-font-weight: bold;
-    -fx-fill: #3F5F3C;
+/* TEXT */
+.page-title { -fx-font-size: 24px; -fx-font-weight: bold; -fx-fill: #3F5F3C; }
+.page-subtitle { -fx-font-size: 14px; -fx-text-fill: #7E9E7A; }
+.input-label { -fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #3F5F3C; }
+
+/* CARDS (Route & Schedule) */
+.item-card {
+    -fx-background-color: white;
+    -fx-background-radius: 10px;
+    -fx-border-color: #E0E0E0;
+    -fx-border-radius: 10px;
+    -fx-padding: 15px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 3, 0, 0, 1);
+    -fx-cursor: hand;
+}
+.item-card:hover {
+    -fx-border-color: #3F5F3C;
+    -fx-effect: dropshadow(three-pass-box, rgba(63, 95, 60, 0.2), 5, 0, 0, 2);
 }
 
-.page-subtitle {
-    -fx-font-size: 14px;
-    -fx-text-fill: #7E9E7A;
-}
+.card-title { -fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #3F5F3C; }
+.card-price { -fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #7E9E7A; }
+.card-detail { -fx-font-size: 12px; -fx-text-fill: #888; }
 
-.input-label {
-    -fx-font-size: 12px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #3F5F3C;
-}
-
-.no-data-text {
-    -fx-font-size: 16px;
-    -fx-text-fill: #999;
-    -fx-alignment: center;
-    -fx-padding: 30px;
-}
-
-/* SEARCH CARD */
+/* SEARCH BAR */
 .search-card {
     -fx-background-color: white;
-    -fx-background-radius: 10px;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 1);
 }
-
 .text-field {
-    -fx-background-color: #F9F9F9;
-    -fx-border-color: #C7D8BA;
-    -fx-border-radius: 5px;
-    -fx-background-radius: 5px;
-    -fx-padding: 8px;
-    -fx-pref-width: 200px;
+    -fx-background-color: #FAFAFA;
+    -fx-border-color: #CCC;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
 }
+.text-field:focused { -fx-border-color: #3F5F3C; }
 
-.text-field:focused {
-    -fx-border-color: #3F5F3C;
-}
-
-/* --- DYNAMIC CONTENT CARDS --- */
-
-/* Route Card */
-.route-card {
-    -fx-background-color: white;
-    -fx-background-radius: 12px;
-    -fx-border-color: #E0E0E0;
-    -fx-border-radius: 12px;
-    -fx-padding: 15px;
-    -fx-cursor: hand;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 3, 0, 0, 1);
-}
-
-.route-card:hover {
-    -fx-border-color: #3F5F3C;
-    -fx-effect: dropshadow(three-pass-box, rgba(63, 95, 60, 0.15), 5, 0, 0, 2);
-}
-
-.route-header {
-    -fx-alignment: center-left;
-}
-
-.route-title {
-    -fx-font-size: 18px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #3F5F3C;
-}
-
-.route-price {
-    -fx-font-size: 16px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #7E9E7A;
-}
-
-.route-detail {
-    -fx-font-size: 12px;
-    -fx-text-fill: #888;
-}
-
-/* Schedule Card */
-.schedule-card {
-    -fx-background-color: white;
-    -fx-background-radius: 10px;
-    -fx-border-left-color: #3F5F3C;
-    -fx-border-left-width: 5px;
-    -fx-border-color: #E0E0E0; /* other sides */
-    -fx-padding: 15px;
-    -fx-cursor: hand;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 3, 0, 0, 1);
-}
-
-.schedule-card:hover {
-    -fx-background-color: #FDFDFD;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 3, 0, 0, 1);
-}
-
-.schedule-header {
-    -fx-alignment: center-left;
-}
-
-.schedule-date {
-    -fx-font-size: 14px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #333;
-}
-
-.schedule-class {
-    -fx-background-color: #F0F5F0;
-    -fx-text-fill: #3F5F3C;
-    -fx-padding: 3px 8px;
-    -fx-background-radius: 10px;
-    -fx-font-size: 11px;
-    -fx-font-weight: bold;
-}
-
-.schedule-time {
-    -fx-font-size: 16px;
-    -fx-text-fill: #3F5F3C;
-}
-
-.schedule-seats {
-    -fx-font-size: 12px;
-    -fx-text-fill: #7E9E7A;
-}
-
-/* --- SEAT LAYOUT STYLES --- */
-
-.seat-layout {
-    -fx-alignment: top-center;
-    -fx-padding: 20px;
+/* SEATS */
+.bus-layout {
     -fx-background-color: white;
     -fx-background-radius: 15px;
-    -fx-max-width: 400px;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 3, 0, 0, 1);
+    -fx-padding: 20px;
+    -fx-max-width: 350px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);
 }
-
-.bus-front {
-    -fx-font-size: 14px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #AAA;
-    -fx-padding: 0 0 20px 0;
-    -fx-border-color: #EEE;
-    -fx-border-width: 0 0 2px 0;
-    -fx-border-style: dashed;
-    -fx-alignment: center;
-    -fx-pref-width: 250px;
-}
-
-.seat-row {
-    -fx-spacing: 15px;
-}
-
-.seat-button {
+.seat-btn {
     -fx-pref-width: 40px;
     -fx-pref-height: 40px;
     -fx-background-radius: 8px;
-    -fx-font-size: 12px;
     -fx-font-weight: bold;
+    -fx-font-size: 11px;
     -fx-cursor: hand;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 2, 0, 0, 1);
-}
-
-/* Seat States */
-.seat-available {
-    -fx-background-color: white;
-    -fx-border-color: #3F5F3C;
     -fx-border-width: 1px;
-    -fx-text-fill: #3F5F3C;
 }
+.seat-available { -fx-background-color: white; -fx-border-color: #3F5F3C; -fx-text-fill: #3F5F3C; }
+.seat-available:hover { -fx-background-color: #F0F5F0; }
+.seat-booked { -fx-background-color: #E0E0E0; -fx-border-color: transparent; -fx-text-fill: #AAA; -fx-cursor: default; }
+.seat-selected { -fx-background-color: #3F5F3C; -fx-text-fill: white; }
 
-.seat-available:hover {
-    -fx-background-color: #F0F5F0;
-}
+/* BUTTONS */
+.btn-primary { -fx-background-color: #3F5F3C; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; }
+.btn-secondary { -fx-background-color: #E0E0E0; -fx-text-fill: #333; -fx-font-weight: bold; -fx-cursor: hand; }
+.btn-icon { -fx-background-color: transparent; -fx-text-fill: #3F5F3C; -fx-font-weight: bold; -fx-cursor: hand; -fx-border-color: #3F5F3C; -fx-border-radius: 20px; }
+.btn-confirm { -fx-background-color: #E67E22; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-font-size: 14px; -fx-padding: 8px 20px; }
+.btn-confirm:disabled { -fx-background-color: #CCC; }
 
-.seat-booked {
-    -fx-background-color: #E0E0E0;
-    -fx-text-fill: #AAA;
-    -fx-border-color: transparent;
-    -fx-cursor: default;
-}
-
-.seat-selected {
-    -fx-background-color: #3F5F3C;
-    -fx-text-fill: white;
-    -fx-border-color: #2F4F2C;
-}
-
-/* --- BUTTONS --- */
-.btn-primary {
-    -fx-background-color: #3F5F3C;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-background-radius: 5px;
-    -fx-cursor: hand;
-    -fx-padding: 8px 20px;
-}
-.btn-primary:hover { -fx-background-color: #2F4F2C; }
-
-.btn-secondary {
-    -fx-background-color: #E0E0E0;
-    -fx-text-fill: #555;
-    -fx-background-radius: 5px;
-    -fx-cursor: hand;
-    -fx-padding: 8px 20px;
-}
-.btn-secondary:hover { -fx-background-color: #D6D6D6; }
-
-.btn-icon {
-    -fx-background-color: transparent;
-    -fx-text-fill: #3F5F3C;
-    -fx-font-weight: bold;
-    -fx-cursor: hand;
-    -fx-border-color: #3F5F3C;
-    -fx-border-radius: 20px;
-    -fx-padding: 5px 12px;
-}
-.btn-icon:hover { -fx-background-color: #F0F5F0; }
-
-.btn-confirm {
-    -fx-background-color: #E67E22;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-font-size: 14px;
-    -fx-background-radius: 5px;
-    -fx-padding: 10px 25px;
-    -fx-cursor: hand;
-}
-.btn-confirm:hover { -fx-background-color: #D35400; }
-.btn-confirm:disabled { -fx-background-color: #DDD; -fx-cursor: default; }
-
-/* SUMMARY BAR */
-.summary-card {
-    -fx-background-color: white;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 0, -3, 0, 0);
-}
-
-.summary-label {
-    -fx-font-size: 10px;
-    -fx-text-fill: #999;
-    -fx-font-weight: bold;
-}
-
-.summary-value {
-    -fx-font-size: 13px;
-    -fx-fill: #333;
-}
-
-.total-price {
-    -fx-font-size: 18px;
-    -fx-font-weight: bold;
-    -fx-fill: #3F5F3C;
-}
-
-.transparent-scroll {
-    -fx-background-color: transparent;
-    -fx-background: transparent;
-}
-.transparent-scroll > .viewport {
-    -fx-background-color: transparent;
-}
+/* SCROLLPANE CLEANUP */
+.transparent-scroll { -fx-background-color: transparent; -fx-background: transparent; }
+.transparent-scroll > .viewport { -fx-background-color: transparent; }

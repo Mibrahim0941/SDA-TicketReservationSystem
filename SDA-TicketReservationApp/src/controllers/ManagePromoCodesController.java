@@ -12,7 +12,6 @@ import javafx.stage.Stage;
 import models.Admin;
 import models.PromotionalCode;
 import catalogs.PromoCodeCatalog;
-import helpers.IDGenerator;
 
 import java.io.IOException;
 import java.time.LocalDate;
