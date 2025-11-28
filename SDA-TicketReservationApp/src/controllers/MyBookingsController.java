@@ -5,6 +5,7 @@ import javafx.fxml.*;
 import javafx.scene.control.*;
 import javafx.scene.Scene;
 import javafx.scene.Parent;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -455,21 +456,92 @@ public class MyBookingsController implements Initializable {
                 showAlert("Payment Required", "Please complete payment to view your E-Ticket.");
                 return;
             }
-            
+
             ETicket eTicket = booking.generateETicket();
-            showAlert("E-Ticket", 
-                "E-Ticket Details:\n" +
-                "Ticket ID: " + eTicket.getTicketID() + "\n" +
-                "Booking ID: " + booking.getBookingID() + "\n" +
-                "Route: " + booking.getReservation().getRoute().getSource() + " -> " + 
-                          booking.getReservation().getRoute().getDestination() + "\n" +
-                "Date: " + booking.getReservation().getSchedule().getDate() + "\n" +
-                "Time: " + booking.getReservation().getSchedule().getDepartureTime() + " - " + 
-                          booking.getReservation().getSchedule().getArrivalTime());
             
+            // --- Build Custom Ticket UI ---
+            VBox ticketCard = new VBox(15);
+            ticketCard.getStyleClass().add("ticket-card");
+            ticketCard.setMinWidth(400);
+
+            // 1. Ticket Header
+            HBox header = new HBox();
+            header.setAlignment(javafx.geometry.Pos.CENTER);
+            Label title = new Label("E-TICKET CONFIRMATION");
+            title.setStyle("-fx-font-weight: bold; -fx-text-fill: #3F5F3C; -fx-font-size: 16px;");
+            header.getChildren().add(title);
+
+            // 2. Dashed Line Separator
+            Separator sep1 = new Separator();
+            sep1.setStyle("-fx-border-style: dashed; -fx-border-width: 1px 0 0 0; -fx-border-color: #ccc; -fx-background-color: transparent;");
+
+            // 3. Route Info (Large)
+            VBox routeBox = new VBox(5);
+            routeBox.setAlignment(javafx.geometry.Pos.CENTER);
+            Label routeLbl = new Label(
+                booking.getReservation().getRoute().getSource() + " ➝ " + 
+                booking.getReservation().getRoute().getDestination()
+            );
+            routeLbl.getStyleClass().add("route");
+            routeLbl.setStyle("-fx-font-size: 22px;"); // Make it bigger for the ticket
+            routeBox.getChildren().add(routeLbl);
+
+            // 4. Details Grid (Date, Time, Class, IDs)
+            GridPane detailsGrid = new GridPane();
+            detailsGrid.setHgap(20);
+            detailsGrid.setVgap(10);
+            detailsGrid.setAlignment(javafx.geometry.Pos.CENTER);
+
+            // Helper to add styled rows
+            addTicketDetail(detailsGrid, "Date:", booking.getReservation().getSchedule().getDate().toString(), 0, 0);
+            addTicketDetail(detailsGrid, "Time:", booking.getReservation().getSchedule().getDepartureTime() + " - " + booking.getReservation().getSchedule().getArrivalTime(), 0, 1);
+            addTicketDetail(detailsGrid, "Class:", booking.getReservation().getSeatClass(), 1, 0);
+            addTicketDetail(detailsGrid, "Price:", "PKR " + booking.getTotalAmount(), 1, 1);
+            
+            // 5. Footer (IDs)
+            VBox footer = new VBox(5);
+            footer.setAlignment(javafx.geometry.Pos.CENTER);
+            footer.setPadding(new javafx.geometry.Insets(15, 0, 0, 0));
+            Label ticketId = new Label("Ticket ID: " + eTicket.getTicketID());
+            Label bookingId = new Label("Booking Ref: " + booking.getBookingID());
+            ticketId.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;");
+            bookingId.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;");
+            footer.getChildren().addAll(ticketId, bookingId);
+
+            // Combine all
+            ticketCard.getChildren().addAll(header, sep1, routeBox, detailsGrid, new Separator(), footer);
+
+            // --- Show in Dialog ---
+            Alert ticketDialog = new Alert(Alert.AlertType.NONE);
+            ticketDialog.setTitle("Your E-Ticket");
+            ticketDialog.getDialogPane().setContent(ticketCard);
+            ticketDialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+            
+            // Remove default header/graphic to keep it clean
+            ticketDialog.setHeaderText(null);
+            ticketDialog.setGraphic(null);
+            
+            // Apply CSS to the dialog
+            DialogPane dialogPane = ticketDialog.getDialogPane();
+            dialogPane.getStylesheets().add(getClass().getResource("/ui/MyBookings.css").toExternalForm());
+            dialogPane.getStyleClass().add("ticket-dialog");
+
+            ticketDialog.showAndWait();
+
         } catch (Exception e) {
             showAlert("Error", "Failed to generate E-Ticket: " + e.getMessage());
         }
+    }
+
+    // Helper method for the Grid layout
+    private void addTicketDetail(GridPane grid, String label, String value, int col, int row) {
+        VBox box = new VBox(2);
+        Label l = new Label(label);
+        l.setStyle("-fx-font-size: 10px; -fx-text-fill: #888;");
+        Label v = new Label(value);
+        v.setStyle("-fx-font-weight: bold; -fx-text-fill: #333;");
+        box.getChildren().addAll(l, v);
+        grid.add(box, col, row);
     }
 
     private void proceedToPayment(Booking booking) {
