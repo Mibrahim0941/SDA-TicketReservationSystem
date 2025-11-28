@@ -4,63 +4,61 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" 
-      fx:controller="controllers.MyBookingsController" 
-      spacing="20" style="-fx-background-color: #F5EFE7;">
+<VBox spacing="20" style="-fx-background-color: #F5EFE7;" stylesheets="@../ui/MyBookings.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MyBookingsController">
     
     <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
+        <Insets bottom="20" left="20" right="20" top="20" />
     </padding>
 
-    <!-- Header Section -->
-    <HBox spacing="20" alignment="CENTER_LEFT" styleClass="header-section">
+    <HBox alignment="CENTER_LEFT" spacing="20" styleClass="header-section">
         <VBox spacing="5">
-            <Text fx:id="pageTitle" styleClass="dashboard-title">
-                My Bookings
-            </Text>
-            <Text fx:id="userGreeting" styleClass="dashboard-subtitle">
-                Hello, User! 👋
-            </Text>
+            <Text fx:id="pageTitle" styleClass="dashboard-title" text="My Bookings" />
+            <Text fx:id="userGreeting" styleClass="dashboard-subtitle" text="Hello, User! 👋" />
         </VBox>
         
-        <HBox spacing="10" HBox.hgrow="ALWAYS" alignment="CENTER_RIGHT">
-            <Button fx:id="refreshButton" text="Refresh" styleClass="btn-secondary"/>
-            <Button fx:id="backButton" text="Back to Dashboard" styleClass="btn-secondary"/>
+        <HBox alignment="CENTER_RIGHT" spacing="10" HBox.hgrow="ALWAYS">
+            <Button fx:id="refreshButton" styleClass="btn-secondary" text="Refresh" />
+            <Button fx:id="backButton" styleClass="btn-secondary" text="Back to Dashboard" />
         </HBox>
     </HBox>
 
-    <!-- Filters Section -->
-    <HBox fx:id="filterContainer" spacing="15" alignment="CENTER_LEFT" styleClass="filter-container">
-        <Label text="Filters:" styleClass="filter-label"/>
+    <HBox fx:id="filterContainer" alignment="CENTER_LEFT" spacing="15" styleClass="filter-container">
+        <Label styleClass="filter-label" text="Filters:" />
         
         <VBox spacing="5">
-            <Label text="Status" styleClass="input-label"/>
-            <ComboBox fx:id="statusFilter" prefWidth="150" styleClass="combo-box"/>
+            <Label styleClass="input-label" text="Status" />
+            <ComboBox fx:id="statusFilter" prefWidth="150" styleClass="combo-box" />
         </VBox>
         
         <VBox spacing="5">
-            <Label text="Payment" styleClass="input-label"/>
-            <ComboBox fx:id="paymentFilter" prefWidth="120" styleClass="combo-box"/>
+            <Label styleClass="input-label" text="Payment" />
+            <ComboBox fx:id="paymentFilter" prefWidth="150" styleClass="combo-box" />
         </VBox>
         
         <VBox spacing="5" HBox.hgrow="ALWAYS">
-            <Label text="Search" styleClass="input-label"/>
-            <TextField fx:id="searchField" prefWidth="200" styleClass="text-field"/>
+            <Label styleClass="input-label" text="Search" />
+            <TextField fx:id="searchField" promptText="Search by ID or City..." styleClass="text-field" />
         </VBox>
     </HBox>
 
-    <!-- Bookings Container -->
-    <VBox fx:id="bookingsContainer" spacing="15" VBox.vgrow="ALWAYS">
-        <Text fx:id="noBookingsText" 
-              text="No bookings found. Start by booking your first ticket!" 
-              styleClass="no-bookings" 
-              visible="false"/>
-        <!-- Booking cards will be dynamically added here -->
-    </VBox>
+    <ProgressIndicator fx:id="loadingIndicator" visible="false" />
+
+    <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: #F5EFE7;" vbarPolicy="AS_NEEDED">
+        <content>
+            <VBox fx:id="bookingsContainer" spacing="15" style="-fx-background-color: #F5EFE7;">
+                <padding>
+                    <Insets bottom="10" left="5" right="5" top="10" />
+                </padding>
+                <Text fx:id="noBookingsText" styleClass="no-bookings" text="No bookings found." visible="false" />
+            </VBox>
+        </content>
+    </ScrollPane>
 
 </VBox>

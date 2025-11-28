@@ -1,12 +1,12 @@
 package controllers;
 
+import javafx.application.Platform;
 import javafx.fxml.*;
 import javafx.scene.control.*;
 import javafx.scene.Scene;
 import javafx.scene.Parent;
-
-import java.io.IOException;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -15,22 +15,21 @@ import models.Booking;
 import models.Customer;
 import models.ETicket;
 import models.Payment;
+import config.DatabaseConfig;
 
+import java.io.IOException;
 import java.net.URL;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
-
-import config.DatabaseConfig;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class MyBookingsController implements Initializable {
 
+    // --- FXML Components ---
     @FXML private Text pageTitle;
     @FXML private Text userGreeting;
     @FXML private Text noBookingsText;
-    
-    @FXML private VBox bookingsContainer;
+    @FXML private VBox bookingsContainer; // This is inside the ScrollPane in FXML
     @FXML private HBox filterContainer;
     
     @FXML private ComboBox<String> statusFilter;
@@ -39,15 +38,21 @@ public class MyBookingsController implements Initializable {
     
     @FXML private Button backButton;
     @FXML private Button refreshButton;
-    
+    @FXML private ProgressIndicator loadingIndicator;
+
+    // --- State & Config ---
     private String currentUsername;
     private Customer currentCustomer;
     private List<Booking> userBookings;
+    
+    private static final String DB_URL = DatabaseConfig.getDbUrl();
+    private static final String DB_USER = DatabaseConfig.getDbUser();
+    private static final String DB_PASSWORD = DatabaseConfig.getDbPassword();
+    
+    private static final String ALL_BOOKINGS = "All Bookings";
+    private static final String ALL_PAYMENTS = "All Payments";
 
-    // Database connection details
-    String DB_URL = DatabaseConfig.getDbUrl();
-    String DB_USER = DatabaseConfig.getDbUser();
-    String DB_PASSWORD = DatabaseConfig.getDbPassword();
+    // --- Initialization & Navigation ---
 
     public static void show(Stage stage, String username, Customer customer) {
         try {
@@ -58,84 +63,111 @@ public class MyBookingsController implements Initializable {
             controller.setUserData(username, customer);
             
             Scene scene = new Scene(root, 1000, 700);
-            scene.getStylesheets().add(MyBookingsController.class.getResource("/ui/MyBookings.css").toExternalForm());
+            
+            // Explicitly load CSS to ensure styling applies immediately
+            URL stylesheet = MyBookingsController.class.getResource("/ui/MyBookings.css");
+            if (stylesheet != null) {
+                scene.getStylesheets().add(stylesheet.toExternalForm());
+            }
             
             stage.setScene(scene);
             stage.setTitle("TicketGenie - My Bookings");
             stage.centerOnScreen();
             
         } catch (IOException e) {
-            e.printStackTrace();
             showErrorAlert("Failed to load My Bookings: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        System.out.println("MyBookingsController initialized");
         setupFilters();
         setupEventHandlers();
+        initializeUIState();
     }
-    
+
     public void setUserData(String username, Customer customer) {
         this.currentUsername = username;
         this.currentCustomer = customer;
         updateUserGreeting();
-        loadUserBookingsFromDB();
+        loadUserBookings();
     }
-    
-    private void updateUserGreeting() {
-        if (currentUsername != null && !currentUsername.isEmpty()) {
-            userGreeting.setText("Hello, " + currentUsername + "! 👋");
-        }
+
+    private void initializeUIState() {
+        if(loadingIndicator != null) loadingIndicator.setVisible(false);
+        if(noBookingsText != null) noBookingsText.setVisible(false);
     }
-    
+
     private void setupFilters() {
-        // Status filter options
-        statusFilter.getItems().addAll("All Bookings", "Confirmed", "Pending", "Cancelled", "Completed");
-        statusFilter.setValue("All Bookings");
+        statusFilter.getItems().addAll(ALL_BOOKINGS, "Confirmed", "Pending", "Cancelled", "Completed");
+        statusFilter.setValue(ALL_BOOKINGS);
         
-        // Payment status filter
-        paymentFilter.getItems().addAll("All Payments", "Paid", "Unpaid", "Pending Payment");
-        paymentFilter.setValue("All Payments");
+        paymentFilter.getItems().addAll(ALL_PAYMENTS, "Paid", "Unpaid", "Pending Payment");
+        paymentFilter.setValue(ALL_PAYMENTS);
         
-        // Search field placeholder
         searchField.setPromptText("Search by booking ID, route...");
     }
-    
+
     private void setupEventHandlers() {
         backButton.setOnAction(e -> handleBack());
-        refreshButton.setOnAction(e -> loadUserBookingsFromDB());
+        refreshButton.setOnAction(e -> loadUserBookings());
         
-        // Filter change listeners
         statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
         paymentFilter.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
         searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
     }
-    
-    private void loadUserBookingsFromDB() {
-        userBookings = fetchBookingsFromDatabase();
-        applyFilters();
+
+    private void updateUserGreeting() {
+        if (currentUsername != null && !currentUsername.isEmpty()) {
+            String displayName = currentUsername.substring(0, 1).toUpperCase() + 
+                               currentUsername.substring(1).toLowerCase();
+            userGreeting.setText("Hello, " + displayName + "! 👋");
+        }
     }
-    
+
+    // --- Data Loading Logic ---
+
+    private void loadUserBookings() {
+        setLoadingState(true);
+        
+        // Run database operation in background thread
+        new Thread(() -> {
+            try {
+                List<Booking> bookings = fetchBookingsFromDatabase();
+                
+                // Update UI on JavaFX Application Thread
+                Platform.runLater(() -> {
+                    userBookings = bookings;
+                    applyFilters();
+                    setLoadingState(false);
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    showAlert("Load Error", "Failed to load bookings: " + e.getMessage());
+                    setLoadingState(false);
+                });
+            }
+        }).start();
+    }
+
     private List<Booking> fetchBookingsFromDatabase() {
         List<Booking> bookings = new ArrayList<>();
         
-        String query = """
-            SELECT 
-                b.BookingID, b.CustomerID, b.BookingDateTime, b.TotalAmount, b.Status,
-                p.PaymentID, p.PaymentStatus, p.PaymentMethod, p.Amount as PaymentAmount,
-                r.RouteID, r.Source, r.Destination, r.BasePrice,
-                s.ScheduleID, s.Date, s.DepartureTime, s.ArrivalTime, s.Class,
-                res.ReservationID
-            FROM Booking b
-            LEFT JOIN Payment p ON b.PaymentID = p.PaymentID
-            LEFT JOIN Reservation res ON b.ReservationID = res.ReservationID
-            LEFT JOIN Route r ON res.RouteID = r.RouteID
-            LEFT JOIN Schedule s ON res.ScheduleID = s.ScheduleID
-            WHERE b.CustomerID = ?
-            ORDER BY b.BookingDateTime DESC
-            """;
+        // Concatenated query compatible with older Java versions
+        String query = "SELECT " +
+                       "    b.BookingID, b.CustomerID, b.BookingDateTime, b.TotalAmount, b.Status, " +
+                       "    p.PaymentID, p.PaymentStatus, p.PaymentMethod, p.Amount as PaymentAmount, " +
+                       "    r.RouteID, r.Source, r.Destination, r.BasePrice, " +
+                       "    s.ScheduleID, s.Date, s.DepartureTime, s.ArrivalTime, s.Class, " +
+                       "    res.ReservationID " +
+                       "FROM Booking b " +
+                       "LEFT JOIN Payment p ON b.PaymentID = p.PaymentID " +
+                       "LEFT JOIN Reservation res ON b.ReservationID = res.ReservationID " +
+                       "LEFT JOIN Route r ON res.RouteID = r.RouteID " +
+                       "LEFT JOIN Schedule s ON res.ScheduleID = s.ScheduleID " +
+                       "WHERE b.CustomerID = ? " +
+                       "ORDER BY b.BookingDateTime DESC";
             
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -151,17 +183,17 @@ public class MyBookingsController implements Initializable {
             }
             
         } catch (SQLException e) {
-            System.err.println("Error fetching bookings from database: " + e.getMessage());
+            System.err.println("Error fetching bookings: " + e.getMessage());
             e.printStackTrace();
-            showAlert("Database Error", "Failed to load bookings: " + e.getMessage());
+            Platform.runLater(() -> showAlert("Database Error", "Failed to load bookings: " + e.getMessage()));
         }
         
         return bookings;
     }
-    
+
     private Booking createBookingFromResultSet(ResultSet rs) throws SQLException {
         try {
-            // Create Route
+            // Reconstruct object graph from flat result set
             models.Route route = new models.Route(
                 String.valueOf(rs.getInt("RouteID")),
                 rs.getString("Source"),
@@ -169,7 +201,6 @@ public class MyBookingsController implements Initializable {
                 rs.getDouble("BasePrice")
             );
             
-            // Create Schedule
             models.Schedule schedule = new models.Schedule(
                 String.valueOf(rs.getInt("ScheduleID")),
                 rs.getDate("Date").toLocalDate(),
@@ -178,7 +209,6 @@ public class MyBookingsController implements Initializable {
                 rs.getString("Class")
             );
             
-            // Create Reservation
             models.Reservation reservation = new models.Reservation(
                 String.valueOf(rs.getInt("ReservationID")),
                 schedule,
@@ -186,7 +216,6 @@ public class MyBookingsController implements Initializable {
                 rs.getString("Class")
             );
             
-            // Create Booking
             Booking booking = new Booking(
                 String.valueOf(rs.getInt("BookingID")),
                 rs.getString("CustomerID"),
@@ -197,7 +226,6 @@ public class MyBookingsController implements Initializable {
             booking.setTotalAmount(rs.getDouble("TotalAmount"));
             booking.setStatus(rs.getString("Status"));
             
-            // Create Payment if exists
             String paymentId = rs.getString("PaymentID");
             if (paymentId != null && !rs.wasNull()) {
                 Payment payment = new Payment(
@@ -217,7 +245,9 @@ public class MyBookingsController implements Initializable {
             return null;
         }
     }
-    
+
+    // --- UI Generation (The Card System) ---
+
     private void applyFilters() {
         if (userBookings == null || userBookings.isEmpty()) {
             showNoBookings();
@@ -226,39 +256,33 @@ public class MyBookingsController implements Initializable {
         
         List<Booking> filteredBookings = new ArrayList<>(userBookings);
         
-        // Apply status filter
+        // Status Filter
         String status = statusFilter.getValue();
-        if (!"All Bookings".equals(status)) {
+        if (!ALL_BOOKINGS.equals(status)) {
             filteredBookings.removeIf(booking -> !booking.getStatus().equalsIgnoreCase(status));
         }
         
-        // Apply payment filter
+        // Payment Filter
         String paymentStatus = paymentFilter.getValue();
         switch (paymentStatus) {
-            case "Paid":
-                filteredBookings.removeIf(booking -> !booking.isPaid());
-                break;
-            case "Unpaid":
-                filteredBookings.removeIf(booking -> booking.hasPayment() && !booking.isPaid());
-                break;
-            case "Pending Payment":
-                filteredBookings.removeIf(booking -> !booking.hasPayment() || booking.isPaid());
-                break;
+            case "Paid": filteredBookings.removeIf(b -> !b.isPaid()); break;
+            case "Unpaid": filteredBookings.removeIf(b -> b.hasPayment() && b.isPaid()); break;
+            case "Pending Payment": filteredBookings.removeIf(b -> b.hasPayment() || b.isPaid()); break;
         }
         
-        // Apply search filter
+        // Search Filter
         String searchTerm = searchField.getText().toLowerCase();
         if (!searchTerm.isEmpty()) {
-            filteredBookings.removeIf(booking -> 
-                !booking.getBookingID().toLowerCase().contains(searchTerm) &&
-                !booking.getReservation().getRoute().getSource().toLowerCase().contains(searchTerm) &&
-                !booking.getReservation().getRoute().getDestination().toLowerCase().contains(searchTerm)
+            filteredBookings.removeIf(b -> 
+                !b.getBookingID().toLowerCase().contains(searchTerm) &&
+                !b.getReservation().getRoute().getSource().toLowerCase().contains(searchTerm) &&
+                !b.getReservation().getRoute().getDestination().toLowerCase().contains(searchTerm)
             );
         }
         
         displayBookings(filteredBookings);
     }
-    
+
     private void displayBookings(List<Booking> bookings) {
         bookingsContainer.getChildren().clear();
         
@@ -274,24 +298,26 @@ public class MyBookingsController implements Initializable {
             bookingsContainer.getChildren().add(bookingCard);
         }
     }
-    
+
+    /**
+     * Creates a card styled via CSS (.booking-card) containing all booking info.
+     */
     private VBox createBookingCard(Booking booking) {
-        VBox card = new VBox();
-        card.getStyleClass().add("booking-card");
+        VBox card = new VBox(15);
+        card.getStyleClass().add("booking-card"); // CRITICAL: Applies white bg and shadow
         
         models.Reservation reservation = booking.getReservation();
         models.Route route = reservation.getRoute();
         models.Schedule schedule = reservation.getSchedule();
         
-        // Header section
-        HBox header = new HBox();
+        // 1. HEADER (ID + Status Badges)
+        HBox header = new HBox(10); 
         header.getStyleClass().add("booking-header");
         
         Label bookingId = new Label("Booking #" + booking.getBookingID());
         bookingId.getStyleClass().add("booking-id");
         
-        // Status badge
-        HBox statusBadges = new HBox();
+        HBox statusBadges = new HBox(8); 
         statusBadges.getStyleClass().add("status-badges");
         
         Label bookingStatus = new Label(booking.getStatus());
@@ -302,11 +328,13 @@ public class MyBookingsController implements Initializable {
         
         statusBadges.getChildren().addAll(bookingStatus, paymentStatus);
         
-        HBox.setHgrow(bookingId, javafx.scene.layout.Priority.ALWAYS);
-        header.getChildren().addAll(bookingId, statusBadges);
+        // Push badges to the right
+        HBox spacer = new HBox();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        header.getChildren().addAll(bookingId, spacer, statusBadges);
         
-        // Route information
-        VBox routeInfo = new VBox();
+        // 2. ROUTE INFO
+        VBox routeInfo = new VBox(8); 
         routeInfo.getStyleClass().add("route-info");
         
         Label routeText = new Label(route.getSource() + " → " + route.getDestination());
@@ -323,38 +351,39 @@ public class MyBookingsController implements Initializable {
         
         routeInfo.getChildren().addAll(routeText, scheduleText, classText);
         
-        // Details section
-        HBox details = new HBox();
+        // 3. FOOTER (Details + Actions)
+        HBox details = new HBox(10); 
         details.getStyleClass().add("booking-details");
+        details.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         
-        VBox leftDetails = new VBox();
+        VBox leftDetails = new VBox(5); 
         leftDetails.getStyleClass().add("details-left");
         
-        Label bookingDate = new Label("Booked: " + 
-            new java.text.SimpleDateFormat("MMM dd, yyyy 'at' HH:mm").format(booking.getBookingDateTime()));
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy 'at' HH:mm");
+        Label bookingDate = new Label("Booked: " + dateFormat.format(booking.getBookingDateTime()));
         bookingDate.getStyleClass().add("booking-date");
         
-        Label price = new Label("Total: PKR " + booking.getTotalAmount());
+        Label price = new Label("Total: PKR " + String.format("%.2f", booking.getTotalAmount()));
         price.getStyleClass().add("price");
         
         leftDetails.getChildren().addAll(bookingDate, price);
         
-        // Action buttons
-        HBox actionButtons = new HBox();
+        // Action Buttons
+        HBox actionButtons = new HBox(10); 
         actionButtons.getStyleClass().add("action-buttons");
         
         Button viewTicketBtn = new Button("View E-Ticket");
         viewTicketBtn.getStyleClass().add("btn-primary");
         viewTicketBtn.setOnAction(e -> viewETicket(booking));
         
-        // Show appropriate buttons based on payment status
+        // Logic for which buttons to show
         if (!booking.isPaid()) {
             Button payBtn = new Button("Pay Now");
             payBtn.getStyleClass().add("btn-pay");
             payBtn.setOnAction(e -> proceedToPayment(booking));
             actionButtons.getChildren().addAll(viewTicketBtn, payBtn);
         } else {
-            // For paid bookings, show cancel button if it's not completed/cancelled
+            // Only show Cancel if Confirmed
             if ("Confirmed".equals(booking.getStatus())) {
                 Button cancelBtn = new Button("Cancel Booking");
                 cancelBtn.getStyleClass().add("btn-danger");
@@ -365,22 +394,23 @@ public class MyBookingsController implements Initializable {
             }
         }
         
-        HBox.setHgrow(leftDetails, javafx.scene.layout.Priority.ALWAYS);
-        details.getChildren().addAll(leftDetails, actionButtons);
+        HBox detailSpacer = new HBox();
+        HBox.setHgrow(detailSpacer, Priority.ALWAYS);
+        details.getChildren().addAll(leftDetails, detailSpacer, actionButtons);
         
         card.getChildren().addAll(header, routeInfo, details);
-        
         return card;
     }
-    
+
+    // --- Helpers & Actions ---
+
     private String getPaymentStatusText(Booking booking) {
-        if (!booking.hasPayment()) {
-            return "Unpaid";
-        }
+        if (!booking.hasPayment()) return "Unpaid";
         return booking.getPayment().getStatus();
     }
-    
+
     private String getBookingStatusStyleClass(String status) {
+        if(status == null) return "status-pending";
         switch (status.toLowerCase()) {
             case "confirmed": return "status-confirmed";
             case "pending": return "status-pending";
@@ -389,13 +419,13 @@ public class MyBookingsController implements Initializable {
             default: return "status-pending";
         }
     }
-    
+
     private String getPaymentStatusStyleClass(Booking booking) {
-        if (!booking.hasPayment()) {
-            return "status-unpaid";
-        }
-        String paymentStatus = booking.getPayment().getStatus();
-        switch (paymentStatus.toLowerCase()) {
+        if (!booking.hasPayment()) return "status-unpaid";
+        String status = booking.getPayment().getStatus();
+        if(status == null) return "status-unpaid";
+        
+        switch (status.toLowerCase()) {
             case "completed": return "status-paid";
             case "pending": 
             case "processing": return "status-pending-payment";
@@ -403,12 +433,22 @@ public class MyBookingsController implements Initializable {
             default: return "status-unpaid";
         }
     }
-    
+
     private void showNoBookings() {
         bookingsContainer.getChildren().clear();
         noBookingsText.setVisible(true);
+        if(!bookingsContainer.getChildren().contains(noBookingsText)) {
+            bookingsContainer.getChildren().add(noBookingsText);
+        }
     }
-    
+
+    private void setLoadingState(boolean loading) {
+        if(loadingIndicator != null) loadingIndicator.setVisible(loading);
+        if(bookingsContainer != null) bookingsContainer.setVisible(!loading);
+        if(filterContainer != null) filterContainer.setDisable(loading);
+        if(refreshButton != null) refreshButton.setDisable(loading);
+    }
+
     private void viewETicket(Booking booking) {
         try {
             if (!booking.isPaid()) {
@@ -421,19 +461,18 @@ public class MyBookingsController implements Initializable {
                 "E-Ticket Details:\n" +
                 "Ticket ID: " + eTicket.getTicketID() + "\n" +
                 "Booking ID: " + booking.getBookingID() + "\n" +
-                "Route: " + booking.getReservation().getRoute().getSource() + " → " + 
-                         booking.getReservation().getRoute().getDestination() + "\n" +
+                "Route: " + booking.getReservation().getRoute().getSource() + " -> " + 
+                          booking.getReservation().getRoute().getDestination() + "\n" +
                 "Date: " + booking.getReservation().getSchedule().getDate() + "\n" +
                 "Time: " + booking.getReservation().getSchedule().getDepartureTime() + " - " + 
-                         booking.getReservation().getSchedule().getArrivalTime());
+                          booking.getReservation().getSchedule().getArrivalTime());
             
         } catch (Exception e) {
             showAlert("Error", "Failed to generate E-Ticket: " + e.getMessage());
         }
     }
-    
+
     private void proceedToPayment(Booking booking) {
-        // Create payment if doesn't exist
         if (!booking.hasPayment()) {
             booking.proceedToPayment();
         }
@@ -441,99 +480,75 @@ public class MyBookingsController implements Initializable {
         Alert paymentAlert = new Alert(Alert.AlertType.CONFIRMATION);
         paymentAlert.setTitle("Proceed to Payment");
         paymentAlert.setHeaderText("Payment Required");
-        paymentAlert.setContentText(
-            "Proceed to payment for Booking #" + booking.getBookingID() + "?\n" +
-            "Amount: PKR " + booking.getTotalAmount() + "\n" +
-            "Route: " + booking.getReservation().getRoute().getSource() + " → " + 
-                     booking.getReservation().getRoute().getDestination() + "\n\n" +
-            "Note: This is a simulation. In production, you would integrate with a payment gateway."
-        );
+        paymentAlert.setContentText("Proceed to payment for Booking #" + booking.getBookingID() + "?\n" +
+            "Amount: PKR " + String.format("%.2f", booking.getTotalAmount()));
         
         paymentAlert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                // Simulate payment processing
                 boolean paymentSuccess = simulatePayment(booking);
-                
                 if (paymentSuccess) {
                     booking.getPayment().confirmPayment();
                     savePaymentToDatabase(booking.getPayment());
-                    showAlert("Payment Successful", 
-                        "Payment completed for Booking #" + booking.getBookingID() + "\n" +
-                        "Your tickets have been confirmed!");
-                    // Refresh bookings to update status
-                    loadUserBookingsFromDB();
+                    showAlert("Payment Successful", "Payment completed for Booking #" + booking.getBookingID());
+                    loadUserBookings(); // Refresh UI
                 } else {
                     booking.getPayment().setStatus("Failed");
-                    showAlert("Payment Failed", 
-                        "Payment failed for Booking #" + booking.getBookingID() + "\n" +
-                        "Please try again or contact support.");
+                    showAlert("Payment Failed", "Payment failed. Please try again.");
                 }
             }
         });
     }
-    
+
     private boolean simulatePayment(Booking booking) {
-        // Simulate payment processing - 90% success rate
-        return Math.random() > 0.1;
+        return Math.random() > 0.1; // 90% success rate simulation
     }
-    
+
     private void savePaymentToDatabase(Payment payment) {
-        // Implementation to save payment to database
-        // This would update the Payment table with the confirmed payment
-        System.out.println("Saving payment to database: " + payment.getPaymentID());
+        // Implementation would execute an UPDATE/INSERT SQL query here
+        System.out.println("Saving payment to database: " + payment.getPaymentID() + " Status: " + payment.getStatus());
     }
-    
+
     private void cancelBooking(Booking booking) {
         Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
         confirmAlert.setTitle("Cancel Booking");
-        confirmAlert.setHeaderText("Confirm Cancellation");
-        confirmAlert.setContentText(
-            "Are you sure you want to cancel booking #" + booking.getBookingID() + "?\n" +
-            "Route: " + booking.getReservation().getRoute().getSource() + " → " + 
-                     booking.getReservation().getRoute().getDestination() + "\n" +
-            "Cancellation fees may apply based on our policy."
-        );
+        confirmAlert.setContentText("Are you sure you want to cancel booking #" + booking.getBookingID() + "?");
         
         confirmAlert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 if (updateBookingStatus(booking.getBookingID(), "Cancelled")) {
-                    showAlert("Booking Cancelled", 
-                        "Booking #" + booking.getBookingID() + " has been cancelled successfully.");
-                    loadUserBookingsFromDB();
+                    booking.setStatus("Cancelled"); 
+                    showAlert("Booking Cancelled", "Booking cancelled successfully.");
+                    loadUserBookings();
                 } else {
-                    showAlert("Error", "Failed to cancel booking. Please try again.");
+                    showAlert("Error", "Failed to cancel booking.");
                 }
             }
         });
     }
-    
+
     private boolean updateBookingStatus(String bookingId, String status) {
         String query = "UPDATE Booking SET Status = ? WHERE BookingID = ?";
-        
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(query)) {
-            
             stmt.setString(1, status);
             stmt.setString(2, bookingId);
-            
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
-            
+            return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.err.println("Error updating booking status: " + e.getMessage());
+            System.err.println("Error updating status: " + e.getMessage());
             return false;
         }
     }
-    
+
     private void handleBack() {
         try {
-            DashboardController.show((Stage) backButton.getScene().getWindow(), currentUsername, currentCustomer);
+            Stage currentStage = (Stage) backButton.getScene().getWindow();
+            DashboardController.show(currentStage, currentUsername, currentCustomer);
         } catch (Exception e) {
             System.err.println("Error navigating back: " + e.getMessage());
             e.printStackTrace();
         }
     }
-    
+
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
@@ -541,7 +556,7 @@ public class MyBookingsController implements Initializable {
         alert.setContentText(message);
         alert.showAndWait();
     }
-    
+
     private static void showErrorAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");
