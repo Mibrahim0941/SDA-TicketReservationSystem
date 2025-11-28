@@ -201,14 +201,12 @@ public class DashboardController implements Initializable {
                 return;
             }
             
-            // Load the FXML file directly
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/booking-history.fxml"));
             Parent historyContent = loader.load();
             
-            // Pass data to controller if it exists
             Object controller = loader.getController();
             if (controller instanceof BookingHistoryController) {
-                ((BookingHistoryController) controller).setUserData(currentCustomer);
+                ((BookingHistoryController) controller).setUserData(currentUsername,currentCustomer);
             }
             
             contentArea.getChildren().add(historyContent);
