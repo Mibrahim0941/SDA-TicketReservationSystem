@@ -6,98 +6,61 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import models.Booking;
 import models.Customer;
 import models.ETicket;
+import models.Payment;
 
 import java.io.IOException;
 import java.net.URL;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
+
+import config.DatabaseConfig;
 
 public class BookingHistoryController implements Initializable {
 
-    @FXML private Text pageTitle;
-    @FXML private Text pageSubtitle;
+    @FXML private Label pageTitle;
+    @FXML private Label userGreeting;
+    @FXML private Label noBookingsText;
     
-    @FXML private Label totalBookingsLabel;
-    @FXML private Label completedTripsLabel;
-    @FXML private Label cancelledBookingsLabel;
-    @FXML private Label totalSpentLabel;
+    @FXML private VBox bookingsContainer;
+    @FXML private HBox filterContainer;
     
-    @FXML private DatePicker fromDatePicker;
-    @FXML private DatePicker toDatePicker;
-    @FXML private ComboBox<String> statusFilterCombo;
+    @FXML private ComboBox<String> statusFilter;
+    @FXML private ComboBox<String> paymentFilter;
     @FXML private TextField searchField;
-    @FXML private Button applyFiltersButton;
-    @FXML private Button clearFiltersButton;
-    @FXML private Button exportButton;
     
-    @FXML private TableView<Booking> bookingsTable;
-    @FXML private TableColumn<Booking, String> bookingIdColumn;
-    @FXML private TableColumn<Booking, String> routeColumn;
-    @FXML private TableColumn<Booking, String> dateColumn;
-    @FXML private TableColumn<Booking, String> bookingDateColumn;
-    @FXML private TableColumn<Booking, String> seatsColumn;
-    @FXML private TableColumn<Booking, String> classColumn;
-    @FXML private TableColumn<Booking, String> amountColumn;
-    @FXML private TableColumn<Booking, String> statusColumn;
-    @FXML private TableColumn<Booking, String> actionsColumn;
-    
-    @FXML private Button prevPageButton;
-    @FXML private Button nextPageButton;
-    @FXML private Label pageInfoLabel;
-    @FXML private ComboBox<Integer> pageSizeCombo;
-    
-    @FXML private VBox detailsPanel;
-    @FXML private Label detailBookingId;
-    @FXML private Label detailStatus;
-    @FXML private Label detailBookedOn;
-    @FXML private Label detailRoute;
-    @FXML private Label detailDeparture;
-    @FXML private Label detailArrival;
-    @FXML private Label detailSeats;
-    @FXML private Label detailClass;
-    @FXML private Label detailAmount;
-    @FXML private Label detailPaymentStatus;
-    @FXML private Label detailTravelDate;
-    
-    @FXML private Button viewTicketButton;
-    @FXML private Button downloadTicketButton;
-    @FXML private Button bookAgainButton;
-    @FXML private Button provideFeedbackButton;
-    
-    @FXML private Button refreshButton;
     @FXML private Button backButton;
+    @FXML private Button refreshButton;
     
-    private Customer currentCustomer;
     private String currentUsername;
-    private Stage primaryStage;
-    
-    private List<Booking> allBookings;
-    private List<Booking> filteredBookings;
-    private int currentPage = 1;
-    private int pageSize = 10;
-    private int totalPages = 1;
-    
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm");
-    
-    // Static show method for navigation
+    private Customer currentCustomer;
+    private List<Booking> userBookings;
+
+    // Database connection details
+    String DB_URL = DatabaseConfig.getDbUrl();
+    String DB_USER = DatabaseConfig.getDbUser();
+    String DB_PASSWORD = DatabaseConfig.getDbPassword();
+
     public static void show(Stage stage, String username, Customer customer) {
         try {
             FXMLLoader loader = new FXMLLoader(BookingHistoryController.class.getResource("/ui/booking-history.fxml"));
             Parent root = loader.load();
             
             BookingHistoryController controller = loader.getController();
-            controller.setUserData(username, stage, customer);
+            controller.setUserData(username, customer);
             
-            Scene scene = new Scene(root, 1200, 800);
+            Scene scene = new Scene(root, 1000, 700);
             scene.getStylesheets().add(BookingHistoryController.class.getResource("/ui/booking-history.css").toExternalForm());
             
             stage.setScene(scene);
@@ -109,406 +72,475 @@ public class BookingHistoryController implements Initializable {
             showErrorAlert("Failed to load Booking History: " + e.getMessage());
         }
     }
-    
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         System.out.println("BookingHistoryController initialized");
-        initializeFilters();
-        setupTableColumns();
+        setupFilters();
         setupEventHandlers();
-        setupPagination();
     }
     
-    public void setUserData(String username, Stage stage, Customer customer) {
+    public void setUserData(String username, Customer customer) {
         this.currentUsername = username;
-        this.primaryStage = stage;
         this.currentCustomer = customer;
-        loadBookingsData();
+        updateUserGreeting();
+        loadUserBookingsFromDB();
     }
     
-    private void initializeFilters() {
-        // Initialize status filter options
-        statusFilterCombo.getItems().addAll(
-            "All Status",
-            "Completed",
-            "Confirmed", 
-            "Cancelled",
-            "Pending",
-            "Refunded"
-        );
-        statusFilterCombo.setValue("All Status");
-        
-        // Initialize page size options
-        pageSizeCombo.getItems().addAll(5, 10, 20, 50);
-        pageSizeCombo.setValue(10);
-        
-        // Set default date range (last 6 months)
-        fromDatePicker.setValue(LocalDate.now().minusMonths(6));
-        toDatePicker.setValue(LocalDate.now());
+    private void updateUserGreeting() {
+        if (currentUsername != null && !currentUsername.isEmpty()) {
+            userGreeting.setText("Hello, " + currentUsername + "! 📜");
+        }
     }
     
-    private void setupTableColumns() {
-        // Configure table columns
-        bookingIdColumn.setCellValueFactory(cellData -> cellData.getValue().bookingIdProperty());
-        routeColumn.setCellValueFactory(cellData -> cellData.getValue().routeInfoProperty());
-        dateColumn.setCellValueFactory(cellData -> cellData.getValue().travelDateProperty());
-        bookingDateColumn.setCellValueFactory(cellData -> cellData.getValue().bookingDateProperty());
-        seatsColumn.setCellValueFactory(cellData -> cellData.getValue().seatsProperty());
-        classColumn.setCellValueFactory(cellData -> cellData.getValue().classTypeProperty());
-        amountColumn.setCellValueFactory(cellData -> cellData.getValue().amountProperty());
+    private void setupFilters() {
+        // Status filter options - including historical statuses
+        statusFilter.getItems().addAll("All Bookings", "Confirmed", "Completed", "Cancelled", "Pending", "Refunded");
+        statusFilter.setValue("All Bookings");
         
-        // Status column with styling
-        statusColumn.setCellValueFactory(cellData -> cellData.getValue().statusProperty());
-        statusColumn.setCellFactory(column -> new TableCell<Booking, String>() {
-            @Override
-            protected void updateItem(String status, boolean empty) {
-                super.updateItem(status, empty);
-                if (empty || status == null) {
-                    setText(null);
-                    setStyle("");
-                } else {
-                    setText(status);
-                    switch (status.toUpperCase()) {
-                        case "COMPLETED":
-                            setStyle("-fx-background-color: #d1fae5; -fx-text-fill: #059669; -fx-background-radius: 8; -fx-padding: 2 6;");
-                            break;
-                        case "CONFIRMED":
-                            setStyle("-fx-background-color: #dbeafe; -fx-text-fill: #1d4ed8; -fx-background-radius: 8; -fx-padding: 2 6;");
-                            break;
-                        case "CANCELLED":
-                            setStyle("-fx-background-color: #fee2e2; -fx-text-fill: #dc2626; -fx-background-radius: 8; -fx-padding: 2 6;");
-                            break;
-                        case "PENDING":
-                            setStyle("-fx-background-color: #fef3c7; -fx-text-fill: #d97706; -fx-background-radius: 8; -fx-padding: 2 6;");
-                            break;
-                        case "REFUNDED":
-                            setStyle("-fx-background-color: #f3e8ff; -fx-text-fill: #7c3aed; -fx-background-radius: 8; -fx-padding: 2 6;");
-                            break;
-                        default:
-                            setStyle("");
-                    }
-                }
-            }
-        });
+        // Payment status filter
+        paymentFilter.getItems().addAll("All Payments", "Paid", "Unpaid", "Pending Payment", "Refunded");
+        paymentFilter.setValue("All Payments");
         
-        // Actions column
-        actionsColumn.setCellFactory(column -> new TableCell<Booking, String>() {
-            private final Button viewButton = new Button("👁 View");
-            private final Button ticketButton = new Button("🎫 Ticket");
-            
-            {
-                viewButton.setStyle("-fx-font-size: 10px; -fx-padding: 2px 6px;");
-                ticketButton.setStyle("-fx-font-size: 10px; -fx-padding: 2px 6px;");
-                
-                viewButton.setOnAction(e -> {
-                    Booking booking = getTableView().getItems().get(getIndex());
-                    showBookingDetails(booking);
-                });
-                
-                ticketButton.setOnAction(e -> {
-                    Booking booking = getTableView().getItems().get(getIndex());
-                    viewETicket(booking);
-                });
-            }
-            
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    HBox buttons = new HBox(5);
-                    buttons.getChildren().addAll(viewButton, ticketButton);
-                    setGraphic(buttons);
-                }
-            }
-        });
+        // Search field placeholder
+        searchField.setPromptText("Search by booking ID, route...");
     }
     
     private void setupEventHandlers() {
-        // Filter buttons
-        applyFiltersButton.setOnAction(e -> applyFilters());
-        clearFiltersButton.setOnAction(e -> clearFilters());
-        exportButton.setOnAction(e -> exportHistory());
+        backButton.setOnAction(e -> handleBack());
+        refreshButton.setOnAction(e -> loadUserBookingsFromDB());
         
-        // Pagination
-        prevPageButton.setOnAction(e -> previousPage());
-        nextPageButton.setOnAction(e -> nextPage());
-        pageSizeCombo.setOnAction(e -> changePageSize());
-        
-        // Detail buttons
-        viewTicketButton.setOnAction(e -> viewSelectedTicket());
-        downloadTicketButton.setOnAction(e -> downloadSelectedTicket());
-        bookAgainButton.setOnAction(e -> bookAgain());
-        provideFeedbackButton.setOnAction(e -> provideFeedback());
-        
-        // Navigation buttons
-        refreshButton.setOnAction(e -> loadBookingsData());
-        backButton.setOnAction(e -> navigateToDashboard());
-        
-        // Table selection listener
-        bookingsTable.getSelectionModel().selectedItemProperty().addListener(
-            (obs, oldSelection, newSelection) -> {
-                if (newSelection != null) {
-                    showBookingDetails(newSelection);
-                }
-            });
+        // Filter change listeners
+        statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
+        paymentFilter.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
     }
     
-    private void setupPagination() {
-        updatePaginationControls();
-    }
-    
-    private void loadBookingsData() {
-        // Load ALL bookings for customer (including completed and cancelled)
-        allBookings = Booking.getAllBookingsForCustomer(currentCustomer.getCustomerID());
-        applyFilters(); // This will apply current filters and pagination
-        updateStatistics();
-    }
-    
-    private void applyFilters() {
-        if (allBookings == null) return;
-        
-        List<Booking> filtered = allBookings.stream()
-            .filter(this::filterByDate)
-            .filter(this::filterByStatus)
-            .filter(this::filterBySearch)
-            .collect(Collectors.toList());
-        
-        filteredBookings = filtered;
-        currentPage = 1;
-        updatePagination();
-        displayCurrentPage();
-    }
-    
-    private boolean filterByDate(Booking booking) {
-        if (fromDatePicker.getValue() == null && toDatePicker.getValue() == null) {
-            return true;
-        }
-        
-        LocalDate bookingDate = booking.getBookingDate();
-        if (bookingDate == null) return true;
-        
-        boolean afterFrom = fromDatePicker.getValue() == null || 
-                           !bookingDate.isBefore(fromDatePicker.getValue());
-        boolean beforeTo = toDatePicker.getValue() == null || 
-                          !bookingDate.isAfter(toDatePicker.getValue());
-        
-        return afterFrom && beforeTo;
-    }
-    
-    private boolean filterByStatus(Booking booking) {
-        String selectedStatus = statusFilterCombo.getValue();
-        if (selectedStatus == null || "All Status".equals(selectedStatus)) {
-            return true;
-        }
-        return selectedStatus.equalsIgnoreCase(booking.getStatus());
-    }
-    
-    private boolean filterBySearch(Booking booking) {
-        String searchText = searchField.getText();
-        if (searchText == null || searchText.trim().isEmpty()) {
-            return true;
-        }
-        
-        String searchLower = searchText.toLowerCase();
-        return booking.getBookingID().toLowerCase().contains(searchLower) ||
-               booking.getRouteInfo().toLowerCase().contains(searchLower);
-    }
-    
-    private void clearFilters() {
-        fromDatePicker.setValue(LocalDate.now().minusMonths(6));
-        toDatePicker.setValue(LocalDate.now());
-        statusFilterCombo.setValue("All Status");
-        searchField.clear();
+    private void loadUserBookingsFromDB() {
+        userBookings = fetchBookingsFromDatabase();
         applyFilters();
     }
     
-    private void updatePagination() {
-        if (filteredBookings == null) {
-            totalPages = 1;
-        } else {
-            totalPages = (int) Math.ceil((double) filteredBookings.size() / pageSize);
+    private List<Booking> fetchBookingsFromDatabase() {
+        List<Booking> bookings = new ArrayList<>();
+        
+        String query = """
+            SELECT 
+                b.BookingID, b.CustomerID, b.BookingDateTime, b.TotalAmount, b.Status,
+                p.PaymentID, p.PaymentStatus, p.PaymentMethod, p.Amount as PaymentAmount,
+                r.RouteID, r.Source, r.Destination, r.BasePrice,
+                s.ScheduleID, s.Date, s.DepartureTime, s.ArrivalTime, s.Class,
+                res.ReservationID
+            FROM Booking b
+            LEFT JOIN Payment p ON b.PaymentID = p.PaymentID
+            LEFT JOIN Reservation res ON b.ReservationID = res.ReservationID
+            LEFT JOIN Route r ON res.RouteID = r.RouteID
+            LEFT JOIN Schedule s ON res.ScheduleID = s.ScheduleID
+            WHERE b.CustomerID = ?
+            ORDER BY b.BookingDateTime DESC
+            """;
+            
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            
+            stmt.setString(1, currentCustomer.getUserID());
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                Booking booking = createBookingFromResultSet(rs);
+                if (booking != null) {
+                    bookings.add(booking);
+                }
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error fetching bookings from database: " + e.getMessage());
+            e.printStackTrace();
+            showAlert("Database Error", "Failed to load bookings: " + e.getMessage());
         }
-        updatePaginationControls();
+        
+        return bookings;
     }
     
-    private void updatePaginationControls() {
-        pageInfoLabel.setText(String.format("Page %d of %d", currentPage, totalPages));
-        prevPageButton.setDisable(currentPage <= 1);
-        nextPageButton.setDisable(currentPage >= totalPages);
+    private Booking createBookingFromResultSet(ResultSet rs) throws SQLException {
+        try {
+            // Create Route
+            models.Route route = new models.Route(
+                String.valueOf(rs.getInt("RouteID")),
+                rs.getString("Source"),
+                rs.getString("Destination"),
+                rs.getDouble("BasePrice")
+            );
+            
+            // Create Schedule
+            models.Schedule schedule = new models.Schedule(
+                String.valueOf(rs.getInt("ScheduleID")),
+                rs.getDate("Date").toLocalDate(),
+                rs.getTime("DepartureTime").toLocalTime(),
+                rs.getTime("ArrivalTime").toLocalTime(),
+                rs.getString("Class")
+            );
+            
+            // Create Reservation
+            models.Reservation reservation = new models.Reservation(
+                String.valueOf(rs.getInt("ReservationID")),
+                schedule,
+                route,
+                rs.getString("Class")
+            );
+            
+            // Create Booking
+            Booking booking = new Booking(
+                "BK" + rs.getInt("BookingID"), // Format booking ID
+                rs.getString("CustomerID"),
+                reservation,
+                rs.getTimestamp("BookingDateTime")
+            );
+            
+            booking.setTotalAmount(rs.getDouble("TotalAmount"));
+            booking.setStatus(rs.getString("Status"));
+            
+            // Create Payment if exists
+            String paymentId = rs.getString("PaymentID");
+            if (paymentId != null && !rs.wasNull()) {
+                Payment payment = new Payment(
+                    paymentId,
+                    booking,
+                    rs.getDouble("PaymentAmount"),
+                    rs.getString("PaymentMethod")
+                );
+                payment.setStatus(rs.getString("PaymentStatus"));
+                booking.setPayment(payment);
+            }
+            
+            return booking;
+            
+        } catch (Exception e) {
+            System.err.println("Error creating booking object: " + e.getMessage());
+            return null;
+        }
     }
     
-    private void displayCurrentPage() {
-        if (filteredBookings == null) {
-            bookingsTable.getItems().clear();
+    private void applyFilters() {
+        if (userBookings == null || userBookings.isEmpty()) {
+            showNoBookings();
             return;
         }
         
-        int fromIndex = (currentPage - 1) * pageSize;
-        int toIndex = Math.min(fromIndex + pageSize, filteredBookings.size());
+        List<Booking> filteredBookings = new ArrayList<>(userBookings);
         
-        if (fromIndex >= filteredBookings.size()) {
-            bookingsTable.getItems().clear();
+        // Apply status filter
+        String status = statusFilter.getValue();
+        if (!"All Bookings".equals(status)) {
+            filteredBookings.removeIf(booking -> !booking.getStatus().equalsIgnoreCase(status));
+        }
+        
+        // Apply payment filter
+        String paymentStatus = paymentFilter.getValue();
+        switch (paymentStatus) {
+            case "Paid":
+                filteredBookings.removeIf(booking -> !booking.isPaid());
+                break;
+            case "Unpaid":
+                filteredBookings.removeIf(booking -> booking.hasPayment() && !booking.isPaid());
+                break;
+            case "Pending Payment":
+                filteredBookings.removeIf(booking -> !booking.hasPayment() || booking.isPaid());
+                break;
+            case "Refunded":
+                filteredBookings.removeIf(booking -> !"Refunded".equals(booking.getPaymentStatus()));
+                break;
+        }
+        
+        // Apply search filter
+        String searchTerm = searchField.getText().toLowerCase();
+        if (!searchTerm.isEmpty()) {
+            filteredBookings.removeIf(booking -> 
+                !booking.getBookingID().toLowerCase().contains(searchTerm) &&
+                !booking.getReservation().getRoute().getSource().toLowerCase().contains(searchTerm) &&
+                !booking.getReservation().getRoute().getDestination().toLowerCase().contains(searchTerm)
+            );
+        }
+        
+        displayBookings(filteredBookings);
+    }
+    
+    private void displayBookings(List<Booking> bookings) {
+        bookingsContainer.getChildren().clear();
+        
+        if (bookings.isEmpty()) {
+            showNoBookings();
+            return;
+        }
+        
+        noBookingsText.setVisible(false);
+        
+        for (Booking booking : bookings) {
+            VBox bookingCard = createBookingCard(booking);
+            bookingsContainer.getChildren().add(bookingCard);
+        }
+    }
+    
+    private VBox createBookingCard(Booking booking) {
+        VBox card = new VBox();
+        card.getStyleClass().add("booking-card");
+        
+        models.Reservation reservation = booking.getReservation();
+        models.Route route = reservation.getRoute();
+        models.Schedule schedule = reservation.getSchedule();
+        
+        // Header section
+        HBox header = new HBox();
+        header.getStyleClass().add("booking-header");
+        
+        Label bookingId = new Label("Booking #" + booking.getBookingID());
+        bookingId.getStyleClass().add("booking-id");
+        
+        // Status badge
+        HBox statusBadges = new HBox();
+        statusBadges.getStyleClass().add("status-badges");
+        
+        Label bookingStatus = new Label(booking.getStatus());
+        bookingStatus.getStyleClass().addAll("status", getBookingStatusStyleClass(booking.getStatus()));
+        
+        Label paymentStatus = new Label(getPaymentStatusText(booking));
+        paymentStatus.getStyleClass().addAll("status", getPaymentStatusStyleClass(booking));
+        
+        statusBadges.getChildren().addAll(bookingStatus, paymentStatus);
+        
+        HBox.setHgrow(bookingId, javafx.scene.layout.Priority.ALWAYS);
+        header.getChildren().addAll(bookingId, statusBadges);
+        
+        // Route information
+        VBox routeInfo = new VBox();
+        routeInfo.getStyleClass().add("route-info");
+        
+        Label routeText = new Label(route.getSource() + " → " + route.getDestination());
+        routeText.getStyleClass().add("route");
+        
+        Label scheduleText = new Label(
+            schedule.getDate() + " • " + 
+            schedule.getDepartureTime() + " - " + schedule.getArrivalTime()
+        );
+        scheduleText.getStyleClass().add("schedule");
+        
+        Label classText = new Label("Class: " + reservation.getSeatClass());
+        classText.getStyleClass().add("class");
+        
+        routeInfo.getChildren().addAll(routeText, scheduleText, classText);
+        
+        // Details section
+        HBox details = new HBox();
+        details.getStyleClass().add("booking-details");
+        
+        VBox leftDetails = new VBox();
+        leftDetails.getStyleClass().add("details-left");
+        
+        Label bookingDate = new Label("Booked: " + 
+            new SimpleDateFormat("MMM dd, yyyy 'at' HH:mm").format(booking.getBookingDateTime()));
+        bookingDate.getStyleClass().add("booking-date");
+        
+        Label price = new Label("Total: PKR " + booking.getTotalAmount());
+        price.getStyleClass().add("price");
+        
+        leftDetails.getChildren().addAll(bookingDate, price);
+        
+        // Action buttons
+        HBox actionButtons = new HBox();
+        actionButtons.getStyleClass().add("action-buttons");
+        
+        Button viewTicketBtn = new Button("View E-Ticket");
+        viewTicketBtn.getStyleClass().add("btn-primary");
+        viewTicketBtn.setOnAction(e -> viewETicket(booking));
+        
+        Button viewDetailsBtn = new Button("View Details");
+        viewDetailsBtn.getStyleClass().add("btn-secondary");
+        viewDetailsBtn.setOnAction(e -> showBookingDetails(booking));
+        
+        // Show appropriate buttons based on status
+        if (booking.isPaid() && ("Confirmed".equals(booking.getStatus()) || "Completed".equals(booking.getStatus()))) {
+            actionButtons.getChildren().addAll(viewTicketBtn, viewDetailsBtn);
         } else {
-            List<Booking> pageBookings = filteredBookings.subList(fromIndex, toIndex);
-            bookingsTable.getItems().setAll(pageBookings);
+            actionButtons.getChildren().add(viewDetailsBtn);
+        }
+        
+        HBox.setHgrow(leftDetails, javafx.scene.layout.Priority.ALWAYS);
+        details.getChildren().addAll(leftDetails, actionButtons);
+        
+        card.getChildren().addAll(header, routeInfo, details);
+        
+        return card;
+    }
+    
+    private String getPaymentStatusText(Booking booking) {
+        if (!booking.hasPayment()) {
+            return "Unpaid";
+        }
+        return booking.getPayment().getStatus();
+    }
+    
+    private String getBookingStatusStyleClass(String status) {
+        switch (status.toLowerCase()) {
+            case "confirmed": return "status-confirmed";
+            case "completed": return "status-completed";
+            case "cancelled": return "status-cancelled";
+            case "pending": return "status-pending";
+            case "refunded": return "status-refunded";
+            default: return "status-pending";
         }
     }
     
-    private void previousPage() {
-        if (currentPage > 1) {
-            currentPage--;
-            displayCurrentPage();
-            updatePaginationControls();
+    private String getPaymentStatusStyleClass(Booking booking) {
+        if (!booking.hasPayment()) {
+            return "status-unpaid";
+        }
+        String paymentStatus = booking.getPayment().getStatus();
+        switch (paymentStatus.toLowerCase()) {
+            case "completed": return "status-paid";
+            case "pending": 
+            case "processing": return "status-pending-payment";
+            case "failed": return "status-cancelled";
+            case "refunded": return "status-refunded";
+            default: return "status-unpaid";
         }
     }
     
-    private void nextPage() {
-        if (currentPage < totalPages) {
-            currentPage++;
-            displayCurrentPage();
-            updatePaginationControls();
-        }
-    }
-    
-    private void changePageSize() {
-        pageSize = pageSizeCombo.getValue();
-        currentPage = 1;
-        updatePagination();
-        displayCurrentPage();
-    }
-    
-    private void updateStatistics() {
-        if (allBookings == null) return;
-        
-        long total = allBookings.size();
-        long completed = allBookings.stream().filter(b -> "COMPLETED".equals(b.getStatus())).count();
-        long cancelled = allBookings.stream().filter(b -> "CANCELLED".equals(b.getStatus())).count();
-        double totalSpent = allBookings.stream()
-            .filter(b -> !"CANCELLED".equals(b.getStatus()))
-            .mapToDouble(b -> Double.parseDouble(b.getAmount().replace("$", "")))
-            .sum();
-        
-        totalBookingsLabel.setText(String.valueOf(total));
-        completedTripsLabel.setText(String.valueOf(completed));
-        cancelledBookingsLabel.setText(String.valueOf(cancelled));
-        totalSpentLabel.setText(String.format("$%.2f", totalSpent));
-    }
-    
-    private void showBookingDetails(Booking booking) {
-        detailsPanel.setVisible(true);
-        
-        detailBookingId.setText(booking.getBookingID());
-        detailStatus.setText(booking.getStatus());
-        detailBookedOn.setText(booking.getBookingDateTime());
-        detailRoute.setText(booking.getRouteInfo());
-        detailDeparture.setText(booking.getDepartureTime());
-        detailArrival.setText(booking.getArrivalTime());
-        detailSeats.setText(booking.getSeats());
-        detailClass.setText(booking.getClassType());
-        detailAmount.setText(booking.getAmount());
-        detailPaymentStatus.setText(booking.getPaymentStatus());
-        detailTravelDate.setText(booking.getTravelDate());
-        
-        // Enable/disable buttons based on status
-        boolean canViewTicket = "CONFIRMED".equals(booking.getStatus()) || "COMPLETED".equals(booking.getStatus());
-        viewTicketButton.setDisable(!canViewTicket);
-        downloadTicketButton.setDisable(!canViewTicket);
-        provideFeedbackButton.setDisable(!"COMPLETED".equals(booking.getStatus()));
-    }
-    
-    private void viewSelectedTicket() {
-        Booking selected = bookingsTable.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            viewETicket(selected);
-        }
+    private void showNoBookings() {
+        bookingsContainer.getChildren().clear();
+        noBookingsText.setVisible(true);
     }
     
     private void viewETicket(Booking booking) {
-        ETicket ticket = booking.GetETicket();
-        if (ticket != null) {
-            // Show ticket in a dialog or new window
-            showAlert("E-Ticket", "Displaying E-Ticket for booking: " + booking.getBookingID());
-            // In real implementation, you'd show the ticket details
-        } else {
-            showAlert("Error", "No E-Ticket available for this booking.");
-        }
-    }
-    
-    private void downloadSelectedTicket() {
-        Booking selected = bookingsTable.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            // Generate and download PDF ticket
-            boolean success = generateTicketPDF(selected);
-            if (success) {
-                showAlert("Success", "E-Ticket PDF downloaded successfully!");
-            } else {
-                showAlert("Error", "Failed to download E-Ticket.");
+        try {
+            if (!booking.isPaid()) {
+                showAlert("Payment Required", "Please complete payment to view your E-Ticket.");
+                return;
             }
-        }
-    }
-    
-    private boolean generateTicketPDF(Booking booking) {
-        // Implement PDF generation logic here
-        // This would use a PDF library to generate the ticket
-        return true; // Placeholder
-    }
-    
-    private void bookAgain() {
-        Booking selected = bookingsTable.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            // Navigate to booking page with pre-filled route information
-            showAlert("Book Again", "Redirecting to booking page with route: " + selected.getRouteInfo());
-            // In real implementation, you'd navigate to booking page with pre-filled data
-        }
-    }
-    
-    private void provideFeedback() {
-        Booking selected = bookingsTable.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            // Show feedback dialog
-            TextInputDialog dialog = new TextInputDialog();
-            dialog.setTitle("Provide Feedback");
-            dialog.setHeaderText("Feedback for booking: " + selected.getBookingID());
-            dialog.setContentText("Please enter your feedback:");
             
-            dialog.showAndWait().ifPresent(feedback -> {
-                if (!feedback.trim().isEmpty()) {
-                    // Save feedback to database
-                    boolean success = saveFeedback(selected, feedback);
-                    if (success) {
-                        showAlert("Thank You", "Your feedback has been submitted!");
-                    } else {
-                        showAlert("Error", "Failed to submit feedback.");
-                    }
-                }
-            });
+            ETicket eTicket = booking.generateETicket();
+            showAlert("E-Ticket", 
+                "E-Ticket Details:\n" +
+                "Ticket ID: " + eTicket.getTicketID() + "\n" +
+                "Booking ID: " + booking.getBookingID() + "\n" +
+                "Route: " + booking.getReservation().getRoute().getSource() + " → " + 
+                         booking.getReservation().getRoute().getDestination() + "\n" +
+                "Date: " + booking.getReservation().getSchedule().getDate() + "\n" +
+                "Time: " + booking.getReservation().getSchedule().getDepartureTime() + " - " + 
+                         booking.getReservation().getSchedule().getArrivalTime());
+            
+        } catch (Exception e) {
+            showAlert("Error", "Failed to generate E-Ticket: " + e.getMessage());
         }
     }
     
-    private boolean saveFeedback(Booking booking, String feedback) {
-        // Implement feedback saving logic
-        return true; // Placeholder
-    }
-    
-    private void exportHistory() {
-        // Export booking history to CSV or PDF
-        boolean success = exportToCSV();
-        if (success) {
-            showAlert("Export Successful", "Booking history exported successfully!");
-        } else {
-            showAlert("Export Failed", "Failed to export booking history.");
+    private void showBookingDetails(Booking booking) {
+        StringBuilder details = new StringBuilder();
+        details.append("📋 Booking Details\n\n");
+        details.append("Booking ID: ").append(booking.getBookingID()).append("\n");
+        details.append("Status: ").append(booking.getStatus()).append("\n");
+        details.append("Payment Status: ").append(booking.getPaymentStatus()).append("\n");
+        details.append("Booked On: ").append(new SimpleDateFormat("MMM dd, yyyy 'at' HH:mm").format(booking.getBookingDateTime())).append("\n");
+        details.append("Total Amount: PKR ").append(booking.getTotalAmount()).append("\n\n");
+        
+        if (booking.getReservation() != null) {
+            details.append("🚌 Journey Details\n\n");
+            details.append("Route: ").append(booking.getReservation().getRoute().getSource())
+                   .append(" → ").append(booking.getReservation().getRoute().getDestination()).append("\n");
+            details.append("Travel Date: ").append(booking.getReservation().getSchedule().getDate()).append("\n");
+            details.append("Departure: ").append(booking.getReservation().getSchedule().getDepartureTime()).append("\n");
+            details.append("Arrival: ").append(booking.getReservation().getSchedule().getArrivalTime()).append("\n");
+            details.append("Class: ").append(booking.getReservation().getSeatClass()).append("\n");
         }
+        
+        Alert detailsAlert = new Alert(Alert.AlertType.INFORMATION);
+        detailsAlert.setTitle("Booking Details");
+        detailsAlert.setHeaderText("Complete Booking Information");
+        detailsAlert.setContentText(details.toString());
+        detailsAlert.showAndWait();
+    }
+    // Sample structure for creating booking cards in your controller
+    private VBox createBookingCard(Booking booking) {
+        VBox card = new VBox();
+        card.getStyleClass().add("booking-card");
+    
+        // Header with booking ID and status
+        HBox header = new HBox();
+        header.getStyleClass().add("booking-header");
+    
+        VBox bookingInfo = new VBox();
+        Label bookingId = new Label("Booking #" + booking.getId());
+        bookingId.getStyleClass().add("booking-id");
+    
+        Label bookingDate = new Label("Booked on: " + booking.getBookingDate());
+        bookingDate.getStyleClass().add("booking-date");
+    
+        bookingInfo.getChildren().addAll(bookingId, bookingDate);
+    
+        HBox statusBadges = new HBox();
+        statusBadges.getStyleClass().add("status-badges");
+    
+        Label statusLabel = new Label(booking.getStatus());
+        statusLabel.getStyleClass().addAll("status", "status-" + booking.getStatus().toLowerCase());
+    
+        Label paymentLabel = new Label(booking.getPaymentStatus());
+        paymentLabel.getStyleClass().addAll("status", "status-" + booking.getPaymentStatus().toLowerCase().replace(" ", "-"));
+    
+        statusBadges.getChildren().addAll(statusLabel, paymentLabel);
+    
+        HBox.setHgrow(bookingInfo, Priority.ALWAYS);
+        header.getChildren().addAll(bookingInfo, statusBadges);
+    
+        // Route information
+        VBox routeSection = new VBox();
+        routeSection.getStyleClass().add("route-section");
+    
+        Label route = new Label(booking.getDeparture() + " → " + booking.getDestination());
+        route.getStyleClass().add("route");
+    
+        Label schedule = new Label(booking.getDepartureTime() + " - " + booking.getArrivalTime());
+        schedule.getStyleClass().add("schedule");
+    
+        routeSection.getChildren().addAll(route, schedule);
+    
+        // Booking details grid
+        GridPane detailsGrid = new GridPane();
+        detailsGrid.getStyleClass().add("details-grid");
+    
+        // Add detail items (passengers, class, etc.)
+        // ... details implementation
+    
+        // Price section
+        VBox priceSection = new VBox();
+        priceSection.getStyleClass().add("price-section");
+    
+        Label price = new Label("$" + booking.getTotalPrice());
+        price.getStyleClass().add("price");
+    
+        priceSection.getChildren().add(price);
+    
+        // Action buttons
+        HBox actionButtons = new HBox();
+        actionButtons.getStyleClass().add("action-buttons");
+    
+        Button viewDetails = new Button("View Details");
+        viewDetails.getStyleClass().add("btn-primary");
+    
+        Button cancelBooking = new Button("Cancel");
+        cancelBooking.getStyleClass().add("btn-danger");
+    
+        actionButtons.getChildren().addAll(viewDetails, cancelBooking);
+    
+        card.getChildren().addAll(header, routeSection, detailsGrid, priceSection, actionButtons);
+        return card;
     }
     
-    private boolean exportToCSV() {
-        // Implement CSV export logic
-        return true; // Placeholder
-    }
-    
-    private void navigateToDashboard() {
-        DashboardController.show(primaryStage, currentUsername, currentCustomer);
+    private void handleBack() {
+        try {
+            DashboardController.show((Stage) backButton.getScene().getWindow(), currentUsername, currentCustomer);
+        } catch (Exception e) {
+            System.err.println("Error navigating back: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
     
     private void showAlert(String title, String message) {
