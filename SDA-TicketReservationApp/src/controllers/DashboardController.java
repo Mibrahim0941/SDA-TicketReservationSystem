@@ -159,8 +159,30 @@ public class DashboardController implements Initializable {
     @FXML
     private void showBookTickets() {
         clearContentArea();
-        showAlert("Feature Coming Soon", "Book Tickets feature will be available soon!");
-        showHome(); // Fall back to home
+        try {
+            if (currentCustomer == null) {
+                showAlert("Error", "Customer information not available.");
+                return;
+            }
+            
+            // Load the FXML file directly into content area
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/bookTickets.fxml"));
+            Parent bookTicketsContent = loader.load();
+            
+            // Pass data to controller if it exists
+            Object controller = loader.getController();
+            if (controller instanceof BookTicketsController) {
+                ((BookTicketsController) controller).setUserData(currentUsername, currentCustomer);
+            }
+            
+            contentArea.getChildren().add(bookTicketsContent);
+            System.out.println("Book Tickets loaded successfully!");
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Error", "Failed to load Book Tickets: " + e.getMessage());
+            showHome();
+        }
     }
     
     @FXML

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+
+<BorderPane style="-fx-background-color: #F5EFE7;" stylesheets="@../ui/BookTickets.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.BookTicketsController">
+
+    <padding>
+        <Insets bottom="20" left="20" right="20" top="20" />
+    </padding>
+
+    <top>
+        <VBox spacing="15">
+            <HBox alignment="CENTER_LEFT" spacing="15">
+                <Button fx:id="backToRoutesButton" styleClass="btn-icon" text="← Routes" visible="false" managed="false" />
+                <Button fx:id="backToSchedulesButton" styleClass="btn-icon" text="← Schedules" visible="false" managed="false" />
+                
+                <VBox>
+                    <Text fx:id="pageTitle" styleClass="page-title" text="Book Tickets" />
+                    <Label text="Find your next journey" styleClass="page-subtitle"/>
+                </VBox>
+            </HBox>
+
+            <HBox fx:id="searchBarContainer" alignment="CENTER_LEFT" spacing="15" styleClass="search-card">
+                <padding>
+                    <Insets bottom="15" left="20" right="20" top="15" />
+                </padding>
+                
+                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                    <Label styleClass="input-label" text="From" />
+                    <TextField fx:id="searchSource" promptText="City (e.g. Lahore)" styleClass="text-field" />
+                </VBox>
+
+                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                    <Label styleClass="input-label" text="To" />
+                    <TextField fx:id="searchDestination" promptText="City (e.g. Islamabad)" styleClass="text-field" />
+                </VBox>
+
+                <VBox alignment="BOTTOM_LEFT">
+                    <Button fx:id="searchButton" styleClass="btn-primary" text="Search Routes" />
+                </VBox>
+
+                <VBox alignment="BOTTOM_LEFT">
+                    <Button fx:id="clearSearchButton" styleClass="btn-secondary" text="Clear" />
+                </VBox>
+            </HBox>
+            <Separator />
+        </VBox>
+    </top>
+
+    <center>
+        <StackPane fx:id="contentArea" style="-fx-padding: 10 0 10 0;">
+            
+            <ScrollPane fitToWidth="true" styleClass="transparent-scroll">
+                <VBox fx:id="routesContainer" spacing="15" />
+            </ScrollPane>
+
+            <ScrollPane fitToWidth="true" styleClass="transparent-scroll">
+                <VBox fx:id="schedulesContainer" spacing="15" visible="false" />
+            </ScrollPane>
+
+            <VBox fx:id="seatsContainer" alignment="TOP_CENTER" spacing="15" visible="false" />
+            
+        </StackPane>
+    </center>
+
+    <bottom>
+        <VBox styleClass="summary-card">
+            <padding>
+                <Insets bottom="15" left="20" right="20" top="15" />
+            </padding>
+            
+            <HBox alignment="CENTER_LEFT" spacing="30">
+                <VBox spacing="2">
+                    <Label styleClass="summary-label" text="SELECTED ROUTE" />
+                    <Text fx:id="selectedRouteText" styleClass="summary-value" text="Route: Not selected" />
+                </VBox>
+                
+                <Separator orientation="VERTICAL" />
+                
+                <VBox spacing="2">
+                    <Label styleClass="summary-label" text="SELECTED SCHEDULE" />
+                    <Text fx:id="selectedScheduleText" styleClass="summary-value" text="Schedule: Not selected" />
+                </VBox>
+                
+                <Separator orientation="VERTICAL" />
+
+                <VBox spacing="2" HBox.hgrow="ALWAYS">
+                    <Label styleClass="summary-label" text="SELECTED SEATS" />
+                    <Text fx:id="selectedSeatsText" styleClass="summary-value" text="Seats: None" />
+                </VBox>
+
+                <VBox alignment="CENTER_RIGHT" spacing="5">
+                    <Text fx:id="totalPriceText" styleClass="total-price" text="Total: PKR 0.00" />
+                    <Button fx:id="bookNowButton" disable="true" styleClass="btn-confirm" text="Book Now" />
+                </VBox>
+            </HBox>
+        </VBox>
+    </bottom>
+
+</BorderPane>
