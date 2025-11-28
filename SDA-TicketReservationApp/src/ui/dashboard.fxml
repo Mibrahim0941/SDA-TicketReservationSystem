@@ -7,14 +7,27 @@
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
-<?import javafx.scene.text.TextAlignment?>
 
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" 
             fx:controller="controllers.DashboardController" stylesheets="@dashboard.css">
    
-   <!-- Left Sidebar -->
+   <top>
+      <HBox styleClass="header" alignment="CENTER_LEFT" spacing="20">
+         <padding>
+            <Insets top="10" right="25" bottom="10" left="25"/>
+         </padding>
+         
+         <Text text="TG" styleClass="header-logo"/>
+         
+         <Region HBox.hgrow="ALWAYS"/>
+         
+         <Button fx:id="logoutButton" text="🚪 Logout" styleClass="logout-button"/>
+      </HBox>
+   </top>
+
    <left>
       <ScrollPane styleClass="sidebar-scroll" fitToWidth="true" vbarPolicy="AS_NEEDED" hbarPolicy="NEVER">
          <VBox fx:id="sidebar" spacing="20" styleClass="sidebar" prefWidth="280">
@@ -22,7 +35,6 @@
                <Insets top="30" bottom="30" left="25" right="25"/>
             </padding>
             
-            <!-- User Info Section -->
             <VBox spacing="15" alignment="CENTER_LEFT">
                <Text text="Customer Profile" styleClass="sidebar-main-title"/>
                <Separator prefWidth="230"/>
@@ -37,24 +49,17 @@
                      <Label text="Member Since:" styleClass="info-label"/>
                      <Label fx:id="memberSinceLabel" text="Loading..." styleClass="info-value"/>
                   </VBox>
-                  <VBox spacing="4" styleClass="info-item">
-                     <Label text="Status:" styleClass="info-label"/>
-                     <Label fx:id="statusLabel" text="Loading..." styleClass="info-value status-active"/>
                   </VBox>
-               </VBox>
                
                <Separator prefWidth="230"/>
             </VBox>
 
-            <!-- Navigation Menu -->
             <VBox spacing="12" styleClass="nav-menu">
                <Text text="Navigation" styleClass="sidebar-section-title"/>
                
                <VBox spacing="8">
-                  <!-- Home/Overview -->
                   <Button fx:id="homeButton" text="🏠 Home" styleClass="nav-button"/>
                   
-                  <!-- Bookings Section -->
                   <VBox spacing="4" styleClass="nav-subsection">
                      <Text text="Bookings" styleClass="nav-subsection-title"/>
                      <Button fx:id="bookTicketsButton" text="🎫 Book Tickets" styleClass="nav-button"/>
@@ -62,14 +67,12 @@
                      <Button fx:id="historyButton" text="📊 Booking History" styleClass="nav-button"/>
                   </VBox>
                   
-                  <!-- Account Section -->
                   <VBox spacing="4" styleClass="nav-subsection">
                      <Text text="Account" styleClass="nav-subsection-title"/>
                      <Button fx:id="profileButton" text="👤 My Profile" styleClass="nav-button"/>
                      <Button fx:id="settingsButton" text="⚙️ Settings" styleClass="nav-button"/>
                   </VBox>
                   
-                  <!-- Support Section -->
                   <VBox spacing="4" styleClass="nav-subsection">
                      <Text text="Support" styleClass="nav-subsection-title"/>
                      <Button fx:id="supportButton" text="💬 Customer Support" styleClass="nav-button"/>
@@ -77,36 +80,10 @@
                </VBox>
             </VBox>
 
-            <!-- Quick Stats in Sidebar -->
-            <VBox spacing="12" styleClass="sidebar-stats">
-               <Text text="Quick Stats" styleClass="sidebar-section-title"/>
-               <VBox spacing="8">
-                  <HBox spacing="15" alignment="CENTER_LEFT">
-                     <VBox alignment="CENTER_LEFT" spacing="2">
-                        <Label fx:id="totalBookingsLabel" text="0" styleClass="sidebar-stat-number"/>
-                        <Label text="Total Bookings" styleClass="sidebar-stat-label"/>
-                     </VBox>
-                     <VBox alignment="CENTER_LEFT" spacing="2">
-                        <Label fx:id="upcomingTripsLabel" text="0" styleClass="sidebar-stat-number"/>
-                        <Label text="Upcoming Trips" styleClass="sidebar-stat-label"/>
-                     </VBox>
-                  </HBox>
-                  <HBox spacing="15" alignment="CENTER_LEFT">
-                     <VBox alignment="CENTER_LEFT" spacing="2">
-                        <Label fx:id="pointsLabel" text="0" styleClass="sidebar-stat-number"/>
-                        <Label text="Reward Points" styleClass="sidebar-stat-label"/>
-                     </VBox>
-                  </HBox>
-               </VBox>
             </VBox>
-
-            <!-- Logout Button -->
-            <Button fx:id="logoutButton" text="🚪 Logout" styleClass="logout-button"/>
-         </VBox>
       </ScrollPane>
    </left>
 
-   <!-- Main Content Area -->
    <center>
       <ScrollPane fx:id="contentScrollPane" fitToWidth="true" fitToHeight="true" 
                   vbarPolicy="AS_NEEDED" hbarPolicy="NEVER" styleClass="content-scroll">
@@ -115,15 +92,12 @@
                <Insets top="40" right="40" bottom="40" left="40"/>
             </padding>
             
-            <!-- Home Content (Default) -->
             <VBox fx:id="homeContent" styleClass="content-section">
-               <!-- Welcome Section -->
                <VBox spacing="15" alignment="TOP_LEFT">
                   <Text fx:id="welcomeTitle" text="Welcome Back!" styleClass="content-main-title"/>
                   <Text fx:id="userGreeting" text="Hello, Customer! Ready to book your next journey? 🚌" styleClass="content-subtitle"/>
                </VBox>
 
-               <!-- Quick Actions -->
                <VBox spacing="15" styleClass="quick-actions-section">
                   <Text text="Quick Actions" styleClass="section-title"/>
                   <HBox spacing="15" alignment="CENTER_LEFT">
@@ -132,7 +106,6 @@
                   </HBox>
                </VBox>
 
-               <!-- Recent Activity -->
                <VBox spacing="15" styleClass="activity-section">
                   <Text text="Recent Activity" styleClass="section-title"/>
                   <VBox fx:id="recentActivityContainer" spacing="10" styleClass="activity-list">

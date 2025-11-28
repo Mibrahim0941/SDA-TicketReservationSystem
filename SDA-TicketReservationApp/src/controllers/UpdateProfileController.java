@@ -37,7 +37,6 @@ public class UpdateProfileController implements Initializable {
     @FXML private Button updateProfileButton;
     @FXML private Button changePasswordButton;
     @FXML private Button backButton;
-    @FXML private Button logoutButton;
     
     private String currentUsername;
     private Stage primaryStage;
@@ -88,7 +87,6 @@ public class UpdateProfileController implements Initializable {
         updateProfileButton.setOnAction(e -> updateProfile());
         changePasswordButton.setOnAction(e -> changePassword());
         backButton.setOnAction(e -> goBackToDashboard());
-        logoutButton.setOnAction(e -> logout());
     }
     
     private void loadUserData() {
@@ -229,16 +227,6 @@ public class UpdateProfileController implements Initializable {
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("Error", "Failed to go back to dashboard: " + e.getMessage());
-        }
-    }
-    
-    private void logout() {
-        try {
-            Stage currentStage = (Stage) logoutButton.getScene().getWindow();
-            CustomerLoginController.show(currentStage);
-        } catch (Exception e) {
-            e.printStackTrace();
-            showAlert("Error", "Failed to logout: " + e.getMessage());
         }
     }
     

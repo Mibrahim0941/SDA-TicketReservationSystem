@@ -72,7 +72,6 @@
          <!-- Action Buttons -->
          <HBox spacing="15" alignment="CENTER">
             <Button fx:id="backButton" text="⬅ Back to Dashboard" styleClass="secondary-button"/>
-            <Button fx:id="logoutButton" text="🚪 Logout" styleClass="secondary-button"/>
          </HBox>
       </VBox>
    </center>

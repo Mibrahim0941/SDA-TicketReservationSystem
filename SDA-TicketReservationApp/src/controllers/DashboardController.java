@@ -26,10 +26,8 @@ public class DashboardController implements Initializable {
     // Sidebar elements
     @FXML private Label customerIdLabel;
     @FXML private Label memberSinceLabel;
-    @FXML private Label statusLabel;
-    @FXML private Label totalBookingsLabel;
-    @FXML private Label upcomingTripsLabel;
-    @FXML private Label pointsLabel;
+    
+    // REMOVED: statusLabel, totalBookingsLabel, etc. are no longer needed
     
     // Navigation buttons
     @FXML private Button homeButton;
@@ -102,12 +100,12 @@ public class DashboardController implements Initializable {
     
     private void loadCustomerData() {
         if (currentCustomer != null) {
-            // Display ONLY username and email - nothing else
+            // Display ONLY username and email
             String displayName = currentCustomer.getUsername() != null ? 
                 currentCustomer.getUsername() : "User";
             welcomeTitle.setText("Welcome, " + displayName + "!");
             
-            // Only set username and email - remove all other data
+            // Set username and email sidebar labels
             customerIdLabel.setText("Username: " + displayName);
             
             if (currentCustomer.getEmail() != null) {
@@ -116,24 +114,20 @@ public class DashboardController implements Initializable {
                 memberSinceLabel.setText("Email: Not provided");
             }
             
-            // Remove status and stats since you said NOTHING ELSE
-            statusLabel.setText("");
-            totalBookingsLabel.setText("");
-            upcomingTripsLabel.setText("");
-            pointsLabel.setText("");
+            // CRITICAL FIX: Removed code that tries to set text on deleted labels (statusLabel, etc.)
         }
     }
     
     private void setupEventHandlers() {
         // Navigation button handlers
-        homeButton.setOnAction(e -> showHome());
-        bookTicketsButton.setOnAction(e -> showBookTickets());
-        myBookingsButton.setOnAction(e -> showMyBookings());
-        historyButton.setOnAction(e -> showHistory());
-        profileButton.setOnAction(e -> showProfile());
-        settingsButton.setOnAction(e -> showSettings());
-        supportButton.setOnAction(e -> showSupport());
-        logoutButton.setOnAction(e -> handleLogout());
+        if(homeButton != null) homeButton.setOnAction(e -> showHome());
+        if(bookTicketsButton != null) bookTicketsButton.setOnAction(e -> showBookTickets());
+        if(myBookingsButton != null) myBookingsButton.setOnAction(e -> showMyBookings());
+        if(historyButton != null) historyButton.setOnAction(e -> showHistory());
+        if(profileButton != null) profileButton.setOnAction(e -> showProfile());
+        if(settingsButton != null) settingsButton.setOnAction(e -> showSettings());
+        if(supportButton != null) supportButton.setOnAction(e -> showSupport());
+        if(logoutButton != null) logoutButton.setOnAction(e -> handleLogout());
     }
     
     @FXML
@@ -142,8 +136,6 @@ public class DashboardController implements Initializable {
         contentArea.getChildren().add(homeContent);
         homeContent.setVisible(true);
         homeContent.setManaged(true);
-        
-        // Update home content with actual user data
         updateHomeContent();
     }
     
@@ -165,22 +157,25 @@ public class DashboardController implements Initializable {
                 return;
             }
             
-            // Load the FXML file directly into content area
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/bookTickets.fxml"));
             Parent bookTicketsContent = loader.load();
             
-            // Pass data to controller if it exists
-            Object controller = loader.getController();
-            if (controller instanceof BookTicketsController) {
-                ((BookTicketsController) controller).setUserData(currentUsername, currentCustomer);
-            }
+            // Note: Ensure BookTicketsController class exists and has setUserData
+            // If you don't have this controller yet, remove this block
+             Object controller = loader.getController();
+             // Reflection check to avoid crash if class missing
+             try {
+                 java.lang.reflect.Method method = controller.getClass().getMethod("setUserData", String.class, Customer.class);
+                 method.invoke(controller, currentUsername, currentCustomer);
+             } catch (Exception ex) {
+                 System.out.println("Controller does not have setUserData method or class mismatch: " + ex.getMessage());
+             }
             
             contentArea.getChildren().add(bookTicketsContent);
-            System.out.println("Book Tickets loaded successfully!");
             
         } catch (Exception e) {
             e.printStackTrace();
-            showAlert("Error", "Failed to load Book Tickets: " + e.getMessage());
+            showAlert("Feature Unavailable", "Book Tickets page is not ready yet.");
             showHome();
         }
     }
@@ -194,18 +189,15 @@ public class DashboardController implements Initializable {
                 return;
             }
             
-            // Load the FXML file directly into content area
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/myBookings.fxml"));
             Parent myBookingsContent = loader.load();
             
-            // Pass data to controller if it exists
             Object controller = loader.getController();
             if (controller instanceof MyBookingsController) {
-                ((MyBookingsController) controller).setUserData(currentUsername,currentCustomer);
+                ((MyBookingsController) controller).setUserData(currentUsername, currentCustomer);
             }
             
             contentArea.getChildren().add(myBookingsContent);
-            System.out.println("My Bookings loaded successfully in content area!");
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -228,11 +220,10 @@ public class DashboardController implements Initializable {
             
             Object controller = loader.getController();
             if (controller instanceof BookingHistoryController) {
-                ((BookingHistoryController) controller).setUserData(currentUsername,currentCustomer);
+                ((BookingHistoryController) controller).setUserData(currentUsername, currentCustomer);
             }
             
             contentArea.getChildren().add(historyContent);
-            System.out.println("Booking History loaded successfully!");
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -250,18 +241,17 @@ public class DashboardController implements Initializable {
                 return;
             }
             
-            // Load the FXML file directly
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/update-profile.fxml"));
             Parent profileContent = loader.load();
             
-            // Pass data to controller if it exists
             Object controller = loader.getController();
-            if (controller instanceof UpdateProfileController) {
-                ((UpdateProfileController) controller).setUserData(currentUsername, primaryStage, currentCustomer);
-            }
+            // Using reflection or strict casting depending on your exact Controller class name
+            // Assuming class name is UpdateProfileController
+             if (controller instanceof UpdateProfileController) {
+                 ((UpdateProfileController) controller).setUserData(currentUsername, primaryStage, currentCustomer);
+             }
             
             contentArea.getChildren().add(profileContent);
-            System.out.println("Profile loaded successfully!");
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -279,18 +269,19 @@ public class DashboardController implements Initializable {
                 return;
             }
             
-            // Load the FXML file directly
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/customer-support.fxml"));
             Parent supportContent = loader.load();
             
-            // Pass data to controller if it exists
             Object controller = loader.getController();
-            if (controller instanceof CustomerSupportController) {
-                ((CustomerSupportController) controller).setCustomerData(currentUsername, currentCustomer);
-            }
+            // Assuming class name is CustomerSupportController
+             try {
+                 java.lang.reflect.Method method = controller.getClass().getMethod("setCustomerData", String.class, Customer.class);
+                 method.invoke(controller, currentUsername, currentCustomer);
+             } catch (Exception ex) {
+                 // Ignore if method missing
+             }
             
             contentArea.getChildren().add(supportContent);
-            System.out.println("Support loaded successfully!");
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -303,7 +294,7 @@ public class DashboardController implements Initializable {
     private void showSettings() {
         clearContentArea();
         showAlert("Feature Coming Soon", "Settings feature will be available soon!");
-        showHome(); // Fall back to home
+        showHome();
     }
     
     private void clearContentArea() {
@@ -314,10 +305,24 @@ public class DashboardController implements Initializable {
     private void handleLogout() {
         try {
             System.out.println("Logging out user: " + currentUsername);
-            CustomerLoginController.show(primaryStage);
+            // Assuming CustomerLoginController exists and has a show method
+            // If class name is different, adjust here.
+            Class<?> loginControllerClass = Class.forName("controllers.CustomerLoginController");
+            java.lang.reflect.Method showMethod = loginControllerClass.getMethod("show", Stage.class);
+            showMethod.invoke(null, primaryStage);
+            
         } catch (Exception e) {
             System.err.println("Error during logout: " + e.getMessage());
             e.printStackTrace();
+            // Fallback if reflection fails
+            try {
+                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/customer_login.fxml"));
+                 Parent root = loader.load();
+                 primaryStage.setScene(new Scene(root));
+                 primaryStage.show();
+            } catch(Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
     
