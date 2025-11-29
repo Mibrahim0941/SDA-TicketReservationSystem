@@ -1,6 +1,7 @@
 package controllers;
 
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -13,52 +14,42 @@ import models.Admin;
 import models.Route;
 import catalogs.RouteCatalog;
 import helpers.IDGenerator;
-
 import java.io.IOException;
 
 public class ManageRoutesController {
-
     private RouteCatalog routeCatalog = RouteCatalog.getInstance();
     private String currentUsername;
     private Admin currentAdmin;
 
     @FXML private Text welcomeTitle;
     @FXML private Text userGreeting;
-    
     @FXML private TableView<Route> routesTable;
     @FXML private TableColumn<Route, String> routeIdColumn;
     @FXML private TableColumn<Route, String> sourceColumn;
     @FXML private TableColumn<Route, String> destinationColumn;
     @FXML private TableColumn<Route, Double> basePriceColumn;
-    
     @FXML private TextField sourceField;
     @FXML private TextField destinationField;
     @FXML private TextField basePriceField;
-    
     @FXML private Button addRouteButton;
     @FXML private Button updateRouteButton;
     @FXML private Button deleteRouteButton;
     @FXML private Button refreshButton;
     @FXML private Button clearButton;
     @FXML private Button backButton;
-    
     @FXML private TextArea routeDetailsArea;
 
     public static void show(Stage stage, String username, Admin admin) {
         try {
             FXMLLoader loader = new FXMLLoader(ManageRoutesController.class.getResource("/ui/manage-routes.fxml"));
             Parent root = loader.load();
-            
             ManageRoutesController controller = loader.getController();
             controller.setAdminData(username, admin);
-            
             Scene scene = new Scene(root, 1200, 800);
             scene.getStylesheets().add(ManageRoutesController.class.getResource("/ui/manage-routes.css").toExternalForm());
-            
             stage.setScene(scene);
             stage.setTitle("TicketGenie - Manage Routes");
             stage.centerOnScreen();
-            
         } catch (IOException e) {
             e.printStackTrace();
             showErrorAlert("Failed to load route management page: " + e.getMessage());
@@ -68,11 +59,9 @@ public class ManageRoutesController {
     public void setAdminData(String username, Admin admin) {
         this.currentUsername = username;
         this.currentAdmin = admin;
-        
         if (userGreeting != null) {
             userGreeting.setText("Manage Routes - " + username);
         }
-        
         Platform.runLater(this::loadRoutesData);
     }
 
@@ -84,24 +73,12 @@ public class ManageRoutesController {
     }
 
     private void setupEventHandlers() {
-        if (addRouteButton != null) {
-            addRouteButton.setOnAction(e -> handleAddRoute());
-        }
-        if (updateRouteButton != null) {
-            updateRouteButton.setOnAction(e -> handleUpdateRoute());
-        }
-        if (deleteRouteButton != null) {
-            deleteRouteButton.setOnAction(e -> handleDeleteRoute());
-        }
-        if (refreshButton != null) {
-            refreshButton.setOnAction(e -> handleRefresh());
-        }
-        if (clearButton != null) {
-            clearButton.setOnAction(e -> handleClear());
-        }
-        if (backButton != null) {
-            backButton.setOnAction(e -> handleBack());
-        }
+        if (addRouteButton != null) addRouteButton.setOnAction(e -> handleAddRoute());
+        if (updateRouteButton != null) updateRouteButton.setOnAction(e -> handleUpdateRoute());
+        if (deleteRouteButton != null) deleteRouteButton.setOnAction(e -> handleDeleteRoute());
+        if (refreshButton != null) refreshButton.setOnAction(e -> handleRefresh());
+        if (clearButton != null) clearButton.setOnAction(e -> handleClear());
+        if (backButton != null) backButton.setOnAction(e -> handleBack());
     }
 
     private void initializeTable() {
@@ -111,19 +88,34 @@ public class ManageRoutesController {
             destinationColumn.setCellValueFactory(new PropertyValueFactory<>("destination"));
             basePriceColumn.setCellValueFactory(new PropertyValueFactory<>("basePrice"));
             
+            basePriceColumn.setCellFactory(column -> new TableCell<Route, Double>() {
+                @Override
+                protected void updateItem(Double item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(String.format("PKR %.2f", item));
+                    }
+                }
+            });
+            
             routesTable.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldSelection, newSelection) -> showRouteDetails(newSelection)
             );
-            
-            routesTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         }
     }
 
     private void loadRoutesData() {
         if (routeCatalog != null && routesTable != null) {
-            routeCatalog.refresh();
-            routesTable.getItems().setAll(routeCatalog.getAllRoutes());
-            System.out.println("Loaded " + routeCatalog.getAllRoutes().size() + " routes");
+            try {
+                routeCatalog.refresh();
+                routesTable.setItems(FXCollections.observableArrayList(routeCatalog.getAllRoutes()));
+                System.out.println("Loaded " + routeCatalog.getAllRoutes().size() + " routes");
+            } catch (Exception e) {
+                System.err.println("Error loading routes: " + e.getMessage());
+                showError("Failed to load routes: " + e.getMessage());
+            }
         }
     }
 
@@ -135,12 +127,18 @@ public class ManageRoutesController {
             
             if (routeDetailsArea != null) {
                 StringBuilder details = new StringBuilder();
+                details.append("=== ROUTE DETAILS ===\n\n");
                 details.append("Route ID: ").append(route.getRouteID()).append("\n");
                 details.append("Source: ").append(route.getSource()).append("\n");
                 details.append("Destination: ").append(route.getDestination()).append("\n");
-                details.append("Base Price: PKR ").append(route.getBasePrice()).append("\n");
-                details.append("Number of Schedules: ").append(route.getSchedules().size());
+                details.append("Base Price: PKR ").append(String.format("%.2f", route.getBasePrice())).append("\n");
+                details.append("Number of Schedules: ").append(route.getSchedules().size()).append("\n\n");
                 
+                if (route.getSchedules().isEmpty()) {
+                    details.append("⚠ No schedules configured for this route.\n");
+                } else {
+                    details.append("✓ Route has active schedules.\n");
+                }
                 routeDetailsArea.setText(details.toString());
             }
         }
@@ -156,6 +154,11 @@ public class ManageRoutesController {
             return;
         }
         
+        if (source.equalsIgnoreCase(destination)) {
+            showError("Source and destination cannot be the same");
+            return;
+        }
+        
         try {
             double basePrice = Double.parseDouble(priceText);
             
@@ -164,14 +167,9 @@ public class ManageRoutesController {
                 return;
             }
             
-            // Check if route already exists using RouteCatalog
-            boolean routeExists = false;
-            for (Route existingRoute : routeCatalog.getAllRoutes()) {
-                if (existingRoute.verifySrcDst(source, destination)) {
-                    routeExists = true;
-                    break;
-                }
-            }
+            boolean routeExists = routeCatalog.getAllRoutes().stream()
+                .anyMatch(r -> r.getSource().equalsIgnoreCase(source) && 
+                              r.getDestination().equalsIgnoreCase(destination));
             
             if (routeExists) {
                 showError("A route from " + source + " to " + destination + " already exists");
@@ -182,15 +180,14 @@ public class ManageRoutesController {
             Route newRoute = new Route(routeID, source, destination, basePrice);
             
             if (routeCatalog.addRoute(newRoute)) {
-                showSuccess("Route added successfully!");
+                showSuccess("Route added successfully!\nRoute ID: " + routeID);
                 handleClear();
                 loadRoutesData();
             } else {
                 showError("Failed to add route");
             }
-            
         } catch (NumberFormatException e) {
-            showError("Invalid price format");
+            showError("Invalid price format. Please enter a valid number.");
         }
     }
 
@@ -211,6 +208,11 @@ public class ManageRoutesController {
             return;
         }
         
+        if (source.equalsIgnoreCase(destination)) {
+            showError("Source and destination cannot be the same");
+            return;
+        }
+        
         try {
             double basePrice = Double.parseDouble(priceText);
             
@@ -219,19 +221,24 @@ public class ManageRoutesController {
                 return;
             }
             
-            selectedRoute.setSource(source);
-            selectedRoute.setDestination(destination);
-            selectedRoute.setBasePrice(basePrice);
-            
-            if (routeCatalog.updateRoute(selectedRoute)) {
-                showSuccess("Route updated successfully!");
-                loadRoutesData();
+            // Get the actual route from catalog to ensure we're updating the right instance
+            Route currentRoute = routeCatalog.getRoute(selectedRoute.getRouteID());
+            if (currentRoute != null) {
+                currentRoute.setSource(source);
+                currentRoute.setDestination(destination);
+                currentRoute.setBasePrice(basePrice);
+                
+                if (routeCatalog.updateRoute(currentRoute)) {
+                    showSuccess("Route updated successfully!");
+                    loadRoutesData();
+                } else {
+                    showError("Failed to update route");
+                }
             } else {
-                showError("Failed to update route");
+                showError("Route not found in catalog");
             }
-            
         } catch (NumberFormatException e) {
-            showError("Invalid price format");
+            showError("Invalid price format. Please enter a valid number.");
         }
     }
 
@@ -246,16 +253,16 @@ public class ManageRoutesController {
         Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
         confirmation.setTitle("Confirm Deletion");
         confirmation.setHeaderText("Delete Route");
-        confirmation.setContentText("Are you sure you want to delete route from " + 
-                                    selectedRoute.getSource() + " to " + 
-                                    selectedRoute.getDestination() + "?\n" +
-                                    "This will also delete all associated schedules.");
+        confirmation.setContentText("Are you sure you want to delete route from\n" + 
+                                    selectedRoute.getSource() + " → " + 
+                                    selectedRoute.getDestination() + "?\n\n" +
+                                    "⚠ This will also delete all associated schedules (" + 
+                                    selectedRoute.getSchedules().size() + " schedules).\n\n" +
+                                    "This action cannot be undone.");
         
         confirmation.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                boolean success = routeCatalog.deleteRoute(selectedRoute.getRouteID());
-                
-                if (success) {
+                if (routeCatalog.deleteRoute(selectedRoute.getRouteID())) {
                     showSuccess("Route deleted successfully!");
                     handleClear();
                     loadRoutesData();
@@ -268,7 +275,7 @@ public class ManageRoutesController {
 
     private void handleRefresh() {
         loadRoutesData();
-        showSuccess("Routes refreshed");
+        showSuccess("Routes refreshed successfully");
     }
 
     private void handleClear() {

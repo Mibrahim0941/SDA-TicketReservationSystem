@@ -89,17 +89,49 @@ public class AdminSettingsController {
     }
 
     private void loadSettings() {
-        // Load current settings
+        // Load current settings (in real app, these would come from database)
         systemNameField.setText("TicketGenie Booking System");
         adminEmailField.setText("admin@ticketgenie.com");
         emailNotificationsCheck.setSelected(true);
         autoBackupCheck.setSelected(true);
         maintenanceModeCheck.setSelected(false);
+        
+        showInfo("Settings loaded", "Current system settings loaded successfully");
     }
 
     private void handleSaveSettings() {
-        // Save system settings logic
+        String systemName = systemNameField.getText().trim();
+        String adminEmail = adminEmailField.getText().trim();
+        
+        if (systemName.isEmpty() || adminEmail.isEmpty()) {
+            showError("Please fill in all required fields");
+            return;
+        }
+        
+        if (!isValidEmail(adminEmail)) {
+            showError("Please enter a valid email address");
+            return;
+        }
+        
+        // Save system settings logic would go here
+        boolean emailNotifications = emailNotificationsCheck.isSelected();
+        boolean autoBackup = autoBackupCheck.isSelected();
+        boolean maintenanceMode = maintenanceModeCheck.isSelected();
+        
+        // Simulate saving to database
+        System.out.println("Saving system settings:");
+        System.out.println("System Name: " + systemName);
+        System.out.println("Admin Email: " + adminEmail);
+        System.out.println("Email Notifications: " + emailNotifications);
+        System.out.println("Auto Backup: " + autoBackup);
+        System.out.println("Maintenance Mode: " + maintenanceMode);
+        
         showSuccess("System settings saved successfully!");
+        
+        if (maintenanceMode) {
+            showWarning("Maintenance Mode Enabled", 
+                       "The system is now in maintenance mode. Regular users will not be able to access the system until maintenance mode is disabled.");
+        }
     }
 
     private void handleChangePassword() {
@@ -117,19 +149,47 @@ public class AdminSettingsController {
             return;
         }
         
-        // Password change logic would go here
+        if (newPassword.length() < 6) {
+            showError("New password must be at least 6 characters long");
+            return;
+        }
+        
+        // Password validation
+        if (!isValidPassword(newPassword)) {
+            showError("Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character");
+            return;
+        }
+        
+        // Simulate password change logic
+        // In real application, this would verify current password and update in database
+        System.out.println("Changing password for user: " + currentUsername);
+        System.out.println("Current password verification...");
+        System.out.println("New password: " + newPassword);
+        
         showSuccess("Password changed successfully!");
+        
+        // Clear password fields
         currentPasswordField.clear();
         newPasswordField.clear();
         confirmPasswordField.clear();
     }
 
+    private boolean isValidEmail(String email) {
+        return email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
+    }
+
+    private boolean isValidPassword(String password) {
+        // At least one uppercase, one lowercase, one digit, one special character, min 6 chars
+        return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{6,}$");
+    }
+
     private void handleReset() {
+        // Reset to default settings
         loadSettings();
         currentPasswordField.clear();
         newPasswordField.clear();
         confirmPasswordField.clear();
-        showSuccess("Settings reset to default");
+        showSuccess("Settings reset to default values");
     }
 
     private void handleBack() {
@@ -147,6 +207,14 @@ public class AdminSettingsController {
 
     private void showSuccess(String message) {
         showAlert("Success", message, Alert.AlertType.INFORMATION);
+    }
+
+    private void showInfo(String title, String message) {
+        showAlert(title, message, Alert.AlertType.INFORMATION);
+    }
+
+    private void showWarning(String title, String message) {
+        showAlert(title, message, Alert.AlertType.WARNING);
     }
 
     private void showAlert(String title, String message, Alert.AlertType type) {

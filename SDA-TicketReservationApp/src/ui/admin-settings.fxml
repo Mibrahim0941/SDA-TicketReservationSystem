@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+
+<VBox spacing="20" style="-fx-background-color: #F5EFE7;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AdminSettingsController">
+    
+    <padding>
+        <Insets bottom="20" left="20" right="20" top="20" />
+    </padding>
+
+    <!-- Header Section -->
+    <HBox alignment="CENTER_LEFT" spacing="20" styleClass="header-section">
+        <VBox spacing="5">
+            <Text fx:id="welcomeTitle" styleClass="dashboard-title" text="System Settings" />
+            <Text fx:id="userGreeting" styleClass="dashboard-subtitle" text="System Settings - Admin" />
+        </VBox>
+        
+        <HBox alignment="CENTER_RIGHT" spacing="10" HBox.hgrow="ALWAYS">
+            <Button fx:id="backButton" styleClass="btn-secondary" text="Back to Dashboard" />
+        </HBox>
+    </HBox>
+
+    <!-- System Settings -->
+    <VBox spacing="15" styleClass="form-container">
+        <Label styleClass="section-title" text="System Configuration" />
+        
+        <HBox spacing="15">
+            <VBox spacing="10" HBox.hgrow="ALWAYS">
+                <Label styleClass="input-label" text="System Name" />
+                <TextField fx:id="systemNameField" styleClass="text-field" />
+            </VBox>
+            
+            <VBox spacing="10" HBox.hgrow="ALWAYS">
+                <Label styleClass="input-label" text="Admin Email" />
+                <TextField fx:id="adminEmailField" styleClass="text-field" />
+            </VBox>
+        </HBox>
+        
+        <VBox spacing="10">
+            <Label styleClass="input-label" text="System Options" />
+            <HBox spacing="20">
+                <CheckBox fx:id="emailNotificationsCheck" text="Email Notifications" />
+                <CheckBox fx:id="autoBackupCheck" text="Auto Backup" />
+                <CheckBox fx:id="maintenanceModeCheck" text="Maintenance Mode" />
+            </HBox>
+        </VBox>
+        
+        <Button fx:id="saveSettingsButton" styleClass="btn-primary" text="Save System Settings" />
+    </VBox>
+
+    <!-- Password Change -->
+    <VBox spacing="15" styleClass="form-container">
+        <Label styleClass="section-title" text="Change Password" />
+        
+        <HBox spacing="15">
+            <VBox spacing="10" HBox.hgrow="ALWAYS">
+                <Label styleClass="input-label" text="Current Password" />
+                <PasswordField fx:id="currentPasswordField" styleClass="text-field" />
+            </VBox>
+            
+            <VBox spacing="10" HBox.hgrow="ALWAYS">
+                <Label styleClass="input-label" text="New Password" />
+                <PasswordField fx:id="newPasswordField" styleClass="text-field" />
+            </VBox>
+            
+            <VBox spacing="10" HBox.hgrow="ALWAYS">
+                <Label styleClass="input-label" text="Confirm Password" />
+                <PasswordField fx:id="confirmPasswordField" styleClass="text-field" />
+            </VBox>
+        </HBox>
+        
+        <HBox spacing="10">
+            <Button fx:id="changePasswordButton" styleClass="btn-primary" text="Change Password" />
+            <Button fx:id="resetButton" styleClass="btn-secondary" text="Reset Settings" />
+        </HBox>
+    </VBox>
+
+</VBox>

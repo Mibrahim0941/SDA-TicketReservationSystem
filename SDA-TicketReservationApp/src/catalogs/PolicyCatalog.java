@@ -39,7 +39,6 @@ public class PolicyCatalog {
         policies.add(new CancellationPolicy("POL001", 100.0, 24, "Full refund if cancelled 24+ hours before departure"));
         policies.add(new CancellationPolicy("POL002", 50.0, 12, "50% refund if cancelled 12-24 hours before departure"));
         policies.add(new CancellationPolicy("POL003", 0.0, 0, "No refund if cancelled less than 12 hours before departure"));
-        policies.add(new CancellationPolicy("POL004", 75.0, 48, "75% refund if cancelled 48+ hours before departure"));
         System.out.println("Initialized with " + policies.size() + " default cancellation policies");
     }
     
@@ -48,8 +47,6 @@ public class PolicyCatalog {
             System.out.println("Database not available, using in-memory data");
             return;
         }
-        
-        createTableIfNotExists();
         
         String query = "SELECT * FROM CancellationPolicies ORDER BY TimeBeforeDeparture DESC";
         
@@ -72,35 +69,9 @@ public class PolicyCatalog {
             
         } catch (SQLException e) {
             System.err.println("Error loading cancellation policies from database: " + e.getMessage());
-            e.printStackTrace();
             if (policies.isEmpty()) {
                 initializeDefaultPolicies();
             }
-        }
-    }
-    
-    private void createTableIfNotExists() {
-        if (!databaseAvailable) {
-            return;
-        }
-        
-        String createTableSQL = "IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CancellationPolicies' AND xtype='U') " +
-                               "CREATE TABLE CancellationPolicies (" +
-                               "PolicyID VARCHAR(20) PRIMARY KEY, " +
-                               "RefundAmount DECIMAL(5,2) NOT NULL, " +
-                               "TimeBeforeDeparture INT NOT NULL, " +
-                               "Description VARCHAR(500) NOT NULL, " +
-                               "CreatedAt DATETIME DEFAULT GETDATE(), " +
-                               "UpdatedAt DATETIME DEFAULT GETDATE(), " +
-                               "UNIQUE(TimeBeforeDeparture)" +
-                               ")";
-        
-        try (Statement stmt = connection.createStatement()) {
-            stmt.execute(createTableSQL);
-            System.out.println("CancellationPolicies table ensured to exist");
-        } catch (SQLException e) {
-            System.err.println("Error creating CancellationPolicies table: " + e.getMessage());
-            e.printStackTrace();
         }
     }
     
@@ -191,7 +162,7 @@ public class PolicyCatalog {
         }
         
         if (databaseAvailable) {
-            String query = "UPDATE CancellationPolicies SET RefundAmount = ?, TimeBeforeDeparture = ?, Description = ?, UpdatedAt = GETDATE() WHERE PolicyID = ?";
+            String query = "UPDATE CancellationPolicies SET RefundAmount = ?, TimeBeforeDeparture = ?, Description = ? WHERE PolicyID = ?";
             
             try (PreparedStatement pstmt = connection.prepareStatement(query)) {
                 pstmt.setDouble(1, updatedPolicy.getAmountToBeRefunded());
@@ -209,7 +180,6 @@ public class PolicyCatalog {
                 
             } catch (SQLException e) {
                 System.err.println("Error updating policy in database: " + e.getMessage());
-                e.printStackTrace();
             }
         }
         
@@ -247,7 +217,6 @@ public class PolicyCatalog {
                 
             } catch (SQLException e) {
                 System.err.println("Error deleting policy from database: " + e.getMessage());
-                e.printStackTrace();
             }
         }
         

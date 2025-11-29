@@ -1,287 +1,114 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
-<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.Text?>
 
-<BorderPane xmlns="http://javafx.com/javafx/11.0.1"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="controllers.AdminDashboardController"
-            stylesheets="@admin-dashboard.css">
+<VBox spacing="20" style="-fx-background-color: #F5EFE7;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AdminDashboardController">
+    
+    <padding>
+        <Insets bottom="20" left="20" right="20" top="20" />
+    </padding>
 
-    <top>
-        <VBox styleClass="header" spacing="10">
-            <padding>
-                <Insets top="15" right="25" bottom="15" left="25"/>
-            </padding>
-            <HBox alignment="CENTER_LEFT" spacing="15">
-                <StackPane styleClass="header-icon-container">
-                    <Rectangle arcWidth="10" arcHeight="10" width="45" height="45" styleClass="header-icon-bg"/>
-                    <Text text="⚙️" styleClass="header-icon"/>
-                </StackPane>
-
-                <VBox spacing="3" alignment="CENTER_LEFT">
-                    <Text fx:id="welcomeTitle" styleClass="welcome-title" text="Administrator Dashboard"/>
-                    <Text fx:id="userGreeting" styleClass="user-greeting" text="Welcome, Administrator!"/>
-                </VBox>
-
-                <Region HBox.hgrow="ALWAYS"/>
-
-                <HBox spacing="12" alignment="CENTER_RIGHT">
-                    <Button fx:id="mainPageButton" text="🏠 Main Page" styleClass="nav-button"/>
-                    <Button fx:id="refreshButton" text="🔄 Refresh Data" styleClass="nav-button"/>
-                    <Button fx:id="logoutButton" text="🚪 Logout" styleClass="logout-button"/>
-                </HBox>
-            </HBox>
+    <!-- Header Section -->
+    <HBox alignment="CENTER_LEFT" spacing="20" styleClass="header-section">
+        <VBox spacing="5">
+            <Text fx:id="welcomeTitle" styleClass="dashboard-title" text="Admin Dashboard" />
+            <Text fx:id="userGreeting" styleClass="dashboard-subtitle" text="Welcome, Administrator! 👋" />
         </VBox>
-    </top>
+        
+        <HBox alignment="CENTER_RIGHT" spacing="10" HBox.hgrow="ALWAYS">
+            <Button fx:id="refreshButton" styleClass="btn-secondary" text="Refresh" />
+            <Button fx:id="mainPageButton" styleClass="btn-secondary" text="Main Page" />
+            <Button fx:id="logoutButton" styleClass="btn-danger" text="Logout" />
+        </HBox>
+    </HBox>
 
-    <center>
-        <ScrollPane fitToWidth="true" styleClass="scroll-pane" vbarPolicy="AS_NEEDED" hbarPolicy="NEVER">
-            <VBox spacing="25" styleClass="main-content">
-                <padding>
-                    <Insets top="25" right="30" bottom="25" left="30"/>
-                </padding>
+    <!-- Statistics Cards -->
+    <HBox spacing="15" styleClass="stats-container">
+        <VBox spacing="10" styleClass="stat-card" HBox.hgrow="ALWAYS">
+            <Label styleClass="stat-label" text="Total Routes" />
+            <Label fx:id="totalRoutesLabel" styleClass="stat-value" text="25" />
+        </VBox>
+        
+        <VBox spacing="10" styleClass="stat-card" HBox.hgrow="ALWAYS">
+            <Label styleClass="stat-label" text="Active Schedules" />
+            <Label fx:id="activeSchedulesLabel" styleClass="stat-value" text="48" />
+        </VBox>
+        
+        <VBox spacing="10" styleClass="stat-card" HBox.hgrow="ALWAYS">
+            <Label styleClass="stat-label" text="Total Bookings" />
+            <Label fx:id="totalBookingsLabel" styleClass="stat-value" text="1,234" />
+        </VBox>
+        
+        <VBox spacing="10" styleClass="stat-card" HBox.hgrow="ALWAYS">
+            <Label styleClass="stat-label" text="Revenue" />
+            <Label fx:id="revenueLabel" styleClass="stat-value" text="PKR 45,678" />
+        </VBox>
+    </HBox>
 
-                <!-- Quick Stats Overview -->
-                <VBox spacing="15" styleClass="stats-section">
-                    <Text text="Quick Overview" styleClass="section-header"/>
-                    <HBox spacing="20" alignment="CENTER">
+    <!-- Management Cards Grid -->
+    <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" vbarPolicy="AS_NEEDED">
+        <content>
+            <GridPane hgap="15" vgap="15" style="-fx-background-color: #F5EFE7;">
+                <columnConstraints>
+                    <ColumnConstraints hgrow="ALWAYS" percentWidth="25" />
+                    <ColumnConstraints hgrow="ALWAYS" percentWidth="25" />
+                    <ColumnConstraints hgrow="ALWAYS" percentWidth="25" />
+                    <ColumnConstraints hgrow="ALWAYS" percentWidth="25" />
+                </columnConstraints>
+                
+                <rowConstraints>
+                    <RowConstraints vgrow="ALWAYS" percentHeight="50" />
+                    <RowConstraints vgrow="ALWAYS" percentHeight="50" />
+                </rowConstraints>
 
-                        <VBox styleClass="stat-card" spacing="8" alignment="CENTER">
-                            <StackPane styleClass="stat-icon-container">
-                                <Circle radius="20" styleClass="stat-icon-bg-1"/>
-                                <Text text="🛣️" styleClass="stat-icon"/>
-                            </StackPane>
-                            <Text text="Total Routes" styleClass="stat-label"/>
-                            <Label fx:id="totalRoutesLabel" text="25" styleClass="stat-value"/>
-                            <Text text="Active transportation routes" styleClass="stat-description"/>
-                        </VBox>
-
-                        <VBox styleClass="stat-card" spacing="8" alignment="CENTER">
-                            <StackPane styleClass="stat-icon-container">
-                                <Circle radius="20" styleClass="stat-icon-bg-2"/>
-                                <Text text="🕐" styleClass="stat-icon"/>
-                            </StackPane>
-                            <Text text="Active Schedules" styleClass="stat-label"/>
-                            <Label fx:id="activeSchedulesLabel" text="48" styleClass="stat-value"/>
-                            <Text text="Currently running schedules" styleClass="stat-description"/>
-                        </VBox>
-
-                        <VBox styleClass="stat-card" spacing="8" alignment="CENTER">
-                            <StackPane styleClass="stat-icon-container">
-                                <Circle radius="20" styleClass="stat-icon-bg-3"/>
-                                <Text text="🎫" styleClass="stat-icon"/>
-                            </StackPane>
-                            <Text text="Total Bookings" styleClass="stat-label"/>
-                            <Label fx:id="totalBookingsLabel" text="1,234" styleClass="stat-value"/>
-                            <Text text="Completed reservations" styleClass="stat-description"/>
-                        </VBox>
-
-                        <VBox styleClass="stat-card" spacing="8" alignment="CENTER">
-                            <StackPane styleClass="stat-icon-container">
-                                <Circle radius="20" styleClass="stat-icon-bg-4"/>
-                                <Text text="💰" styleClass="stat-icon"/>
-                            </StackPane>
-                            <Text text="Revenue" styleClass="stat-label"/>
-                            <Label fx:id="revenueLabel" text="PKR 45,678" styleClass="stat-value"/>
-                            <Text text="Total earnings" styleClass="stat-description"/>
-                        </VBox>
-
-                    </HBox>
+                <!-- Row 1 -->
+                <VBox fx:id="manageRoutesCard" styleClass="management-card" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <Label styleClass="card-title" text="🚌 Routes" />
+                    <Label styleClass="card-description" text="Manage bus routes and destinations" wrapText="true" />
                 </VBox>
 
-                <!-- Management Tools Grid -->
-                <VBox spacing="15" styleClass="management-section">
-                    <Text text="Management Tools" styleClass="section-header"/>
-
-                    <GridPane hgap="20" vgap="20" alignment="CENTER">
-                        <columnConstraints>
-                            <ColumnConstraints percentWidth="25" halignment="CENTER"/>
-                            <ColumnConstraints percentWidth="25" halignment="CENTER"/>
-                            <ColumnConstraints percentWidth="25" halignment="CENTER"/>
-                            <ColumnConstraints percentWidth="25" halignment="CENTER"/>
-                        </columnConstraints>
-                        <rowConstraints>
-                            <RowConstraints percentHeight="50" valignment="CENTER"/>
-                            <RowConstraints percentHeight="50" valignment="CENTER"/>
-                        </rowConstraints>
-
-                        <!-- Row 1 -->
-                        <VBox fx:id="manageRoutesCard" styleClass="management-card" spacing="12" alignment="CENTER"
-                              GridPane.columnIndex="0" GridPane.rowIndex="0">
-                            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
-                            <StackPane styleClass="card-icon-container">
-                                <Circle radius="26" styleClass="card-icon-bg-1"/>
-                                <Text text="🛣️" styleClass="card-icon"/>
-                            </StackPane>
-                            <Text text="Manage Routes" styleClass="card-title"/>
-                            <Text text="Add, edit, and manage transportation routes between cities" styleClass="card-description"/>
-                            <HBox spacing="5" alignment="CENTER">
-                                <Text text="Get Started" styleClass="card-action"/>
-                                <Text text="→" styleClass="card-arrow"/>
-                            </HBox>
-                        </VBox>
-
-                        <VBox fx:id="manageSchedulesCard" styleClass="management-card" spacing="12" alignment="CENTER"
-                              GridPane.columnIndex="1" GridPane.rowIndex="0">
-                            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
-                            <StackPane styleClass="card-icon-container">
-                                <Circle radius="26" styleClass="card-icon-bg-2"/>
-                                <Text text="🕐" styleClass="card-icon"/>
-                            </StackPane>
-                            <Text text="Manage Schedules" styleClass="card-title"/>
-                            <Text text="Create and manage departure schedules and timetables" styleClass="card-description"/>
-                            <HBox spacing="5" alignment="CENTER">
-                                <Text text="Get Started" styleClass="card-action"/>
-                                <Text text="→" styleClass="card-arrow"/>
-                            </HBox>
-                        </VBox>
-
-                        <VBox fx:id="managePricingCard" styleClass="management-card" spacing="12" alignment="CENTER"
-                              GridPane.columnIndex="2" GridPane.rowIndex="0">
-                            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
-                            <StackPane styleClass="card-icon-container">
-                                <Circle radius="26" styleClass="card-icon-bg-3"/>
-                                <Text text="💰" styleClass="card-icon"/>
-                            </StackPane>
-                            <Text text="Manage Pricing" styleClass="card-title"/>
-                            <Text text="Set and update ticket prices and fare calculations" styleClass="card-description"/>
-                            <HBox spacing="5" alignment="CENTER">
-                                <Text text="Get Started" styleClass="card-action"/>
-                                <Text text="→" styleClass="card-arrow"/>
-                            </HBox>
-                        </VBox>
-
-                        <VBox fx:id="manageSeatsCard" styleClass="management-card" spacing="12" alignment="CENTER"
-                              GridPane.columnIndex="3" GridPane.rowIndex="0">
-                            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
-                            <StackPane styleClass="card-icon-container">
-                                <Circle radius="26" styleClass="card-icon-bg-4"/>
-                                <Text text="💺" styleClass="card-icon"/>
-                            </StackPane>
-                            <Text text="Manage Seats" styleClass="card-title"/>
-                            <Text text="View and manage seat availability and configurations" styleClass="card-description"/>
-                            <HBox spacing="5" alignment="CENTER">
-                                <Text text="Get Started" styleClass="card-action"/>
-                                <Text text="→" styleClass="card-arrow"/>
-                            </HBox>
-                        </VBox>
-
-                        <!-- Row 2 -->
-                        <VBox fx:id="reportsCard" styleClass="management-card" spacing="12" alignment="CENTER"
-                              GridPane.columnIndex="0" GridPane.rowIndex="1">
-                            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
-                            <StackPane styleClass="card-icon-container">
-                                <Circle radius="26" styleClass="card-icon-bg-5"/>
-                                <Text text="📊" styleClass="card-icon"/>
-                            </StackPane>
-                            <Text text="Reports &amp; Analytics" styleClass="card-title"/>
-                            <Text text="View system reports, analytics and performance metrics" styleClass="card-description"/>
-                            <HBox spacing="5" alignment="CENTER">
-                                <Text text="View Reports" styleClass="card-action"/>
-                                <Text text="→" styleClass="card-arrow"/>
-                            </HBox>
-                        </VBox>
-
-                        <VBox fx:id="policiesCard" styleClass="management-card" spacing="12" alignment="CENTER"
-                              GridPane.columnIndex="1" GridPane.rowIndex="1">
-                            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
-                            <StackPane styleClass="card-icon-container">
-                                <Circle radius="26" styleClass="card-icon-bg-6"/>
-                                <Text text="📋" styleClass="card-icon"/>
-                            </StackPane>
-                            <Text text="Cancellation Policies" styleClass="card-title"/>
-                            <Text text="Manage cancellation policies and refund rules" styleClass="card-description"/>
-                            <HBox spacing="5" alignment="CENTER">
-                                <Text text="Manage Policies" styleClass="card-action"/>
-                                <Text text="→" styleClass="card-arrow"/>
-                            </HBox>
-                        </VBox>
-
-                        <VBox fx:id="promoCodesCard" styleClass="management-card" spacing="12" alignment="CENTER"
-                              GridPane.columnIndex="2" GridPane.rowIndex="1">
-                            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
-                            <StackPane styleClass="card-icon-container">
-                                <Circle radius="26" styleClass="card-icon-bg-7"/>
-                                <Text text="🎁" styleClass="card-icon"/>
-                            </StackPane>
-                            <Text text="Promo Codes" styleClass="card-title"/>
-                            <Text text="Create and manage promotional codes and discounts" styleClass="card-description"/>
-                            <HBox spacing="5" alignment="CENTER">
-                                <Text text="Manage Promos" styleClass="card-action"/>
-                                <Text text="→" styleClass="card-arrow"/>
-                            </HBox>
-                        </VBox>
-
-                        <VBox fx:id="settingsCard" styleClass="management-card" spacing="12" alignment="CENTER"
-                              GridPane.columnIndex="3" GridPane.rowIndex="1">
-                            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
-                            <StackPane styleClass="card-icon-container">
-                                <Circle radius="26" styleClass="card-icon-bg-8"/>
-                                <Text text="⚙️" styleClass="card-icon"/>
-                            </StackPane>
-                            <Text text="System Settings" styleClass="card-title"/>
-                            <Text text="Configure system settings and administrator preferences" styleClass="card-description"/>
-                            <HBox spacing="5" alignment="CENTER">
-                                <Text text="Configure" styleClass="card-action"/>
-                                <Text text="→" styleClass="card-arrow"/>
-                            </HBox>
-                        </VBox>
-
-                    </GridPane>
+                <VBox fx:id="manageSchedulesCard" styleClass="management-card" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <Label styleClass="card-title" text="📅 Schedules" />
+                    <Label styleClass="card-description" text="Manage departure times and schedules" wrapText="true" />
                 </VBox>
 
-                <!-- Recent Activity Section -->
-                <VBox spacing="15" styleClass="activity-section">
-                    <HBox alignment="CENTER_LEFT" spacing="10">
-                        <Text text="Recent Activity" styleClass="section-header"/>
-                        <Region HBox.hgrow="ALWAYS"/>
-                        <Text text="Last 24 hours" styleClass="activity-time"/>
-                    </HBox>
-
-                    <VBox styleClass="activity-container" spacing="8">
-
-                        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="activity-item">
-                            <StackPane styleClass="activity-icon-container">
-                                <Circle radius="16" styleClass="activity-icon-bg-success"/>
-                                <Text text="✓" styleClass="activity-icon"/>
-                            </StackPane>
-                            <VBox spacing="2">
-                                <Text text="New route added: Karachi to Islamabad" styleClass="activity-title"/>
-                                <Text text="2 hours ago • By Admin" styleClass="activity-time"/>
-                            </VBox>
-                        </HBox>
-
-                        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="activity-item">
-                            <StackPane styleClass="activity-icon-container">
-                                <Circle radius="16" styleClass="activity-icon-bg-info"/>
-                                <Text text="🔄" styleClass="activity-icon"/>
-                            </StackPane>
-                            <VBox spacing="2">
-                                <Text text="Price updated for Lahore to Peshawar route" styleClass="activity-title"/>
-                                <Text text="4 hours ago • By System" styleClass="activity-time"/>
-                            </VBox>
-                        </HBox>
-
-                        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="activity-item">
-                            <StackPane styleClass="activity-icon-container">
-                                <Circle radius="16" styleClass="activity-icon-bg-warning"/>
-                                <Text text="⚠️" styleClass="activity-icon"/>
-                            </StackPane>
-                            <VBox spacing="2">
-                                <Text text="Schedule conflict detected and resolved" styleClass="activity-title"/>
-                                <Text text="6 hours ago • By System" styleClass="activity-time"/>
-                            </VBox>
-                        </HBox>
-
-                    </VBox>
+                <VBox fx:id="managePricingCard" styleClass="management-card" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                    <Label styleClass="card-title" text="💰 Pricing" />
+                    <Label styleClass="card-description" text="Set and update ticket prices" wrapText="true" />
                 </VBox>
 
-            </VBox>
-        </ScrollPane>
-    </center>
+                <VBox fx:id="manageSeatsCard" styleClass="management-card" GridPane.columnIndex="3" GridPane.rowIndex="0">
+                    <Label styleClass="card-title" text="💺 Seats" />
+                    <Label styleClass="card-description" text="Manage seat availability and layout" wrapText="true" />
+                </VBox>
 
-</BorderPane>
+                <!-- Row 2 -->
+                <VBox fx:id="reportsCard" styleClass="management-card" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                    <Label styleClass="card-title" text="📊 Reports" />
+                    <Label styleClass="card-description" text="Generate system reports and analytics" wrapText="true" />
+                </VBox>
+
+                <VBox fx:id="policiesCard" styleClass="management-card" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                    <Label styleClass="card-title" text="📋 Policies" />
+                    <Label styleClass="card-description" text="Manage cancellation policies" wrapText="true" />
+                </VBox>
+
+                <VBox fx:id="promoCodesCard" styleClass="management-card" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                    <Label styleClass="card-title" text="🎫 Promo Codes" />
+                    <Label styleClass="card-description" text="Create and manage promotional codes" wrapText="true" />
+                </VBox>
+
+                <VBox fx:id="settingsCard" styleClass="management-card" GridPane.columnIndex="3" GridPane.rowIndex="1">
+                    <Label styleClass="card-title" text="⚙️ Settings" />
+                    <Label styleClass="card-description" text="System configuration and settings" wrapText="true" />
+                </VBox>
+            </GridPane>
+        </content>
+    </ScrollPane>
+
+</VBox>

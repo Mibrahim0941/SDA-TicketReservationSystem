@@ -40,7 +40,6 @@ public class PromoCodeCatalog {
         promoCodes.add(new PromotionalCode("WELCOME10", LocalDate.now().plusDays(30), 10.0));
         promoCodes.add(new PromotionalCode("SUMMER25", LocalDate.now().plusDays(60), 25.0));
         promoCodes.add(new PromotionalCode("FALL15", LocalDate.now().plusDays(45), 15.0));
-        promoCodes.add(new PromotionalCode("NEWUSER20", LocalDate.now().plusDays(90), 20.0));
         System.out.println("Initialized with " + promoCodes.size() + " sample promotional codes");
     }
     
@@ -49,8 +48,6 @@ public class PromoCodeCatalog {
             System.out.println("Database not available, using in-memory data");
             return;
         }
-        
-        createTableIfNotExists();
         
         String query = "SELECT * FROM PromotionalCodes ORDER BY ValidityDate DESC";
         
@@ -74,34 +71,9 @@ public class PromoCodeCatalog {
             
         } catch (SQLException e) {
             System.err.println("Error loading promotional codes from database: " + e.getMessage());
-            e.printStackTrace();
             if (promoCodes.isEmpty()) {
                 initializeSamplePromoCodes();
             }
-        }
-    }
-    
-    private void createTableIfNotExists() {
-        if (!databaseAvailable) {
-            return;
-        }
-        
-        String createTableSQL = "IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='PromotionalCodes' AND xtype='U') " +
-                               "CREATE TABLE PromotionalCodes (" +
-                               "Code VARCHAR(50) PRIMARY KEY, " +
-                               "Percentage DECIMAL(5,2) NOT NULL, " +
-                               "ValidityDate DATE NOT NULL, " +
-                               "IsActive BIT DEFAULT 1, " +
-                               "CreatedAt DATETIME DEFAULT GETDATE(), " +
-                               "UpdatedAt DATETIME DEFAULT GETDATE()" +
-                               ")";
-        
-        try (Statement stmt = connection.createStatement()) {
-            stmt.execute(createTableSQL);
-            System.out.println("PromotionalCodes table ensured to exist");
-        } catch (SQLException e) {
-            System.err.println("Error creating PromotionalCodes table: " + e.getMessage());
-            e.printStackTrace();
         }
     }
     
@@ -163,19 +135,9 @@ public class PromoCodeCatalog {
         return activePromoCodes;
     }
     
-    public ArrayList<PromotionalCode> getExpiredPromoCodes() {
-        ArrayList<PromotionalCode> expiredPromoCodes = new ArrayList<>();
-        for (PromotionalCode promoCode : promoCodes) {
-            if (!promoCode.checkValidity()) {
-                expiredPromoCodes.add(promoCode);
-            }
-        }
-        return expiredPromoCodes;
-    }
-    
     public boolean updatePromoCode(PromotionalCode updatedPromoCode) {
         if (databaseAvailable) {
-            String query = "UPDATE PromotionalCodes SET Percentage = ?, ValidityDate = ?, IsActive = ?, UpdatedAt = GETDATE() WHERE Code = ?";
+            String query = "UPDATE PromotionalCodes SET Percentage = ?, ValidityDate = ?, IsActive = ? WHERE Code = ?";
             
             try (PreparedStatement pstmt = connection.prepareStatement(query)) {
                 pstmt.setDouble(1, updatedPromoCode.getPercentage());
@@ -193,7 +155,6 @@ public class PromoCodeCatalog {
                 
             } catch (SQLException e) {
                 System.err.println("Error updating promo code in database: " + e.getMessage());
-                e.printStackTrace();
             }
         }
         
@@ -231,7 +192,6 @@ public class PromoCodeCatalog {
                 
             } catch (SQLException e) {
                 System.err.println("Error deleting promo code from database: " + e.getMessage());
-                e.printStackTrace();
             }
         }
         

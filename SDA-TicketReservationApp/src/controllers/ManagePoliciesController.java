@@ -1,6 +1,7 @@
 package controllers;
 
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -111,6 +112,18 @@ public class ManagePoliciesController {
             refundColumn.setCellValueFactory(new PropertyValueFactory<>("amountToBeRefunded"));
             descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
             
+            refundColumn.setCellFactory(column -> new TableCell<CancellationPolicy, Double>() {
+                @Override
+                protected void updateItem(Double item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(String.format("%.1f%%", item));
+                    }
+                }
+            });
+            
             policyTable.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldSelection, newSelection) -> showPolicyDetails(newSelection)
             );
@@ -120,7 +133,7 @@ public class ManagePoliciesController {
     private void loadPoliciesData() {
         if (policyCatalog != null && policyTable != null) {
             policyCatalog.refresh();
-            policyTable.getItems().setAll(policyCatalog.getAllPolicies());
+            policyTable.setItems(FXCollections.observableArrayList(policyCatalog.getAllPolicies()));
         }
     }
 
@@ -132,11 +145,12 @@ public class ManagePoliciesController {
             
             if (policyDetailsArea != null) {
                 StringBuilder details = new StringBuilder();
+                details.append("=== CANCELLATION POLICY DETAILS ===\n\n");
                 details.append("Policy ID: ").append(policy.getPolicyID()).append("\n");
                 details.append("Time Before Departure: ").append(policy.getTimeBeforeDeparture()).append(" hours\n");
                 details.append("Refund Amount: ").append(policy.getAmountToBeRefunded()).append("%\n");
-                details.append("Description: ").append(policy.getDescription()).append("\n");
-                details.append("\nSummary: ").append(policy.getData());
+                details.append("Description: ").append(policy.getDescription()).append("\n\n");
+                details.append("Summary: ").append(policy.getData());
                 
                 policyDetailsArea.setText(details.toString());
             }
@@ -167,11 +181,16 @@ public class ManagePoliciesController {
                 return;
             }
             
+            if (policyCatalog.getPolicyByTimeFrame(timeBeforeDeparture) != null) {
+                showError("A policy already exists for " + timeBeforeDeparture + " hours time frame");
+                return;
+            }
+            
             String policyID = IDGenerator.generatePolicyID();
             CancellationPolicy newPolicy = new CancellationPolicy(policyID, refundAmount, timeBeforeDeparture, description);
             
             if (policyCatalog.addToCatalog(newPolicy)) {
-                showSuccess("Cancellation policy added successfully!");
+                showSuccess("Cancellation policy added successfully!\nPolicy ID: " + policyID);
                 handleClear();
                 loadPoliciesData();
             } else {
@@ -214,6 +233,13 @@ public class ManagePoliciesController {
                 return;
             }
             
+            // Check if another policy already has this time frame
+            CancellationPolicy existingPolicy = policyCatalog.getPolicyByTimeFrame(timeBeforeDeparture);
+            if (existingPolicy != null && !existingPolicy.getPolicyID().equals(selectedPolicy.getPolicyID())) {
+                showError("Another policy already exists for " + timeBeforeDeparture + " hours time frame");
+                return;
+            }
+            
             selectedPolicy.setTimeBeforeDeparture(timeBeforeDeparture);
             selectedPolicy.setAmountToBeRefunded(refundAmount);
             selectedPolicy.setDescription(description);
@@ -241,7 +267,10 @@ public class ManagePoliciesController {
         Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
         confirmation.setTitle("Confirm Deletion");
         confirmation.setHeaderText("Delete Cancellation Policy");
-        confirmation.setContentText("Are you sure you want to delete this policy?");
+        confirmation.setContentText("Are you sure you want to delete this policy?\n\n" +
+                                   "Time Frame: " + selectedPolicy.getTimeBeforeDeparture() + " hours\n" +
+                                   "Refund Amount: " + selectedPolicy.getAmountToBeRefunded() + "%\n" +
+                                   "Description: " + selectedPolicy.getDescription());
         
         confirmation.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -258,7 +287,7 @@ public class ManagePoliciesController {
 
     private void handleRefresh() {
         loadPoliciesData();
-        showSuccess("Policies refreshed");
+        showSuccess("Policies refreshed successfully");
     }
 
     private void handleClear() {

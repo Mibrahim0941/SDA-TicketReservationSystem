@@ -1,6 +1,7 @@
 package controllers;
 
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -182,7 +183,7 @@ public class ManageSchedulesController {
         if (routeCatalog != null) {
             List<Schedule> schedules = routeCatalog.getRouteSchedules(routeId);
             if (schedules != null) {
-                schedulesTable.getItems().setAll(schedules);
+                schedulesTable.setItems(FXCollections.observableArrayList(schedules));
             } else {
                 schedulesTable.getItems().clear();
             }
@@ -198,12 +199,14 @@ public class ManageSchedulesController {
             
             if (scheduleDetailsArea != null) {
                 StringBuilder details = new StringBuilder();
+                details.append("=== SCHEDULE DETAILS ===\n\n");
                 details.append("Schedule ID: ").append(schedule.getScheduleID()).append("\n");
                 details.append("Date: ").append(schedule.getDate()).append("\n");
                 details.append("Departure Time: ").append(schedule.getDepartureTime()).append("\n");
                 details.append("Arrival Time: ").append(schedule.getArrivalTime()).append("\n");
                 details.append("Class: ").append(schedule.getScheduleClass()).append("\n");
-                details.append("Available Seats: ").append(schedule.getSeatCount());
+                details.append("Available Seats: ").append(schedule.getSeatCount()).append("\n");
+                details.append("Type Percentage: ").append(schedule.getTypePercentage()).append("%");
                 
                 scheduleDetailsArea.setText(details.toString());
             }
@@ -232,13 +235,18 @@ public class ManageSchedulesController {
                 return;
             }
             
+            if (date.isBefore(LocalDate.now())) {
+                showError("Schedule date cannot be in the past");
+                return;
+            }
+            
             String scheduleID = IDGenerator.generateScheduleID();
             Schedule newSchedule = new Schedule(scheduleID, date, departureTime, arrivalTime, scheduleClass);
             
             boolean success = routeCatalog.addScheduleToRoute(selectedRoute.getRouteID(), newSchedule);
             
             if (success) {
-                showSuccess("Schedule added successfully!");
+                showSuccess("Schedule added successfully!\nSchedule ID: " + scheduleID);
                 handleClear();
                 refreshSchedulesTable(selectedRoute.getRouteID());
             } else {
@@ -278,6 +286,11 @@ public class ManageSchedulesController {
                 return;
             }
             
+            if (date.isBefore(LocalDate.now())) {
+                showError("Schedule date cannot be in the past");
+                return;
+            }
+            
             selectedSchedule.setDate(date);
             selectedSchedule.setDepartureTime(departureTime);
             selectedSchedule.setArrivalTime(arrivalTime);
@@ -309,7 +322,11 @@ public class ManageSchedulesController {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirm Deletion");
         alert.setHeaderText("Delete Schedule");
-        alert.setContentText("Are you sure you want to delete this schedule?\n" + selectedSchedule);
+        alert.setContentText("Are you sure you want to delete this schedule?\n" + 
+                            selectedSchedule.getDate() + " " + 
+                            selectedSchedule.getDepartureTime() + " - " + 
+                            selectedSchedule.getArrivalTime() + " (" + 
+                            selectedSchedule.getScheduleClass() + ")");
         
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -334,7 +351,7 @@ public class ManageSchedulesController {
         if (selectedRoute != null) {
             refreshSchedulesTable(selectedRoute.getRouteID());
         }
-        showSuccess("Data refreshed");
+        showSuccess("Data refreshed successfully");
     }
 
     private void handleClear() {

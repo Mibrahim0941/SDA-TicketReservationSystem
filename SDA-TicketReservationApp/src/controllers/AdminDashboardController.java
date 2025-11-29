@@ -47,40 +47,20 @@ public class AdminDashboardController implements Initializable {
 
     public static void show(Stage stage, String username, Admin admin) {
         try {
-            System.out.println("Attempting to load admin dashboard...");
-            
-            // Use the class loader to get the resource
-            URL resourceUrl = AdminDashboardController.class.getClassLoader().getResource("ui/admin-dashboard.fxml");
-            System.out.println("Resource URL: " + resourceUrl);
-            
-            if (resourceUrl == null) {
-                showErrorAlert("FXML file not found at: ui/admin-dashboard.fxml");
-                return;
-            }
-            
-            FXMLLoader loader = new FXMLLoader(resourceUrl);
+            FXMLLoader loader = new FXMLLoader(AdminDashboardController.class.getResource("/ui/admin-dashboard.fxml"));
             Parent root = loader.load();
-            System.out.println("FXML loaded successfully");
             
             AdminDashboardController controller = loader.getController();
             controller.setAdminData(username, stage, admin);
             
             Scene scene = new Scene(root, 1200, 800);
-            
-            // Load CSS
-            URL cssUrl = AdminDashboardController.class.getClassLoader().getResource("ui/admin-dashboard.css");
-            if (cssUrl != null) {
-                scene.getStylesheets().add(cssUrl.toExternalForm());
-                System.out.println("CSS loaded successfully");
-            } else {
-                System.out.println("CSS file not found, continuing without styles");
-            }
+            scene.getStylesheets().add(AdminDashboardController.class.getResource("/ui/admin-dashboard.css").toExternalForm());
             
             stage.setScene(scene);
             stage.setTitle("TicketGenie - Admin Dashboard");
             stage.centerOnScreen();
             
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
             showErrorAlert("Failed to load admin dashboard: " + e.getMessage());
         }
@@ -157,28 +137,28 @@ public class AdminDashboardController implements Initializable {
                 });
             }
         }
-        
-        if (refreshButton != null) {
-            refreshButton.setOnMouseEntered(e -> refreshButton.setStyle("-fx-background-color: #f1f5f9; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 8 12;"));
-            refreshButton.setOnMouseExited(e -> refreshButton.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 8 12;"));
-        }
-        
-        if (mainPageButton != null) {
-            mainPageButton.setOnMouseEntered(e -> mainPageButton.setStyle("-fx-background-color: #f1f5f9; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 8 12;"));
-            mainPageButton.setOnMouseExited(e -> mainPageButton.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 8 12;"));
-        }
-        
-        if (logoutButton != null) {
-            logoutButton.setOnMouseEntered(e -> logoutButton.setStyle("-fx-background-color: #dc2626; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 8 16;"));
-            logoutButton.setOnMouseExited(e -> logoutButton.setStyle("-fx-background-color: #ef4444; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 8 16;"));
-        }
     }
 
     private void loadStatistics() {
-        if (totalRoutesLabel != null) totalRoutesLabel.setText("25");
-        if (activeSchedulesLabel != null) activeSchedulesLabel.setText("48");
-        if (totalBookingsLabel != null) totalBookingsLabel.setText("1,234");
-        if (revenueLabel != null) revenueLabel.setText("PKR 45,678");
+        // Load actual statistics from catalogs
+        try {
+            catalogs.RouteCatalog routeCatalog = catalogs.RouteCatalog.getInstance();
+            catalogs.PromoCodeCatalog promoCatalog = new catalogs.PromoCodeCatalog();
+            catalogs.PolicyCatalog policyCatalog = new catalogs.PolicyCatalog();
+            
+            if (totalRoutesLabel != null) totalRoutesLabel.setText(String.valueOf(routeCatalog.getAllRoutes().size()));
+            if (activeSchedulesLabel != null) activeSchedulesLabel.setText("48"); // Would need to calculate
+            if (totalBookingsLabel != null) totalBookingsLabel.setText("1,234"); // Would need booking catalog
+            if (revenueLabel != null) revenueLabel.setText("PKR 45,678"); // Would need revenue calculation
+            
+        } catch (Exception e) {
+            System.err.println("Error loading statistics: " + e.getMessage());
+            // Set default values
+            if (totalRoutesLabel != null) totalRoutesLabel.setText("25");
+            if (activeSchedulesLabel != null) activeSchedulesLabel.setText("48");
+            if (totalBookingsLabel != null) totalBookingsLabel.setText("1,234");
+            if (revenueLabel != null) revenueLabel.setText("PKR 45,678");
+        }
     }
 
     private void navigateToRouteManagement() {
@@ -230,12 +210,12 @@ public class AdminDashboardController implements Initializable {
     }
 
     private void navigateToPromoCodes() {
-        try {
-            ManagePromoCodesController.show(primaryStage, currentUsername, currentAdmin);
-        } catch (Exception e) {
-            showAlert("Error", "Failed to load promo codes management: " + e.getMessage());
-        }
+    try {
+        ManagePromoCodesController.show(primaryStage, currentUsername, currentAdmin);
+    } catch (Exception e) {
+        showAlert("Error", "Failed to load promo codes management: " + e.getMessage());
     }
+}
 
     private void navigateToSettings() {
         try {

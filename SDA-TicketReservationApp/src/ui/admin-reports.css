@@ -1,135 +1,148 @@
-/* Admin Reports Styles */
-.header {
-    -fx-background-color: #0ea5e9;
-    -fx-padding: 20;
+/* ROOT BACKGROUND */
+.root {
+    -fx-background-color: #F5EFE7;
+    -fx-font-family: 'Segoe UI', Arial, sans-serif;
 }
 
-.header-content {
-    -fx-padding: 10;
-}
-
-.title {
-    -fx-font-size: 24px;
+/* Header & Text Styles */
+.dashboard-title {
+    -fx-font-size: 28px;
     -fx-font-weight: bold;
-    -fx-fill: white;
-    -fx-font-family: 'Segoe UI', system, sans-serif;
+    -fx-fill: #3F5F3C;
 }
 
-.greeting {
-    -fx-font-size: 14px;
-    -fx-fill: white;
-    -fx-font-family: 'Segoe UI', system, sans-serif;
+.dashboard-subtitle {
+    -fx-font-size: 16px;
+    -fx-fill: #7E9E7A;
 }
 
-.back-button {
-    -fx-background-color: rgba(255, 255, 255, 0.2);
-    -fx-text-fill: white;
-    -fx-font-size: 14px;
-    -fx-padding: 8 16;
-    -fx-background-radius: 6;
-    -fx-cursor: hand;
-    -fx-font-family: 'Segoe UI', system, sans-serif;
+/* Sections */
+.header-section {
+    -fx-background-color: white;
+    -fx-background-radius: 15px;
+    -fx-padding: 20px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
 }
 
-.back-button:hover {
-    -fx-background-color: rgba(255, 255, 255, 0.3);
+.form-container {
+    -fx-background-color: white;
+    -fx-background-radius: 15px;
+    -fx-padding: 20px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
 }
 
-.main-content {
-    -fx-background-color: #ffffff;
-}
-
-.options-container {
-    -fx-background-color: #f8fafc;
-    -fx-padding: 25;
-    -fx-background-radius: 12;
-    -fx-min-width: 280;
-    -fx-max-width: 280;
-}
-
-.report-container {
-    -fx-background-color: #ffffff;
-    -fx-padding: 25;
-    -fx-background-radius: 12;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 8, 0, 0, 2);
-}
-
+/* Section Titles */
 .section-title {
     -fx-font-size: 18px;
     -fx-font-weight: bold;
-    -fx-fill: #1e293b;
-    -fx-font-family: 'Segoe UI', system, sans-serif;
+    -fx-text-fill: #3F5F3C;
 }
 
-.report-button {
-    -fx-background-color: #0ea5e9;
-    -fx-text-fill: white;
-    -fx-font-size: 14px;
-    -fx-font-weight: bold;
-    -fx-padding: 12;
-    -fx-background-radius: 6;
-    -fx-cursor: hand;
-    -fx-font-family: 'Segoe UI', system, sans-serif;
-}
-
-.report-button:hover {
-    -fx-background-color: #0284c7;
-}
-
-.export-button {
-    -fx-background-color: #10b981;
-    -fx-text-fill: white;
-    -fx-font-size: 14px;
-    -fx-font-weight: bold;
-    -fx-padding: 12;
-    -fx-background-radius: 6;
-    -fx-cursor: hand;
-    -fx-font-family: 'Segoe UI', system, sans-serif;
-}
-
-.export-button:hover {
-    -fx-background-color: #059669;
-}
-
-.info-box {
-    -fx-background-color: #f0f9ff;
-    -fx-padding: 15;
-    -fx-background-radius: 8;
-    -fx-border-color: #bae6fd;
-    -fx-border-radius: 8;
-    -fx-border-width: 1;
-}
-
-.info-title {
-    -fx-font-size: 14px;
-    -fx-font-weight: bold;
-    -fx-fill: #0284c7;
-    -fx-font-family: 'Segoe UI', system, sans-serif;
-}
-
-.info-text {
-    -fx-font-size: 12px;
-    -fx-fill: #475569;
-    -fx-font-family: 'Segoe UI', system, sans-serif;
-}
-
-.hint-label {
-    -fx-font-size: 13px;
-    -fx-text-fill: #94a3b8;
-    -fx-font-family: 'Segoe UI', system, sans-serif;
-}
-
+/* Report Area */
 .report-area {
-    -fx-font-family: "Consolas", "Monaco", "Courier New", monospace;
-    -fx-font-size: 13px;
-    -fx-background-radius: 8;
-    -fx-border-color: #e5e7eb;
-    -fx-border-radius: 8;
-    -fx-border-width: 1;
-    -fx-background-color: #f8fafc;
-    -fx-text-fill: #1e293b;
+    -fx-background-color: white;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: #e2e8f0;
+    -fx-padding: 20px;
+    -fx-font-family: 'Consolas', 'Monaco', monospace;
+    -fx-font-size: 12px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 5, 0, 0, 3);
 }
 
 .report-area .content {
-    -fx-background-color: #f8fafc;
+    -fx-background-color: transparent;
+}
+
+/* Report Sections */
+.report-header {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #3F5F3C;
+    -fx-padding: 10px 0px 5px 0px;
+}
+
+.report-section {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 8px 0px 3px 0px;
+}
+
+.report-item {
+    -fx-padding: 2px 0px;
+}
+
+.report-highlight {
+    -fx-font-weight: bold;
+    -fx-text-fill: #3F5F3C;
+}
+
+/* Buttons */
+.button {
+    -fx-cursor: hand;
+    -fx-background-radius: 8px;
+    -fx-font-weight: bold;
+    -fx-padding: 12px 24px;
+    -fx-font-size: 14px;
+    -fx-min-width: 150px;
+}
+
+.btn-primary {
+    -fx-background-color: #3F5F3C;
+    -fx-text-fill: white;
+    -fx-border-color: #2F4F2C;
+}
+.btn-primary:hover {
+    -fx-background-color: #2F4F2C;
+}
+
+.btn-secondary {
+    -fx-background-color: #E8E8E8;
+    -fx-text-fill: #333;
+    -fx-border-color: #D0D0D0;
+}
+.btn-secondary:hover {
+    -fx-background-color: #D0D0D0;
+}
+
+/* Report Types */
+.report-type-button {
+    -fx-min-width: 180px;
+    -fx-min-height: 60px;
+    -fx-font-size: 16px;
+}
+
+/* Statistics Display */
+.statistics-grid {
+    -fx-background-color: #f8f9fa;
+    -fx-background-radius: 8px;
+    -fx-padding: 15px;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 8px;
+}
+
+.stat-item {
+    -fx-padding: 8px 0px;
+}
+
+.stat-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #666;
+}
+
+.stat-value {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #3F5F3C;
+}
+
+/* Charts and Graphs (placeholder) */
+.chart-container {
+    -fx-background-color: white;
+    -fx-background-radius: 8px;
+    -fx-padding: 15px;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 8px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 3, 0, 0, 1);
 }

@@ -14,14 +14,19 @@ import models.Route;
 import models.Schedule;
 import models.Seat;
 import catalogs.RouteCatalog;
+import config.DatabaseConfig;
 
 import java.io.IOException;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ManageSeatsController {
 
     private RouteCatalog routeCatalog = RouteCatalog.getInstance();
     private String currentUsername;
     private Admin currentAdmin;
+    private List<Seat> currentSeats = new ArrayList<>();
 
     @FXML private Text welcomeTitle;
     @FXML private Text userGreeting;
@@ -43,6 +48,8 @@ public class ManageSeatsController {
             controller.setAdminData(username, admin);
             
             Scene scene = new Scene(root, 1200, 800);
+            scene.getStylesheets().add(ManageSeatsController.class.getResource("/ui/manage-seats.css").toExternalForm());
+            
             stage.setScene(scene);
             stage.setTitle("TicketGenie - Manage Seats");
             stage.centerOnScreen();
@@ -118,7 +125,7 @@ public class ManageSeatsController {
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    setText(item.getDate() + " - " + item.getDepartureTime() + " to " + item.getArrivalTime());
+                    setText(item.getDate() + " - " + item.getDepartureTime() + " to " + item.getArrivalTime() + " (" + item.getScheduleClass() + ")");
                 }
             }
         });
@@ -130,7 +137,7 @@ public class ManageSeatsController {
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    setText(item.getDate() + " - " + item.getDepartureTime() + " to " + item.getArrivalTime());
+                    setText(item.getDate() + " - " + item.getDepartureTime() + " to " + item.getArrivalTime() + " (" + item.getScheduleClass() + ")");
                 }
             }
         });
@@ -160,6 +167,7 @@ public class ManageSeatsController {
                 }
                 
                 seatsGrid.getChildren().clear();
+                currentSeats.clear();
                 if (seatDetailsArea != null) {
                     seatDetailsArea.clear();
                 }
@@ -173,71 +181,81 @@ public class ManageSeatsController {
     private void handleScheduleSelection() {
         Schedule selectedSchedule = scheduleComboBox.getValue();
         if (selectedSchedule != null) {
-            displaySeats(selectedSchedule);
+            loadSeatsFromDatabase(selectedSchedule.getScheduleID());
         }
     }
 
-    private void displaySeats(Schedule schedule) {
+    private void loadSeatsFromDatabase(String scheduleID) {
+        currentSeats.clear();
         seatsGrid.getChildren().clear();
         
-        int totalSeats = 40;
-        int availableSeats = 0;
-        int occupiedSeats = 0;
+        String sql = "SELECT * FROM Seat WHERE ScheduleID = ? ORDER BY SeatNumber";
         
-        for (int i = 0; i < totalSeats; i++) {
-            String seatNumber;
-            String seatType;
-            double price;
+        try (Connection conn = DriverManager.getConnection(
+                DatabaseConfig.getDbUrl(), 
+                DatabaseConfig.getDbUser(), 
+                DatabaseConfig.getDbPassword());
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            if (i < 8) {
-                seatNumber = "A" + (i + 1);
-                seatType = "Business";
-                price = 2000 + (i * 50);
-            } else if (i < 24) {
-                seatNumber = "B" + (i - 7);
-                seatType = "Economy";
-                price = 1000 + (i * 30);
-            } else {
-                seatNumber = "C" + (i - 23);
-                seatType = "Standard";
-                price = 800 + (i * 20);
+            pstmt.setString(1, scheduleID);
+            ResultSet rs = pstmt.executeQuery();
+            
+            int row = 0;
+            int col = 0;
+            int totalSeats = 0;
+            int availableSeats = 0;
+            int occupiedSeats = 0;
+            
+            while (rs.next()) {
+                String seatNumber = rs.getString("SeatNumber");
+                String seatType = rs.getString("SeatType");
+                double price = rs.getDouble("Price");
+                boolean availability = rs.getBoolean("Availability");
+                int seatID = rs.getInt("SeatID");
+                
+                Seat seat = new Seat(seatNumber, seatType, price);
+                seat.setAvailability(availability);
+                currentSeats.add(seat);
+                
+                Button seatButton = createSeatButton(seat, seatID, scheduleID);
+                
+                seatsGrid.add(seatButton, col, row);
+                
+                col++;
+                if (col >= 4) {
+                    col = 0;
+                    row++;
+                }
+                
+                totalSeats++;
+                if (availability) {
+                    availableSeats++;
+                } else {
+                    occupiedSeats++;
+                }
             }
             
-            Seat seat = new Seat(seatNumber, seatType, price);
-            boolean isAvailable = Math.random() > 0.3;
+            updateStatistics(totalSeats, availableSeats, occupiedSeats);
+            showSuccess("Loaded " + totalSeats + " seats for selected schedule");
             
-            if (isAvailable) {
-                availableSeats++;
-            } else {
-                occupiedSeats++;
-            }
-            
-            Button seatButton = createSeatButton(seatNumber, isAvailable, seat);
-            
-            int row = i / 4;
-            int col = i % 4;
-            seatsGrid.add(seatButton, col, row);
+        } catch (SQLException e) {
+            System.err.println("Error loading seats from database: " + e.getMessage());
+            showError("Failed to load seats: " + e.getMessage());
         }
-        
-        updateStatistics(totalSeats, availableSeats, occupiedSeats);
-        showSuccess("Displaying " + totalSeats + " seats for selected schedule");
     }
 
-    private Button createSeatButton(String seatNumber, boolean isAvailable, Seat seat) {
-        Button seatButton = new Button(seatNumber);
+    private Button createSeatButton(Seat seat, int seatID, String scheduleID) {
+        Button seatButton = new Button(seat.getSeatNo());
         
         String baseStyle = "-fx-font-weight: bold; -fx-font-size: 10px; -fx-min-width: 35px; -fx-min-height: 35px; " +
                           "-fx-border-radius: 5px; -fx-background-radius: 5px; -fx-cursor: hand; " +
                           "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 3, 0, 0, 1);";
         
-        if (isAvailable) {
-            seatButton.setStyle(baseStyle + " -fx-background-color: #27ae60; -fx-text-fill: white;");
-        } else {
-            seatButton.setStyle(baseStyle + " -fx-background-color: #e74c3c; -fx-text-fill: white;");
-        }
+        // Set initial color based on availability
+        updateSeatButtonStyle(seatButton, seat.isAvailability());
         
         seatButton.setOnMouseEntered(e -> {
-            if (isAvailable) {
+            if (seat.isAvailability()) {
                 seatButton.setStyle(baseStyle + " -fx-background-color: #2ecc71; -fx-text-fill: white; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 5, 0, 0, 2);");
             } else {
                 seatButton.setStyle(baseStyle + " -fx-background-color: #c0392b; -fx-text-fill: white; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 5, 0, 0, 2);");
@@ -245,57 +263,124 @@ public class ManageSeatsController {
         });
         
         seatButton.setOnMouseExited(e -> {
-            if (isAvailable) {
-                seatButton.setStyle(baseStyle + " -fx-background-color: #27ae60; -fx-text-fill: white; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 3, 0, 0, 1);");
-            } else {
-                seatButton.setStyle(baseStyle + " -fx-background-color: #e74c3c; -fx-text-fill: white; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 3, 0, 0, 1);");
-            }
+            updateSeatButtonStyle(seatButton, seat.isAvailability());
         });
         
-        seatButton.setOnAction(e -> showSeatDetails(seat));
+        seatButton.setOnAction(e -> toggleSeatStatus(seat, seatID, scheduleID, seatButton));
         
         return seatButton;
     }
 
+    private void updateSeatButtonStyle(Button button, boolean isAvailable) {
+        String baseStyle = "-fx-font-weight: bold; -fx-font-size: 10px; -fx-min-width: 35px; -fx-min-height: 35px; " +
+                          "-fx-border-radius: 5px; -fx-background-radius: 5px; -fx-cursor: hand; " +
+                          "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 3, 0, 0, 1);";
+        
+        if (isAvailable) {
+            button.setStyle(baseStyle + " -fx-background-color: #27ae60; -fx-text-fill: white;");
+        } else {
+            button.setStyle(baseStyle + " -fx-background-color: #e74c3c; -fx-text-fill: white;");
+        }
+    }
+
+    private void toggleSeatStatus(Seat seat, int seatID, String scheduleID, Button seatButton) {
+        boolean newStatus = !seat.isAvailability();
+        
+        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmation.setTitle("Change Seat Status");
+        confirmation.setHeaderText("Change Seat Availability");
+        confirmation.setContentText("Are you sure you want to change seat " + seat.getSeatNo() + " status to " + 
+                                  (newStatus ? "AVAILABLE" : "OCCUPIED") + "?");
+        
+        confirmation.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                if (updateSeatStatusInDatabase(seatID, newStatus)) {
+                    seat.setAvailability(newStatus);
+                    updateSeatButtonStyle(seatButton, newStatus);
+                    refreshSeatStatistics();
+                    showSuccess("Seat " + seat.getSeatNo() + " status changed to " + 
+                               (newStatus ? "AVAILABLE" : "OCCUPIED"));
+                } else {
+                    showError("Failed to update seat status");
+                }
+            }
+        });
+    }
+
+    private boolean updateSeatStatusInDatabase(int seatID, boolean newStatus) {
+        String sql = "UPDATE Seat SET Availability = ? WHERE SeatID = ?";
+        
+        try (Connection conn = DriverManager.getConnection(
+                DatabaseConfig.getDbUrl(), 
+                DatabaseConfig.getDbUser(), 
+                DatabaseConfig.getDbPassword());
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setBoolean(1, newStatus);
+            pstmt.setInt(2, seatID);
+            
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+            
+        } catch (SQLException e) {
+            System.err.println("Error updating seat status: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private void refreshSeatStatistics() {
+        int totalSeats = currentSeats.size();
+        int availableSeats = (int) currentSeats.stream().filter(Seat::isAvailability).count();
+        int occupiedSeats = totalSeats - availableSeats;
+        
+        updateStatistics(totalSeats, availableSeats, occupiedSeats);
+    }
+
     private void updateStatistics(int totalSeats, int availableSeats, int occupiedSeats) {
-        double occupancyRate = (double) occupiedSeats / totalSeats * 100;
+        double occupancyRate = totalSeats > 0 ? (double) occupiedSeats / totalSeats * 100 : 0;
+        double availabilityRate = totalSeats > 0 ? (double) availableSeats / totalSeats * 100 : 0;
+        
+        if (seatDetailsArea != null) {
+            StringBuilder stats = new StringBuilder();
+            stats.append("=== SEAT MANAGEMENT ===\n\n");
+            stats.append("📊 STATISTICS:\n");
+            stats.append("Total Seats: ").append(totalSeats).append("\n");
+            stats.append("Available Seats: ").append(availableSeats).append(" (").append(String.format("%.1f", availabilityRate)).append("%)\n");
+            stats.append("Occupied Seats: ").append(occupiedSeats).append(" (").append(String.format("%.1f", occupancyRate)).append("%)\n\n");
+            
+            stats.append("🎯 INSTRUCTIONS:\n");
+            stats.append("• Click on any seat to toggle its status\n");
+            stats.append("• Green = Available\n");
+            stats.append("• Red = Occupied\n");
+            stats.append("• Confirmation required for status changes\n\n");
+            
+            stats.append("💡 LEGEND:\n");
+            stats.append("🟢 Available - Can be booked\n");
+            stats.append("🔴 Occupied - Cannot be booked\n");
+            
+            seatDetailsArea.setText(stats.toString());
+        }
+        
         System.out.println("Seat Statistics - Total: " + totalSeats + 
                           ", Available: " + availableSeats + 
                           ", Occupied: " + occupiedSeats + 
                           ", Occupancy: " + String.format("%.1f", occupancyRate) + "%");
     }
 
-    private void showSeatDetails(Seat seat) {
-        if (seatDetailsArea != null) {
-            StringBuilder details = new StringBuilder();
-            details.append("=== SEAT DETAILS ===\n\n");
-            details.append("Seat Number: ").append(seat.getSeatNo()).append("\n");
-            details.append("Seat Type: ").append(seat.getSeatType()).append("\n");
-            details.append("Price: PKR ").append(String.format("%.2f", seat.getPrice())).append("\n");
-            details.append("Status: ").append(seat.isAvailability() ? "✅ Available" : "❌ Occupied").append("\n");
-            details.append("\n");
-            
-            if (seat.isAvailability()) {
-                details.append("This seat is available for booking.\n");
-                details.append("Passengers can select this seat during booking.");
-            } else {
-                details.append("This seat is currently occupied.\n");
-                details.append("It cannot be selected for new bookings.");
-            }
-            
-            seatDetailsArea.setText(details.toString());
-        }
-    }
-
     private void handleRefresh() {
-        loadRoutesData();
-        seatsGrid.getChildren().clear();
-        if (seatDetailsArea != null) {
-            seatDetailsArea.clear();
+        Schedule selectedSchedule = scheduleComboBox.getValue();
+        if (selectedSchedule != null) {
+            loadSeatsFromDatabase(selectedSchedule.getScheduleID());
+        } else {
+            loadRoutesData();
+            seatsGrid.getChildren().clear();
+            if (seatDetailsArea != null) {
+                seatDetailsArea.clear();
+            }
+            routeComboBox.setValue(null);
+            scheduleComboBox.setValue(null);
+            scheduleComboBox.getItems().clear();
         }
-        routeComboBox.setValue(null);
-        scheduleComboBox.setValue(null);
-        scheduleComboBox.getItems().clear();
         showSuccess("Data refreshed successfully");
     }
 

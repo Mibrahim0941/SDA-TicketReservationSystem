@@ -40,12 +40,53 @@ public class RouteCatalog {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             this.connection = DriverManager.getConnection(url, user, password);
             this.databaseAvailable = true;
-            createTables();
+            createTablesIfNotExists();
             
         } catch (ClassNotFoundException | SQLException e) {
             System.err.println("Database connection failed: " + e.getMessage());
             System.out.println("Using in-memory storage for routes");
             initializeSampleRoutes();
+        }
+    }
+
+    private void createTablesIfNotExists() {
+        if (!databaseAvailable) return;
+        
+        try (Statement stmt = connection.createStatement()) {
+            // Create Route table if not exists
+            String createRouteTable = """
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Route' AND xtype='U')
+                CREATE TABLE Route (
+                    RouteID NVARCHAR(50) PRIMARY KEY,
+                    Source NVARCHAR(100) NOT NULL,
+                    Destination NVARCHAR(100) NOT NULL,
+                    BasePrice DECIMAL(10,2) NOT NULL,
+                    IsActive BIT DEFAULT 1
+                )
+                """;
+            
+            // Create Schedule table if not exists
+            String createScheduleTable = """
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Schedule' AND xtype='U')
+                CREATE TABLE Schedule (
+                    ScheduleID NVARCHAR(50) PRIMARY KEY,
+                    RouteID NVARCHAR(50) NOT NULL,
+                    Date DATE NOT NULL,
+                    DepartureTime TIME NOT NULL,
+                    ArrivalTime TIME NOT NULL,
+                    Class NVARCHAR(20) NOT NULL,
+                    TypePercentage DECIMAL(5,2) DEFAULT 100.0,
+                    IsActive BIT DEFAULT 1,
+                    FOREIGN KEY (RouteID) REFERENCES Route(RouteID) ON DELETE CASCADE
+                )
+                """;
+            
+            stmt.execute(createRouteTable);
+            stmt.execute(createScheduleTable);
+            System.out.println("Route and Schedule tables ensured to exist");
+            
+        } catch (SQLException e) {
+            System.err.println("Table creation failed: " + e.getMessage());
         }
     }
 
@@ -57,46 +98,8 @@ public class RouteCatalog {
         routes.put(route1.getRouteID(), route1);
         routes.put(route2.getRouteID(), route2);
         routes.put(route3.getRouteID(), route3);
-    }
-
-    private void createTables() {
-        if (!databaseAvailable) return;
         
-        String createRoutesTable = """
-            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Route' AND xtype='U')
-            CREATE TABLE Route (
-                RouteID NVARCHAR(50) PRIMARY KEY,
-                Source NVARCHAR(100) NOT NULL,
-                Destination NVARCHAR(100) NOT NULL,
-                BasePrice DECIMAL(10,2) NOT NULL,
-                IsActive BIT DEFAULT 1,
-                CreatedAt DATETIME DEFAULT GETDATE()
-            )
-            """;
-
-        String createSchedulesTable = """
-            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Schedule' AND xtype='U')
-            CREATE TABLE Schedule (
-                ScheduleID NVARCHAR(50) PRIMARY KEY,
-                RouteID NVARCHAR(50) NOT NULL,
-                Date DATE NOT NULL,
-                DepartureTime TIME NOT NULL,
-                ArrivalTime TIME NOT NULL,
-                Class NVARCHAR(20) NOT NULL,
-                TypePercentage DECIMAL(5,2) DEFAULT 100.0,
-                IsActive BIT DEFAULT 1,
-                CreatedAt DATETIME DEFAULT GETDATE(),
-                FOREIGN KEY (RouteID) REFERENCES Route(RouteID) ON DELETE CASCADE
-            )
-            """;
-
-        try (Statement stmt = connection.createStatement()) {
-            stmt.execute(createRoutesTable);
-            stmt.execute(createSchedulesTable);
-            System.out.println("Route and Schedule tables ensured to exist");
-        } catch (SQLException e) {
-            System.err.println("Table creation failed: " + e.getMessage());
-        }
+        System.out.println("Initialized with " + routes.size() + " sample routes");
     }
 
     public Route getRoute(String routeId) {
@@ -112,6 +115,16 @@ public class RouteCatalog {
             return false;
         }
         
+        // Check if route with same source and destination already exists
+        boolean duplicateRoute = routes.values().stream()
+            .anyMatch(r -> r.getSource().equalsIgnoreCase(route.getSource()) && 
+                          r.getDestination().equalsIgnoreCase(route.getDestination()));
+        
+        if (duplicateRoute) {
+            System.err.println("Route already exists: " + route.getSource() + " → " + route.getDestination());
+            return false;
+        }
+        
         routes.put(route.getRouteID(), route);
         
         if (databaseAvailable) {
@@ -123,6 +136,7 @@ public class RouteCatalog {
     public boolean addScheduleToRoute(String routeId, Schedule schedule) {
         Route route = getRoute(routeId);
         if (route == null) {
+            System.err.println("Route not found: " + routeId);
             return false;
         }
         
@@ -153,7 +167,9 @@ public class RouteCatalog {
     }
 
     public void refresh() {
-        loadRoutesFromDB();
+        if (databaseAvailable) {
+            loadRoutesFromDB();
+        }
     }
 
     private boolean saveRouteToDB(Route route) {
@@ -165,9 +181,12 @@ public class RouteCatalog {
             pstmt.setString(3, route.getDestination());
             pstmt.setDouble(4, route.getBasePrice());
             pstmt.executeUpdate();
+            System.out.println("Route saved to database: " + route.getRouteID());
             return true;
         } catch (SQLException e) {
             System.err.println("Save route failed: " + e.getMessage());
+            // Rollback in-memory change
+            routes.remove(route.getRouteID());
             return false;
         }
     }
@@ -184,6 +203,7 @@ public class RouteCatalog {
             pstmt.setString(6, schedule.getScheduleClass());
             pstmt.setDouble(7, schedule.getTypePercentage());
             pstmt.executeUpdate();
+            System.out.println("Schedule saved to database: " + schedule.getScheduleID());
             return true;
         } catch (SQLException e) {
             System.err.println("Save schedule failed: " + e.getMessage());
@@ -200,6 +220,7 @@ public class RouteCatalog {
             pstmt.setDouble(3, route.getBasePrice());
             pstmt.setString(4, route.getRouteID());
             int rowsAffected = pstmt.executeUpdate();
+            System.out.println("Route updated in database: " + route.getRouteID() + " (" + rowsAffected + " rows affected)");
             return rowsAffected > 0;
         } catch (SQLException e) {
             System.err.println("Update route failed: " + e.getMessage());
@@ -246,19 +267,21 @@ public class RouteCatalog {
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, route.getRouteID());
             ResultSet rs = pstmt.executeQuery();
-            System.out.println("Loading schedules for route " + route.getRouteID());
+            
             while (rs.next()) {
                 String scheduleId = rs.getString("ScheduleID");
                 LocalDate date = rs.getDate("Date").toLocalDate();
                 LocalTime departureTime = rs.getTime("DepartureTime").toLocalTime();
                 LocalTime arrivalTime = rs.getTime("ArrivalTime").toLocalTime();
                 String scheduleClass = rs.getString("Class");
-                //double typePercentage = rs.getDouble("TypePercentage");
-                System.out.println("  Loaded schedule " + scheduleId + " for route " + route.getRouteID());
+                double typePercentage = rs.getDouble("TypePercentage");
+                
                 Schedule schedule = new Schedule(scheduleId, date, departureTime, arrivalTime, scheduleClass);
-                //schedule.setTypePercentage(typePercentage);
+                schedule.setTypePercentage(typePercentage);
                 route.addSchedule(schedule);
             }
+            System.out.println("Loaded " + route.getSchedules().size() + " schedules for route " + route.getRouteID());
+            
         } catch (SQLException e) {
             System.err.println("Load schedules failed for route " + route.getRouteID() + ": " + e.getMessage());
         }
@@ -280,6 +303,7 @@ public class RouteCatalog {
                 int rowsAffected = pstmt.executeUpdate();
                 if (rowsAffected > 0) {
                     routes.remove(routeId);
+                    System.out.println("Route deleted from database: " + routeId);
                     return true;
                 }
             } catch (SQLException e) {
@@ -287,6 +311,7 @@ public class RouteCatalog {
             }
         } else {
             routes.remove(routeId);
+            System.out.println("Route deleted from memory: " + routeId);
             return true;
         }
         return false;
@@ -296,6 +321,7 @@ public class RouteCatalog {
         try {
             if (connection != null && !connection.isClosed()) {
                 connection.close();
+                System.out.println("Database connection closed");
             }
         } catch (SQLException e) {
             System.err.println("Error closing connection: " + e.getMessage());

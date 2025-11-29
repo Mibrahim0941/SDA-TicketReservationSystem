@@ -1,6 +1,7 @@
 package controllers;
 
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -36,7 +37,6 @@ public class ManagePricingController {
     @FXML private Button updatePriceButton;
     @FXML private Button applyPercentageButton;
     @FXML private Button refreshButton;
-    @FXML private Button refreshDataButton;
     @FXML private Button backButton;
     
     @FXML private TextArea priceDetailsArea;
@@ -50,6 +50,8 @@ public class ManagePricingController {
             controller.setAdminData(username, admin);
             
             Scene scene = new Scene(root, 1200, 800);
+            scene.getStylesheets().add(ManagePricingController.class.getResource("/ui/manage-pricing.css").toExternalForm());
+            
             stage.setScene(scene);
             stage.setTitle("TicketGenie - Manage Pricing");
             stage.centerOnScreen();
@@ -88,9 +90,6 @@ public class ManagePricingController {
         if (refreshButton != null) {
             refreshButton.setOnAction(e -> handleRefresh());
         }
-        if (refreshDataButton != null) {
-            refreshDataButton.setOnAction(e -> handleRefresh());
-        }
         if (backButton != null) {
             backButton.setOnAction(e -> handleBack());
         }
@@ -103,6 +102,18 @@ public class ManagePricingController {
             destinationColumn.setCellValueFactory(new PropertyValueFactory<>("destination"));
             basePriceColumn.setCellValueFactory(new PropertyValueFactory<>("basePrice"));
             
+            basePriceColumn.setCellFactory(column -> new TableCell<Route, Double>() {
+                @Override
+                protected void updateItem(Double item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(String.format("PKR %.2f", item));
+                    }
+                }
+            });
+            
             routesTable.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldSelection, newSelection) -> showRouteDetails(newSelection)
             );
@@ -112,7 +123,7 @@ public class ManagePricingController {
     private void loadRoutesData() {
         if (routeCatalog != null && routesTable != null) {
             routeCatalog.refresh();
-            routesTable.getItems().setAll(routeCatalog.getAllRoutes());
+            routesTable.setItems(FXCollections.observableArrayList(routeCatalog.getAllRoutes()));
         }
     }
 
@@ -120,11 +131,24 @@ public class ManagePricingController {
         if (route != null) {
             if (priceDetailsArea != null) {
                 StringBuilder details = new StringBuilder();
+                details.append("=== PRICING DETAILS ===\n\n");
                 details.append("Route ID: ").append(route.getRouteID()).append("\n");
                 details.append("Source: ").append(route.getSource()).append("\n");
                 details.append("Destination: ").append(route.getDestination()).append("\n");
-                details.append("Current Base Price: PKR ").append(route.getBasePrice()).append("\n");
-                details.append("Number of Schedules: ").append(route.getSchedules().size());
+                details.append("Current Base Price: PKR ").append(String.format("%.2f", route.getBasePrice())).append("\n");
+                details.append("Number of Schedules: ").append(route.getSchedules().size()).append("\n\n");
+                
+                if (!route.getSchedules().isEmpty()) {
+                    details.append("Schedule Classes:\n");
+                    for (models.Schedule schedule : route.getSchedules()) {
+                        double schedulePrice = route.getBasePrice() * (schedule.getTypePercentage() / 100);
+                        details.append("• ").append(schedule.getScheduleClass())
+                              .append(": PKR ").append(String.format("%.2f", schedulePrice))
+                              .append(" (").append(schedule.getTypePercentage()).append("%)\n");
+                    }
+                } else {
+                    details.append("⚠ No schedules configured for this route.\n");
+                }
                 
                 priceDetailsArea.setText(details.toString());
             }
@@ -158,7 +182,7 @@ public class ManagePricingController {
                 currentRoute.setBasePrice(newPrice);
                 
                 if (routeCatalog.updateRoute(currentRoute)) {
-                    showSuccess("Price updated successfully!");
+                    showSuccess("Price updated successfully!\nNew base price: PKR " + String.format("%.2f", newPrice));
                     loadRoutesData();
                     newPriceField.clear();
                 } else {
@@ -169,7 +193,7 @@ public class ManagePricingController {
             }
             
         } catch (NumberFormatException e) {
-            showError("Invalid price format");
+            showError("Invalid price format. Please enter a valid number.");
         }
     }
 
@@ -184,25 +208,35 @@ public class ManagePricingController {
         try {
             double percentage = Double.parseDouble(percentageText);
             
+            if (percentage < -100) {
+                showError("Percentage cannot be less than -100%");
+                return;
+            }
+            
             boolean allUpdated = true;
+            int updatedCount = 0;
+            
             for (Route route : routesTable.getItems()) {
                 Route currentRoute = routeCatalog.getRoute(route.getRouteID());
                 if (currentRoute != null) {
                     double newPrice = currentRoute.getBasePrice() * (1 + percentage/100);
-                    currentRoute.setBasePrice(Math.round(newPrice * 100.0) / 100.0);
+                    newPrice = Math.round(newPrice * 100.0) / 100.0; // Round to 2 decimal places
+                    currentRoute.setBasePrice(newPrice);
                     
-                    if (!routeCatalog.updateRoute(currentRoute)) {
+                    if (routeCatalog.updateRoute(currentRoute)) {
+                        updatedCount++;
+                    } else {
                         allUpdated = false;
                     }
                 }
             }
             
-            if (allUpdated) {
-                showSuccess("Applied " + percentage + "% change to all routes!");
+            if (updatedCount > 0) {
+                showSuccess("Applied " + percentage + "% change to " + updatedCount + " routes!");
                 loadRoutesData();
                 percentageField.clear();
             } else {
-                showError("Some routes failed to update");
+                showError("No routes were updated");
             }
             
         } catch (NumberFormatException e) {
@@ -212,7 +246,7 @@ public class ManagePricingController {
 
     private void handleRefresh() {
         loadRoutesData();
-        showSuccess("Data refreshed");
+        showSuccess("Data refreshed successfully");
     }
 
     private void handleBack() {
