@@ -196,14 +196,14 @@ public class MyBookingsController implements Initializable {
         try {
             // Reconstruct object graph from flat result set
             models.Route route = new models.Route(
-                String.valueOf(rs.getInt("RouteID")),
+                rs.getString("RouteID"),
                 rs.getString("Source"),
                 rs.getString("Destination"),
                 rs.getDouble("BasePrice")
             );
             
             models.Schedule schedule = new models.Schedule(
-                String.valueOf(rs.getInt("ScheduleID")),
+                rs.getString("ScheduleID"),
                 rs.getDate("Date").toLocalDate(),
                 rs.getTime("DepartureTime").toLocalTime(),
                 rs.getTime("ArrivalTime").toLocalTime(),
@@ -211,14 +211,14 @@ public class MyBookingsController implements Initializable {
             );
             
             models.Reservation reservation = new models.Reservation(
-                String.valueOf(rs.getInt("ReservationID")),
+                rs.getString("ReservationID"),
                 schedule,
                 route,
                 rs.getString("Class")
             );
             
             Booking booking = new Booking(
-                String.valueOf(rs.getInt("BookingID")),
+                rs.getString("BookingID"),
                 rs.getString("CustomerID"),
                 reservation,
                 rs.getTimestamp("BookingDateTime")

@@ -9,6 +9,7 @@ import javafx.scene.control.*;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import models.Admin;
+import java.net.URL;
 
 import java.io.IOException;
 
@@ -37,25 +38,53 @@ public class AdminSettingsController {
 
     public static void show(Stage stage, String username, Admin admin) {
         try {
-            FXMLLoader loader = new FXMLLoader(AdminSettingsController.class.getResource("/ui/admin-settings.fxml"));
-            Parent root = loader.load();
+            System.out.println("Loading Admin Settings Page for user: " + username);
             
+            // URL check karo pehle
+            URL fxmlUrl = AdminSettingsController.class.getResource("/ui/admin-settings.fxml");
+            if (fxmlUrl == null) {
+                System.err.println("CRITICAL ERROR: FXML file not found at /ui/admin-settings.fxml");
+                showErrorAlert("FXML file not found! Check if admin-settings.fxml exists in resources/ui/ folder");
+                return;
+            }
+            System.out.println("FXML URL: " + fxmlUrl);
+            
+            // Loader create karo aur load karo
+            FXMLLoader loader = new FXMLLoader(fxmlUrl);
+            Parent root = loader.load();  // Ye line 42 hogi
+            
+            // Ab controller mil jayega
             AdminSettingsController controller = loader.getController();
-            controller.setAdminData(username, admin);
+            if (controller == null) {
+                System.err.println("WARNING: Controller not injected! Check FXML fx:controller attribute");
+            } else {
+                controller.setAdminData(username, admin);
+            }
             
+            // Scene setup
             Scene scene = new Scene(root, 1200, 800);
-            scene.getStylesheets().add(AdminSettingsController.class.getResource("/ui/admin-settings.css").toExternalForm());
+            
+            // CSS check karo
+            URL cssUrl = AdminSettingsController.class.getResource("/ui/admin-settings.css");
+            if (cssUrl != null) {
+                scene.getStylesheets().add(cssUrl.toExternalForm());
+                System.out.println("CSS loaded: " + cssUrl);
+            } else {
+                System.err.println("WARNING: CSS file not found at /ui/admin-settings.css");
+            }
             
             stage.setScene(scene);
             stage.setTitle("TicketGenie - Admin Settings");
             stage.centerOnScreen();
             
+            System.out.println("Admin Settings page loaded successfully!");
+            
         } catch (IOException e) {
+            System.err.println("FAILED to load Admin Settings:");
             e.printStackTrace();
             showErrorAlert("Failed to load settings page: " + e.getMessage());
         }
     }
-
     public void setAdminData(String username, Admin admin) {
         this.currentUsername = username;
         this.currentAdmin = admin;

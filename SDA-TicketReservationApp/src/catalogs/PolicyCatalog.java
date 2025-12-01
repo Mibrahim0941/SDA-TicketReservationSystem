@@ -115,7 +115,7 @@ public class PolicyCatalog {
         return true;
     }
     
-    private CancellationPolicy getPolicyByTimeFrame(int timeBeforeDeparture) {
+    public CancellationPolicy getPolicyByTimeFrame(int timeBeforeDeparture) {
         return policies.stream()
                 .filter(policy -> policy.getTimeBeforeDeparture() == timeBeforeDeparture)
                 .findFirst()

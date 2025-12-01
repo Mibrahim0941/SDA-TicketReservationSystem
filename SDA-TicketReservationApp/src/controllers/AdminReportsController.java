@@ -300,7 +300,7 @@ public class AdminReportsController {
         stats.put("pendingBookings", pending);
         
         // Recent bookings
-        String todayQuery = "SELECT COUNT(*) as count FROM Booking WHERE CAST(BookingDate AS DATE) = CAST(GETDATE() AS DATE)";
+        String todayQuery = "SELECT COUNT(*) as count FROM Booking WHERE CAST(BookingDateTime AS DATE) = CAST(GETDATE() AS DATE)";
         stmt = connection.prepareStatement(todayQuery);
         rs = stmt.executeQuery();
         rs.next();

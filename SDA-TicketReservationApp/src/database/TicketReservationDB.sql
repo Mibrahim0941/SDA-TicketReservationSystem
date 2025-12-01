@@ -1,3 +1,4 @@
+DROP DATABASE TicketGenieDB
 -- Create Database
 CREATE DATABASE TicketGenieDB;
 GO
@@ -156,10 +157,9 @@ CREATE TABLE Seat (
 );
 GO
 
-
 -- Payment Table (Added as required by Booking table)
 CREATE TABLE Payment (
-    PaymentID INT IDENTITY(1,1) PRIMARY KEY,
+    PaymentID NVARCHAR(20) PRIMARY KEY,
     Amount DECIMAL(10,2) NOT NULL,
     PaymentMethod NVARCHAR(50) NOT NULL, -- Credit Card, Debit Card, PayPal, etc.
     PaymentStatus NVARCHAR(20) DEFAULT 'Pending', -- Pending, Completed, Failed, Refunded
@@ -168,11 +168,13 @@ CREATE TABLE Payment (
 );
 GO
 
+
+
 -- Reservation Table
 CREATE TABLE Reservation (
-    ReservationID INT IDENTITY(1,1) PRIMARY KEY,
-    ScheduleID INT NOT NULL,
-    RouteID INT NOT NULL,
+    ReservationID NVARCHAR(20) PRIMARY KEY,
+    ScheduleID NVARCHAR(20) NOT NULL,
+    RouteID NVARCHAR(20) NOT NULL,
     FOREIGN KEY (ScheduleID) REFERENCES Schedule(ScheduleID),
     FOREIGN KEY (RouteID) REFERENCES Route(RouteID)
 );
@@ -180,13 +182,13 @@ GO
 
 -- Booking Table
 CREATE TABLE Booking (
-    BookingID INT IDENTITY(1,1) PRIMARY KEY,
+    BookingID NVARCHAR(20) PRIMARY KEY,
     CustomerID NVARCHAR(50) NOT NULL,
-    ReservationID INT NOT NULL,
+    ReservationID NVARCHAR(20) NOT NULL,
     BookingDateTime DATETIME DEFAULT GETDATE(),
     TotalAmount DECIMAL(10,2) NOT NULL,
     Status NVARCHAR(20) DEFAULT 'Confirmed', -- Confirmed, Cancelled, Completed
-    PaymentID INT,
+    PaymentID NVARCHAR(20),
     FOREIGN KEY (CustomerID) REFERENCES Users(UserID),
     FOREIGN KEY (ReservationID) REFERENCES Reservation(ReservationID),
     FOREIGN KEY (PaymentID) REFERENCES Payment(PaymentID)
@@ -242,18 +244,30 @@ INSERT INTO Schedule (RouteID, Date, DepartureTime, ArrivalTime, Class) VALUES
 (5, '2024-02-19', '13:00', '15:00', 'Business');
 GO
 
+select * from schedule
 -- Insert into Seat Table
 -- Schedule 1 (Economy)
-INSERT INTO Seat (ScheduleID, SeatNumber, SeatType, Availability, PriceAdjustment) VALUES
-(13, '1A', 'Economy', 1, 0.0),
-(13, '1B', 'Economy', 1, 0.0),
-(13, '1C', 'Economy', 0, 0.0),
-(13, '2A', 'Economy', 1, 0.0),
-(13, '2B', 'Economy', 1, 0.0),
-(13, '2C', 'Economy', 1, 0.0),
-(13, '3A', 'Economy', 1, 0.0),
-(13, '3B', 'Economy', 1, 0.0),
-(13, '3C', 'Economy', 0, 0.0);
+INSERT INTO Seat (ScheduleID, SeatNumber, SeatType, Availability, Price) VALUES
+('SCH0313', '1A', 'Economy', 1, 3000),
+('SCH0313', '1B', 'Economy', 1, 3000),
+('SCH0313', '1C', 'Economy', 0, 3000),
+('SCH0313', '1D', 'Economy', 0, 0.0),
+('SCH0313', '2A', 'Economy', 1, 0.0),
+('SCH0313', '2B', 'Economy', 1, 0.0),
+('SCH0313', '2C', 'Economy', 1, 0.0),
+('SCH0313', '2D', 'Economy', 0, 0.0),
+('SCH0313', '3A', 'Economy', 1, 0.0),
+('SCH0313', '3B', 'Economy', 1, 0.0),
+('SCH0313', '3C', 'Economy', 0, 0.0),
+('SCH0313', '3D', 'Economy', 0, 0.0),
+('SCH0313', '4A', 'Economy', 1, 0.0),
+('SCH0313', '4B', 'Economy', 1, 0.0),
+('SCH0313', '4C', 'Economy', 0, 0.0),
+('SCH0313', '4D', 'Economy', 0, 0.0),
+('SCH0313', '5A', 'Economy', 1, 0.0),
+('SCH0313', '5B', 'Economy', 1, 0.0),
+('SCH0313', '5C', 'Economy', 0, 0.0),
+('SCH0313', '5D', 'Economy', 0, 0.0)
 
 -- Schedule 2 (Business)
 INSERT INTO Seat (ScheduleID, SeatNumber, SeatType, Availability, PriceAdjustment) VALUES

@@ -6,16 +6,16 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
+import catalogs.BookingCatalog;
 import catalogs.RouteCatalog;
 import config.DatabaseConfig;
-import models.Customer;
-import models.Route;
-import models.Schedule;
-import models.Seat;
+import models.*;
+import database.DatabaseConnection;
 
 import java.net.URL;
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -25,7 +25,7 @@ public class BookTicketsController implements Initializable {
     // --- FXML Injection ---
     @FXML private Text pageTitle;
     @FXML private Label subTitle;
-    @FXML private Button backButton; // Single Back Button
+    @FXML private Button backButton;
 
     // Search
     @FXML private HBox searchLayer;
@@ -34,7 +34,7 @@ public class BookTicketsController implements Initializable {
     @FXML private Button searchButton;
     @FXML private Button clearButton;
 
-    // Layers (StackPane children)
+    // Layers
     @FXML private ScrollPane routeLayer;
     @FXML private ScrollPane scheduleLayer;
     @FXML private ScrollPane seatLayer;
@@ -53,27 +53,24 @@ public class BookTicketsController implements Initializable {
     // --- Data ---
     private Customer currentCustomer;
     private RouteCatalog routeCatalog;
+    private BookingCatalog bookingCatalog;
     private Route selectedRoute;
     private Schedule selectedSchedule;
     private Set<String> selectedSeatIds = new HashSet<>();
+    private Map<String, Seat> seatMap = new HashMap<>(); // Track seat objects by seat number
     
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("MMM dd, yyyy");
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("hh:mm a");
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // --- CRITICAL: DEBUG CHECKS ---
-        if (backButton == null) System.err.println("CRITICAL: backButton not injected!");
-        if (routeLayer == null) System.err.println("CRITICAL: routeLayer not injected!");
-        
         routeCatalog = RouteCatalog.getInstance();
+        bookingCatalog = new BookingCatalog(); // Create instance of BookingCatalog
         setupEventHandlers();
-        
-        // Start by loading routes
         loadRoutes();
     }
 
-    // --- Overloaded Setters for Compatibility ---
+    // --- Setters ---
     public void setUserData(String username, Customer customer) {
         this.currentCustomer = customer;
     }
@@ -139,7 +136,7 @@ public class BookTicketsController implements Initializable {
             details.getStyleClass().add("card-detail");
             
             card.getChildren().addAll(top, details);
-            card.setOnMouseClicked(e -> showSchedules(r)); // Interaction
+            card.setOnMouseClicked(e -> showSchedules(r));
             
             routesContainer.getChildren().add(card);
         }
@@ -151,10 +148,6 @@ public class BookTicketsController implements Initializable {
 
     private void showSchedules(Route route) {
         this.selectedRoute = route;
-        System.out.println(route.getRouteID());
-        System.out.println(route.getSource());
-        System.out.println(route.getDestination()); 
-        System.out.println(route.getSchedules());
         showLayer("SCHEDULES");
         subTitle.setText("Route: " + route.getSource() + " to " + route.getDestination());
         
@@ -187,7 +180,7 @@ public class BookTicketsController implements Initializable {
             time.getStyleClass().add("card-detail");
             
             card.getChildren().addAll(top, time);
-            card.setOnMouseClicked(e -> showSeats(s)); // Interaction
+            card.setOnMouseClicked(e -> showSeats(s));
             
             schedulesContainer.getChildren().add(card);
         }
@@ -200,6 +193,7 @@ public class BookTicketsController implements Initializable {
     private void showSeats(Schedule schedule) {
         this.selectedSchedule = schedule;
         this.selectedSeatIds.clear();
+        this.seatMap.clear();
         updateSummary();
         showLayer("SEATS");
         
@@ -209,6 +203,12 @@ public class BookTicketsController implements Initializable {
         if (schedule.getSeats().isEmpty()) {
             loadSeatsFromDB(schedule);
         }
+        
+        // Store seats in map for quick access
+        for (Seat seat : schedule.getSeats()) {
+            seatMap.put(seat.getSeatNo(), seat);
+        }
+        
         renderBusLayout(schedule.getSeats());
     }
 
@@ -226,7 +226,7 @@ public class BookTicketsController implements Initializable {
         front.setStyle("-fx-text-fill: #AAA; -fx-font-weight: bold; -fx-padding: 0 0 10 0; -fx-border-style: dashed; -fx-border-color: #CCC; -fx-border-width: 0 0 1 0;");
         busLayout.getChildren().add(front);
 
-        // Group Seats by Row Char (A, B, C...)
+        // Group Seats by Row Char
         Map<Character, List<Seat>> rows = seats.stream()
             .collect(Collectors.groupingBy(s -> s.getSeatNo().charAt(0)));
         
@@ -280,8 +280,13 @@ public class BookTicketsController implements Initializable {
             btnConfirm.setDisable(true);
         } else {
             lblSelectedSeats.setText(String.join(", ", selectedSeatIds));
-            double total = count * selectedRoute.getBasePrice();
-            lblTotalPrice.setText("PKR " + String.format("%.0f", total));
+            
+            // Calculate total based on selected seats
+            double total = selectedSeatIds.stream()
+                .mapToDouble(seatNo -> seatMap.get(seatNo).getPrice())
+                .sum();
+            
+            lblTotalPrice.setText("PKR " + String.format("%.2f", total));
             btnConfirm.setDisable(false);
         }
     }
@@ -291,11 +296,9 @@ public class BookTicketsController implements Initializable {
     // =========================================================
 
     private void showLayer(String layer) {
-        // Hide all layers first
         routeLayer.setVisible(false);
         scheduleLayer.setVisible(false);
         seatLayer.setVisible(false);
-        
         summaryLayer.setVisible(false);
         searchLayer.setVisible(false);
         searchLayer.setManaged(false);
@@ -341,23 +344,23 @@ public class BookTicketsController implements Initializable {
         
         try (Connection conn = DriverManager.getConnection(DatabaseConfig.getDbUrl(), DatabaseConfig.getDbUser(), DatabaseConfig.getDbPassword());
              PreparedStatement stmt = conn.prepareStatement(query)) {
-            System.out.println("Loading seats for ScheduleID: " + schedule.getScheduleID());
             stmt.setString(1, schedule.getScheduleID());
             ResultSet rs = stmt.executeQuery();
-            System.out.println("Seats loaded:" + rs);
+            
             while(rs.next()) {
-                Seat s = new Seat(rs.getString("SeatNumber"), rs.getString("SeatType"), rs.getDouble("PriceAdjustment"));
+                Seat s = new Seat(rs.getString("SeatNumber"), rs.getString("SeatType"), rs.getDouble("Price"));
                 s.setAvailability(rs.getBoolean("Availability"));
                 dbSeats.add(s);
             }
         } catch (Exception e) {
             System.err.println("Seat load error: " + e.getMessage());
+            e.printStackTrace();
         }
         schedule.setSeats((ArrayList<Seat>) dbSeats);
     }
 
     private void handleBooking() {
-        if(saveBookingTransaction()) {
+        if(saveBookingUsingCatalog()) {
             Alert a = new Alert(Alert.AlertType.INFORMATION, "Booking Successful!");
             a.showAndWait();
             loadRoutes();
@@ -366,36 +369,165 @@ public class BookTicketsController implements Initializable {
         }
     }
 
-    private boolean saveBookingTransaction() {
-        Connection conn = null;
+   private boolean saveBookingUsingCatalog() {
         try {
-            conn = DriverManager.getConnection(DatabaseConfig.getDbUrl(), DatabaseConfig.getDbUser(), DatabaseConfig.getDbPassword());
-            conn.setAutoCommit(false);
-
-            String bID = "B" + System.currentTimeMillis();
-            String insertB = "INSERT INTO Booking (BookingID, CustomerID, BookingDateTime, TotalAmount, Status) VALUES (?, ?, GETDATE(), ?, 'Confirmed')";
-            try(PreparedStatement ps = conn.prepareStatement(insertB)){
-                ps.setString(1, bID);
-                ps.setString(2, currentCustomer.getUserID());
-                ps.setDouble(3, Double.parseDouble(lblTotalPrice.getText().replace("PKR ", "")));
-                ps.executeUpdate();
+            // 1. Generate unique IDs
+            String reservationID = "RES" + System.currentTimeMillis();
+            String bookingID = "B" + System.currentTimeMillis();
+            
+            // 2. Calculate total amount based on selected seats
+            double totalAmount = selectedSeatIds.stream()
+                .mapToDouble(seatNo -> seatMap.get(seatNo).getPrice())
+                .sum();
+            
+            // 3. Create Reservation
+            Reservation reservation = new Reservation(
+                reservationID,
+                selectedSchedule,
+                selectedRoute,
+                selectedSchedule.getScheduleClass()
+            );
+            
+            // Add selected seats to reservation
+            List<String> selectedSeatList = new ArrayList<>(selectedSeatIds);
+            reservation.selectSeats(selectedSeatList);
+            
+            // 4. Create Booking WITHOUT payment initially
+            Booking booking = new Booking(
+                bookingID,
+                currentCustomer.getUserID(),
+                reservation,
+                new java.util.Date()
+            );
+            booking.setTotalAmount(totalAmount);
+            booking.setStatus("Confirmed");
+            
+            // 5. First, try to update seat availability
+            if (!updateSeatAvailability()) {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Seat Unavailable");
+                alert.setHeaderText("Selected seats are no longer available");
+                alert.setContentText("Please select different seats.");
+                alert.showAndWait();
+                return false;
             }
-
-            String updateS = "UPDATE Seat SET IsAvailable = 0 WHERE SeatNo = ? AND ScheduleID = ?";
-            try(PreparedStatement ps = conn.prepareStatement(updateS)){
-                for(String sid : selectedSeatIds) {
-                    ps.setString(1, sid);
-                    ps.setString(2, selectedSchedule.getScheduleID());
-                    ps.addBatch();
-                }
-                ps.executeBatch();
+            
+            // 6. Save to database using BookingCatalog
+            boolean bookingSaved = bookingCatalog.addBooking(booking);
+            
+            if (bookingSaved) {
+                // Show success message
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Booking Confirmed");
+                alert.setHeaderText("Booking Created Successfully!");
+                alert.setContentText("Booking ID: " + bookingID + 
+                                "\nTotal Amount: PKR " + String.format("%.2f", totalAmount) +
+                                "\n\nYour booking is confirmed but payment is pending." +
+                                "\nPlease complete payment from 'My Bookings' page.");
+                alert.showAndWait();
+                
+                System.out.println("Booking saved successfully (payment pending): " + bookingID);
+                return true;
+            } else {
+                // If booking failed, release the seats
+                rollbackSeatAvailability();
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Booking Failed");
+                alert.setHeaderText("Failed to create booking");
+                alert.setContentText("Please try again.");
+                alert.showAndWait();
+                return false;
             }
-            conn.commit();
-            return true;
-        } catch(Exception e) {
-            if(conn!=null) try{conn.rollback();}catch(Exception ex){}
+            
+        } catch (Exception e) {
+            System.err.println("Booking error: " + e.getMessage());
             e.printStackTrace();
             return false;
+        }
+    }
+
+    private boolean updateSeatAvailability() {
+    String updateSeatQuery = "UPDATE Seat SET Availability = 0 WHERE SeatNumber = ? AND ScheduleID = ? AND Availability = 1";
+    
+    Connection conn = null;
+    try {
+        conn = DatabaseConnection.getConnection();
+        int updatedCount = 0;
+        
+        // Use batch update for efficiency
+        try (PreparedStatement ps = conn.prepareStatement(updateSeatQuery)) {
+            for (String seatNo : selectedSeatIds) {
+                ps.setString(1, seatNo);
+                ps.setString(2, selectedSchedule.getScheduleID());
+                ps.addBatch();
+            }
+            
+            int[] results = ps.executeBatch();
+            updatedCount = Arrays.stream(results).sum();
+        }
+        
+        // Check if all seats were updated (means they were available)
+        return updatedCount == selectedSeatIds.size();
+        
+    } catch (Exception e) {
+        System.err.println("Error updating seat availability: " + e.getMessage());
+        e.printStackTrace();
+        return false;
+    } finally {
+        // DO NOT close the connection here if it's a shared connection
+        // Let DatabaseConnection manage it
+    }
+}
+
+private void rollbackSeatAvailability() {
+    String updateSeatQuery = "UPDATE Seat SET Availability = 1 WHERE SeatNumber = ? AND ScheduleID = ?";
+    
+    Connection conn = null;
+    try {
+        conn = DatabaseConnection.getConnection();
+        try (PreparedStatement ps = conn.prepareStatement(updateSeatQuery)) {
+            for (String seatNo : selectedSeatIds) {
+                ps.setString(1, seatNo);
+                ps.setString(2, selectedSchedule.getScheduleID());
+                ps.addBatch();
+            }
+            ps.executeBatch();
+        }
+        
+    } catch (Exception e) {
+        System.err.println("Error rolling back seat availability: " + e.getMessage());
+        e.printStackTrace();
+    } finally {
+        // DO NOT close the connection here
+    }
+}
+
+    // Optional: Get customer's booking history
+    public List<Booking> getCustomerBookings() {
+        if (currentCustomer != null) {
+            return bookingCatalog.getBookingsByCustomer(currentCustomer.getUserID());
+        }
+        return new ArrayList<>();
+    }
+
+    // Optional: Check if seats are still available
+    private boolean validateSeatAvailability() {
+        for (String seatNo : selectedSeatIds) {
+            Seat seat = seatMap.get(seatNo);
+            if (seat == null || !seat.isAvailability()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Optional: Clear selection and refresh
+    private void clearSelection() {
+        selectedSeatIds.clear();
+        updateSummary();
+        // Refresh seat view
+        if (selectedSchedule != null) {
+            showSeats(selectedSchedule);
         }
     }
 }

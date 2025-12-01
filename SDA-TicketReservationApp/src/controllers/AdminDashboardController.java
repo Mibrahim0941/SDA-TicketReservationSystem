@@ -221,6 +221,7 @@ public class AdminDashboardController implements Initializable {
         try {
             AdminSettingsController.show(primaryStage, currentUsername, currentAdmin);
         } catch (Exception e) {
+            e.printStackTrace();
             showAlert("Error", "Failed to load settings: " + e.getMessage());
         }
     }

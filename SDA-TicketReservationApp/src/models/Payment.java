@@ -8,6 +8,7 @@ public class Payment {
     private String status; // Pending, Completed, Failed, Refunded
     private Date confirmedOn;
     private double amount;
+    private String transactionID;
     private String paymentMethod;
 
     public Payment(String paymentID, Booking booking, double amount, String paymentMethod) {
@@ -17,9 +18,17 @@ public class Payment {
         this.paymentMethod = paymentMethod;
         this.status = "Pending";
         this.confirmedOn = null;
+        this.transactionID = null;
     }
 
-    // Getters and Setters
+    public String getTransactionID() {
+        return transactionID;
+    }
+
+    public void setTransactionID(String transactionID) {
+        this.transactionID = transactionID;
+    }
+
     public String getPaymentID() {
         return paymentID;
     }
@@ -36,12 +45,12 @@ public class Payment {
         this.status = status;
     }
 
-    public Date getConfirmedOn() {
+    public Date getPaymentDate() {
         return confirmedOn;
     }
 
-    public void setConfirmedOn(Date confirmedOn) {
-        this.confirmedOn = confirmedOn;
+    public void setPaymentDate(Date paymentDate) {
+        this.confirmedOn = paymentDate;
     }
 
     public double getAmount() {
