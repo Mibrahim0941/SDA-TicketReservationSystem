@@ -160,3 +160,99 @@
 .ticket-dialog .button:hover {
     -fx-background-color: #2F4F2C;
 }
+
+/* === PAYMENT DIALOG OVERRIDES === */
+
+/* 1. The Dialog Window itself */
+.payment-dialog .dialog-pane {
+    -fx-background-color: transparent; 
+    /* We make the pane transparent so the container handles the background/border */
+}
+
+/* 2. The Main Container (The Card) */
+.payment-container {
+    -fx-background-color: #FDFDFD; /* Slightly off-white like the image */
+    -fx-border-color: #C0C0C0;
+    -fx-border-width: 1px;
+    -fx-background-radius: 8px; /* Rounded corners */
+    -fx-border-radius: 8px;
+    -fx-min-width: 380px;
+}
+
+/* 3. Text Styles */
+.payment-title {
+    -fx-font-family: 'Segoe UI', sans-serif;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2F4F2C; /* Dark Green Title */
+}
+
+.payment-amount {
+    -fx-font-family: 'Segoe UI', sans-serif;
+    -fx-font-size: 14px;
+    -fx-text-fill: #333333;
+    -fx-padding: 0 0 5px 0;
+}
+
+.input-label {
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-text-fill: #2F4F2C;
+}
+
+/* 4. The Separator Line */
+.payment-separator .line {
+    -fx-border-style: solid;
+    -fx-border-color: #DDDDDD;
+    -fx-border-width: 1px 0 0 0;
+}
+
+/* 5. Inputs (Combo and Text Field) */
+.payment-input {
+    -fx-background-color: #F4F4F4;
+    -fx-border-color: #D0D0D0;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 8px;
+    -fx-font-size: 13px;
+}
+.payment-input:focused {
+    -fx-background-color: white;
+    -fx-border-color: #2F4F2C;
+}
+
+/* 6. Buttons */
+.payment-dialog .button-bar {
+    -fx-padding: 10px 30px 20px 0; /* Align buttons right */
+}
+
+.dialog-btn {
+    -fx-background-radius: 5px;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-padding: 8px 20px;
+    -fx-cursor: hand;
+}
+
+/* Confirm Button (Lighter Green/Disabled look until active) */
+.btn-confirm {
+    -fx-background-color: #8FA88E; /* Muted Green */
+    -fx-text-fill: white;
+}
+.btn-confirm:hover {
+    -fx-background-color: #7E9E7A;
+}
+/* When disabled (fields empty) */
+.btn-confirm:disabled {
+    -fx-opacity: 0.6;
+    -fx-background-color: #A0A0A0;
+}
+
+/* Cancel Button (Dark Green as per image) */
+.btn-cancel {
+    -fx-background-color: #2F4F2C; /* Dark Green */
+    -fx-text-fill: white;
+}
+.btn-cancel:hover {
+    -fx-background-color: #1E3E1C;
+}

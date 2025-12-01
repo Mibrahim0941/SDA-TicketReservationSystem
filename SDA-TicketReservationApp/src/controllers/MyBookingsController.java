@@ -2,6 +2,7 @@ package controllers;
 
 import javafx.application.Platform;
 import javafx.fxml.*;
+import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.Scene;
 import javafx.scene.Parent;
@@ -545,39 +546,175 @@ public class MyBookingsController implements Initializable {
     }
 
     private void proceedToPayment(Booking booking) {
-        if (!booking.hasPayment()) {
-            booking.proceedToPayment();
-        }
+        // 1. Create Dialog
+        Dialog<Map<String, String>> dialog = new Dialog<>();
+        dialog.setTitle("Secure Payment");
+        dialog.setHeaderText(null);
+        dialog.setGraphic(null);
+
+        // Apply CSS
+        DialogPane dialogPane = dialog.getDialogPane();
+        dialogPane.getStylesheets().add(getClass().getResource("/ui/MyBookings.css").toExternalForm());
+        dialogPane.getStyleClass().add("payment-dialog");
+
+        // 2. Build Content Layout
+        VBox container = new VBox(15);
+        container.setPadding(new Insets(20, 30, 20, 30)); // Top, Right, Bottom, Left
+        container.getStyleClass().add("payment-container");
+
+        // --- Header Section ---
+        VBox headerBox = new VBox(5);
+        Label titleLabel = new Label("Complete Payment");
+        titleLabel.getStyleClass().add("payment-title");
         
-        Alert paymentAlert = new Alert(Alert.AlertType.CONFIRMATION);
-        paymentAlert.setTitle("Proceed to Payment");
-        paymentAlert.setHeaderText("Payment Required");
-        paymentAlert.setContentText("Proceed to payment for Booking #" + booking.getBookingID() + "?\n" +
-            "Amount: PKR " + String.format("%.2f", booking.getTotalAmount()));
+        Label amountLabel = new Label("Total Amount: PKR " + String.format("%.2f", booking.getTotalAmount()));
+        amountLabel.getStyleClass().add("payment-amount");
         
-        paymentAlert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                boolean paymentSuccess = simulatePayment(booking);
-                if (paymentSuccess) {
-                    booking.getPayment().confirmPayment();
-                    savePaymentToDatabase(booking.getPayment());
-                    showAlert("Payment Successful", "Payment completed for Booking #" + booking.getBookingID());
-                    loadUserBookings(); // Refresh UI
-                } else {
-                    booking.getPayment().setStatus("Failed");
-                    showAlert("Payment Failed", "Payment failed. Please try again.");
-                }
+        Separator separator = new Separator();
+        separator.getStyleClass().add("payment-separator");
+        
+        headerBox.getChildren().addAll(titleLabel, amountLabel, separator);
+
+        // --- Form Section ---
+        
+        // Payment Method
+        VBox methodBox = new VBox(8);
+        Label methodLbl = new Label("Payment Method");
+        methodLbl.getStyleClass().add("input-label");
+        
+        ComboBox<String> methodCombo = new ComboBox<>();
+        methodCombo.getItems().addAll("Credit/Debit Card", "JazzCash", "EasyPaisa");
+        methodCombo.setPromptText("Select Method");
+        methodCombo.setMaxWidth(Double.MAX_VALUE);
+        methodCombo.getStyleClass().add("payment-input");
+        
+        methodBox.getChildren().addAll(methodLbl, methodCombo);
+
+        // Account Number
+        VBox accountBox = new VBox(8);
+        Label accLbl = new Label("Account Number");
+        accLbl.getStyleClass().add("input-label");
+        
+        TextField accountField = new TextField();
+        accountField.setPromptText("Enter account/card number");
+        accountField.getStyleClass().add("payment-input");
+        
+        accountBox.getChildren().addAll(accLbl, accountField);
+
+        // Add all to container
+        container.getChildren().addAll(headerBox, methodBox, accountBox);
+        dialogPane.setContent(container);
+
+        // 3. Add Custom Buttons
+        ButtonType confirmType = new ButtonType("Confirm Payment", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialogPane.getButtonTypes().addAll(confirmType, cancelType);
+
+        // 4. Style the Buttons & Validation
+        Button confirmBtn = (Button) dialogPane.lookupButton(confirmType);
+        Button cancelBtn = (Button) dialogPane.lookupButton(cancelType);
+        
+        confirmBtn.getStyleClass().addAll("dialog-btn", "btn-confirm");
+        cancelBtn.getStyleClass().addAll("dialog-btn", "btn-cancel");
+
+        // Default to disabled
+        confirmBtn.setDisable(true);
+
+        // Validation Listener
+        javafx.beans.value.ChangeListener<String> validationListener = (obs, oldVal, newVal) -> {
+            boolean isInvalid = methodCombo.getValue() == null || accountField.getText().trim().isEmpty();
+            confirmBtn.setDisable(isInvalid);
+        };
+        methodCombo.valueProperty().addListener(validationListener);
+        accountField.textProperty().addListener(validationListener);
+
+        // 5. Handle Result
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == confirmType) {
+                Map<String, String> result = new HashMap<>();
+                result.put("method", methodCombo.getValue());
+                result.put("account", accountField.getText());
+                return result;
+            }
+            return null;
+        });
+
+        // 6. Show Dialog & Process
+        Optional<Map<String, String>> result = dialog.showAndWait();
+        result.ifPresent(data -> {
+            String selectedMethod = data.get("method");
+            
+            String newPaymentId = "PAY-" + System.currentTimeMillis();
+            Payment payment = new Payment(newPaymentId, booking, booking.getTotalAmount(), selectedMethod);
+            payment.setStatus("Completed");
+            
+            boolean success = processPaymentTransaction(booking, payment);
+
+            if (success) {
+                booking.setPayment(payment);
+                booking.setStatus("Confirmed");
+                showAlert("Success", "Payment confirmed successfully!");
+                loadUserBookings();
+            } else {
+                showErrorAlert("Payment processing failed.");
             }
         });
     }
 
-    private boolean simulatePayment(Booking booking) {
-        return Math.random() > 0.1; // 90% success rate simulation
-    }
+    /**
+     * Performs an atomic transaction:
+     * 1. Inserts into Payment table.
+     * 2. Updates Booking table with PaymentID.
+     */
+    private boolean processPaymentTransaction(Booking booking, Payment payment) {
+        String insertPaymentSQL = "INSERT INTO Payment (PaymentID, Amount, PaymentMethod, PaymentStatus, PaymentDate) VALUES (?, ?, ?, ?, GETDATE())";
+        String updateBookingSQL = "UPDATE Booking SET PaymentID = ?, Status = ? WHERE BookingID = ?";
 
-    private void savePaymentToDatabase(Payment payment) {
-        // Implementation would execute an UPDATE/INSERT SQL query here
-        System.out.println("Saving payment to database: " + payment.getPaymentID() + " Status: " + payment.getStatus());
+        Connection conn = null;
+        PreparedStatement payStmt = null;
+        PreparedStatement bookStmt = null;
+
+        try {
+            conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            conn.setAutoCommit(false); // Start Transaction
+
+            // 1. Insert Payment
+            payStmt = conn.prepareStatement(insertPaymentSQL);
+            payStmt.setString(1, payment.getPaymentID());
+            payStmt.setDouble(2, payment.getAmount());
+            payStmt.setString(3, payment.getPaymentMethod());
+            payStmt.setString(4, "Completed");
+            payStmt.executeUpdate();
+
+            // 2. Update Booking
+            bookStmt = conn.prepareStatement(updateBookingSQL);
+            bookStmt.setString(1, payment.getPaymentID());
+            bookStmt.setString(2, "Confirmed"); // Or 'Completed' depending on your logic
+            bookStmt.setString(3, booking.getBookingID());
+            bookStmt.executeUpdate();
+
+            conn.commit(); // Commit Transaction
+            return true;
+
+        } catch (SQLException e) {
+            System.err.println("Transaction Failed: " + e.getMessage());
+            if (conn != null) {
+                try {
+                    conn.rollback(); // Rollback changes if error occurs
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            return false;
+        } finally {
+            try {
+                if (payStmt != null) payStmt.close();
+                if (bookStmt != null) bookStmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void cancelBooking(Booking booking) {
