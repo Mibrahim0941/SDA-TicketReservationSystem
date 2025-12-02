@@ -75,6 +75,13 @@ CREATE TABLE Seat (
     Availability BIT DEFAULT 1,
     FOREIGN KEY (ScheduleID) REFERENCES Schedule(ScheduleID) ON DELETE CASCADE
 );
+ALTER TABLE Seat 
+ADD ReservationID NVARCHAR(20) DEFAULT NULL;
+ALTER TABLE Seat 
+ADD CONSTRAINT FK_Seat_Reservation
+FOREIGN KEY (ReservationID) REFERENCES Reservation(ReservationID);
+
+select * from seat
 GO
 
 -- CancellationPolicies Table
@@ -143,3 +150,4 @@ GO
 
 select*from Reservation
 select * from booking
+Select* from Schedule

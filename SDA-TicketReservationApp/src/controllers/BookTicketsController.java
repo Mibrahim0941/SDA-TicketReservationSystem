@@ -400,23 +400,13 @@ public class BookTicketsController implements Initializable {
                 new java.util.Date()
             );
             booking.setTotalAmount(totalAmount);
-            booking.setStatus("Confirmed");
-            
-            // 5. First, try to update seat availability
-            if (!updateSeatAvailability()) {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("Seat Unavailable");
-                alert.setHeaderText("Selected seats are no longer available");
-                alert.setContentText("Please select different seats.");
-                alert.showAndWait();
-                return false;
-            }
-            
+            booking.setStatus("Confirmed");          
             // 6. Save to database using BookingCatalog
             boolean bookingSaved = bookingCatalog.addBooking(booking);
             
             if (bookingSaved) {
                 // Show success message
+                updateSeatAvailability(reservationID);
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Booking Confirmed");
                 alert.setHeaderText("Booking Created Successfully!");
@@ -446,8 +436,8 @@ public class BookTicketsController implements Initializable {
         }
     }
 
-    private boolean updateSeatAvailability() {
-    String updateSeatQuery = "UPDATE Seat SET Availability = 0 WHERE SeatNumber = ? AND ScheduleID = ? AND Availability = 1";
+    private boolean updateSeatAvailability(String reservationID) {
+    String updateSeatQuery = "UPDATE Seat SET Availability = 0, ReservationID = ? WHERE SeatNumber = ? AND ScheduleID = ? AND Availability = 1";
     
     Connection conn = null;
     try {
@@ -457,8 +447,9 @@ public class BookTicketsController implements Initializable {
         // Use batch update for efficiency
         try (PreparedStatement ps = conn.prepareStatement(updateSeatQuery)) {
             for (String seatNo : selectedSeatIds) {
-                ps.setString(1, seatNo);
-                ps.setString(2, selectedSchedule.getScheduleID());
+                ps.setString(1, reservationID);
+                ps.setString(2, seatNo);
+                ps.setString(3, selectedSchedule.getScheduleID());
                 ps.addBatch();
             }
             

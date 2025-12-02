@@ -248,17 +248,17 @@ select * from schedule
 -- Insert into Seat Table
 -- Schedule 1 (Economy)
 INSERT INTO Seat (ScheduleID, SeatNumber, SeatType, Availability, Price) VALUES
-('SCH0313', '1A', 'Economy', 1, 3000),
-('SCH0313', '1B', 'Economy', 1, 3000),
-('SCH0313', '1C', 'Economy', 0, 3000),
-('SCH0313', '1D', 'Economy', 0, 0.0),
-('SCH0313', '2A', 'Economy', 1, 0.0),
-('SCH0313', '2B', 'Economy', 1, 0.0),
-('SCH0313', '2C', 'Economy', 1, 0.0),
-('SCH0313', '2D', 'Economy', 0, 0.0),
-('SCH0313', '3A', 'Economy', 1, 0.0),
-('SCH0313', '3B', 'Economy', 1, 0.0),
-('SCH0313', '3C', 'Economy', 0, 0.0),
+('SCH1428', '1A', 'Economy', 1, 3000),
+('SCH1428', '1B', 'Economy', 1, 3000),
+('SCH1428', '1C', 'Economy', 0, 3000),
+('SCH1428', '1D', 'Economy', 0, 0.0),
+('SCH1428', '2A', 'Economy', 1, 0.0),
+('SCH1428', '2B', 'Economy', 1, 0.0),
+('SCH1428', '2C', 'Economy', 1, 0.0),
+('SCH1428', '2D', 'Economy', 0, 0.0),
+('SCH1428', '3A', 'Economy', 1, 0.0),
+('SCH1428', '3B', 'Economy', 1, 0.0),
+('SCH1428', '3C', 'Economy', 0, 0.0),
 ('SCH0313', '3D', 'Economy', 0, 0.0),
 ('SCH0313', '4A', 'Economy', 1, 0.0),
 ('SCH0313', '4B', 'Economy', 1, 0.0),
@@ -268,6 +268,8 @@ INSERT INTO Seat (ScheduleID, SeatNumber, SeatType, Availability, Price) VALUES
 ('SCH0313', '5B', 'Economy', 1, 0.0),
 ('SCH0313', '5C', 'Economy', 0, 0.0),
 ('SCH0313', '5D', 'Economy', 0, 0.0)
+
+select* from seat
 
 -- Schedule 2 (Business)
 INSERT INTO Seat (ScheduleID, SeatNumber, SeatType, Availability, PriceAdjustment) VALUES
