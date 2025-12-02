@@ -17,6 +17,7 @@ import models.Booking;
 import models.Customer;
 import models.ETicket;
 import models.Payment;
+import models.Seat;
 import config.DatabaseConfig;
 
 import java.io.IOException;
@@ -156,23 +157,27 @@ public class MyBookingsController implements Initializable {
     private List<Booking> fetchBookingsFromDatabase() {
         List<Booking> bookings = new ArrayList<>();
         
-        // Concatenated query compatible with older Java versions
-        String query = "SELECT " +
-                       "    b.BookingID, b.CustomerID, b.BookingDateTime, b.TotalAmount, b.Status, " +
-                       "    p.PaymentID, p.PaymentStatus, p.PaymentMethod, p.Amount as PaymentAmount, " +
-                       "    r.RouteID, r.Source, r.Destination, r.BasePrice, " +
-                       "    s.ScheduleID, s.Date, s.DepartureTime, s.ArrivalTime, s.Class, " +
-                       "    res.ReservationID " +
-                       "FROM Booking b " +
-                       "LEFT JOIN Payment p ON b.PaymentID = p.PaymentID " +
-                       "LEFT JOIN Reservation res ON b.ReservationID = res.ReservationID " +
-                       "LEFT JOIN Route r ON res.RouteID = r.RouteID " +
-                       "LEFT JOIN Schedule s ON res.ScheduleID = s.ScheduleID " +
-                       "WHERE b.CustomerID = ? " +
-                       "ORDER BY b.BookingDateTime DESC";
-            
+        // First, fetch all bookings without seats
+        String bookingQuery = 
+            "SELECT " +
+            "    b.BookingID, b.CustomerID, b.BookingDateTime, b.TotalAmount, b.Status, " +
+            "    p.PaymentID, p.PaymentStatus, p.PaymentMethod, p.Amount as PaymentAmount, " +
+            "    r.RouteID, r.Source, r.Destination, r.BasePrice, " +
+            "    s.ScheduleID, s.Date, s.DepartureTime, s.ArrivalTime, s.Class, " +
+            "    res.ReservationID " +
+            "FROM Booking b " +
+            "LEFT JOIN Payment p ON b.PaymentID = p.PaymentID " +
+            "LEFT JOIN Reservation res ON b.ReservationID = res.ReservationID " +
+            "LEFT JOIN Route r ON res.RouteID = r.RouteID " +
+            "LEFT JOIN Schedule s ON res.ScheduleID = s.ScheduleID " +
+            "WHERE b.CustomerID = ? " +
+            "ORDER BY b.BookingDateTime DESC";
+        
+        Map<String, Booking> bookingMap = new HashMap<>();
+        Map<String, String> bookingReservationMap = new HashMap<>(); // BookingID -> ReservationID
+        
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+            PreparedStatement stmt = conn.prepareStatement(bookingQuery)) {
             
             stmt.setString(1, currentCustomer.getUserID());
             ResultSet rs = stmt.executeQuery();
@@ -180,6 +185,11 @@ public class MyBookingsController implements Initializable {
             while (rs.next()) {
                 Booking booking = createBookingFromResultSet(rs);
                 if (booking != null) {
+                    String bookingId = booking.getBookingID();
+                    String reservationId = booking.getReservation().getReservationID();
+                    
+                    bookingMap.put(bookingId, booking);
+                    bookingReservationMap.put(bookingId, reservationId);
                     bookings.add(booking);
                 }
             }
@@ -188,6 +198,59 @@ public class MyBookingsController implements Initializable {
             System.err.println("Error fetching bookings: " + e.getMessage());
             e.printStackTrace();
             Platform.runLater(() -> showAlert("Database Error", "Failed to load bookings: " + e.getMessage()));
+            return bookings;
+        }
+        
+        // Now fetch seats for each booking's reservation
+        if (!bookingReservationMap.isEmpty()) {
+            String seatQuery = 
+                "SELECT ReservationID, SeatNumber, SeatType, Price, Availability " +
+                "FROM Seat " +
+                "WHERE ReservationID IN (" + 
+                String.join(",", Collections.nCopies(bookingReservationMap.size(), "?")) + 
+                ")";
+            
+            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+                PreparedStatement stmt = conn.prepareStatement(seatQuery)) {
+                
+                int i = 1;
+                for (String reservationId : bookingReservationMap.values()) {
+                    stmt.setString(i++, reservationId);
+                }
+                
+                ResultSet rs = stmt.executeQuery();
+                
+                // Group seats by reservation ID
+                Map<String, List<Seat>> reservationSeatsMap = new HashMap<>();
+                
+                while (rs.next()) {
+                    String reservationId = rs.getString("ReservationID");
+                    Seat seat = new Seat(
+                        rs.getString("SeatNumber"),
+                        rs.getString("SeatType"),
+                        rs.getDouble("Price")
+                    );
+                    seat.setAvailability(rs.getBoolean("Availability"));
+                    
+                    reservationSeatsMap
+                        .computeIfAbsent(reservationId, k -> new ArrayList<>())
+                        .add(seat);
+                }
+                
+                // Assign seats to bookings
+                for (Booking booking : bookings) {
+                    String reservationId = booking.getReservation().getReservationID();
+                    List<Seat> seats = reservationSeatsMap.get(reservationId);
+                    
+                    if (seats != null && !seats.isEmpty()) {
+                        booking.getReservation().getSeats().addAll(seats);
+                    }
+                }
+                
+            } catch (SQLException e) {
+                System.err.println("Error fetching seats: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
         
         return bookings;
@@ -498,6 +561,7 @@ public class MyBookingsController implements Initializable {
             addTicketDetail(detailsGrid, "Time:", booking.getReservation().getSchedule().getDepartureTime() + " - " + booking.getReservation().getSchedule().getArrivalTime(), 0, 1);
             addTicketDetail(detailsGrid, "Class:", booking.getReservation().getSeatClass(), 1, 0);
             addTicketDetail(detailsGrid, "Price:", "PKR " + booking.getTotalAmount(), 1, 1);
+            addTicketDetail(detailsGrid, "Selected Seat(s), :", booking.getReservation().viewSelectedSeats(), 0, 2);
             
             // 5. Footer (IDs)
             VBox footer = new VBox(5);

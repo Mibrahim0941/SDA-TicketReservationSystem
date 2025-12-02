@@ -7,7 +7,7 @@ public class Reservation {
     private Schedule schedule;
     private Route route;
     private String seatClass;
-    private List<String> seats;
+    private List<Seat> seats;
 
     public Reservation(String reservationID, Schedule schedule, Route route, String seatClass) {
         this.reservationID = reservationID;
@@ -33,8 +33,23 @@ public class Reservation {
         return seatClass;
     }
 
-    public List<String> getSeats() {
+    public List<Seat> getSeats() {
         return seats;
+    }
+
+    public String viewSelectedSeats()
+    {
+        StringBuilder seatNumbers = new StringBuilder();
+        for (Seat seat : seats) {
+            seatNumbers.append(seat.getSeatNo()).append(", ");
+        }
+        
+        // Remove the trailing comma and space
+        if (seatNumbers.length() > 0) {
+            seatNumbers.setLength(seatNumbers.length() - 2);
+        }
+        
+        return seatNumbers.toString();
     }
 
     public void searchTicket() {
@@ -50,7 +65,7 @@ public class Reservation {
         }
     }
 
-    public void selectSeats(List<String> selectedSeats) {
+    public void selectSeats(List<Seat> selectedSeats) {
         this.seats.addAll(selectedSeats);
         System.out.println("Selected seats: " + selectedSeats);
     }
