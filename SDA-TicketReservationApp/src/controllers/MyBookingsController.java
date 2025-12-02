@@ -320,7 +320,7 @@ public class MyBookingsController implements Initializable {
         }
         
         List<Booking> filteredBookings = new ArrayList<>(userBookings);
-        
+        filteredBookings.removeIf(booking -> "Cancelled".equalsIgnoreCase(booking.getStatus()));
         // Status Filter
         String status = statusFilter.getValue();
         if (!ALL_BOOKINGS.equals(status)) {
@@ -446,9 +446,11 @@ public class MyBookingsController implements Initializable {
             Button payBtn = new Button("Pay Now");
             payBtn.getStyleClass().add("btn-pay");
             payBtn.setOnAction(e -> proceedToPayment(booking));
-            actionButtons.getChildren().addAll(viewTicketBtn, payBtn);
+            Button cancelBtn = new Button("Cancel Booking");
+            cancelBtn.getStyleClass().add("btn-danger");
+            cancelBtn.setOnAction(e -> cancelBooking(booking));
+            actionButtons.getChildren().addAll(viewTicketBtn, payBtn, cancelBtn);
         } else {
-            // Only show Cancel if Confirmed
             if ("Confirmed".equals(booking.getStatus())) {
                 Button cancelBtn = new Button("Cancel Booking");
                 cancelBtn.getStyleClass().add("btn-danger");

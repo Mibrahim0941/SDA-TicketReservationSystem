@@ -2,9 +2,11 @@ package controllers;
 
 import javafx.application.Platform;
 import javafx.fxml.*;
+import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.Scene;
 import javafx.scene.Parent;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -15,6 +17,7 @@ import models.Booking;
 import models.Customer;
 import models.ETicket;
 import models.Payment;
+import models.Seat;
 import config.DatabaseConfig;
 
 import java.io.IOException;
@@ -167,6 +170,9 @@ public class BookingHistoryController implements Initializable {
                        "LEFT JOIN Schedule s ON res.ScheduleID = s.ScheduleID " +
                        "WHERE b.CustomerID = ? " +
                        "ORDER BY b.BookingDateTime DESC";
+
+        Map<String, Booking> bookingMap = new HashMap<>();
+        Map<String, String> bookingReservationMap = new HashMap<>(); // BookingID -> ReservationID
             
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -177,6 +183,11 @@ public class BookingHistoryController implements Initializable {
             while (rs.next()) {
                 Booking booking = createBookingFromResultSet(rs);
                 if (booking != null) {
+                    String bookingId = booking.getBookingID();
+                    String reservationId = booking.getReservation().getReservationID();
+                    
+                    bookingMap.put(bookingId, booking);
+                    bookingReservationMap.put(bookingId, reservationId);
                     bookings.add(booking);
                 }
             }
@@ -185,6 +196,59 @@ public class BookingHistoryController implements Initializable {
             System.err.println("Error fetching bookings: " + e.getMessage());
             e.printStackTrace();
             Platform.runLater(() -> showAlert("Database Error", "Failed to load bookings: " + e.getMessage()));
+            return bookings;
+        }
+        
+        // Now fetch seats for each booking's reservation
+        if (!bookingReservationMap.isEmpty()) {
+            String seatQuery = 
+                "SELECT ReservationID, SeatNumber, SeatType, Price, Availability " +
+                "FROM Seat " +
+                "WHERE ReservationID IN (" + 
+                String.join(",", Collections.nCopies(bookingReservationMap.size(), "?")) + 
+                ")";
+            
+            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+                PreparedStatement stmt = conn.prepareStatement(seatQuery)) {
+                
+                int i = 1;
+                for (String reservationId : bookingReservationMap.values()) {
+                    stmt.setString(i++, reservationId);
+                }
+                
+                ResultSet rs = stmt.executeQuery();
+                
+                // Group seats by reservation ID
+                Map<String, List<Seat>> reservationSeatsMap = new HashMap<>();
+                
+                while (rs.next()) {
+                    String reservationId = rs.getString("ReservationID");
+                    Seat seat = new Seat(
+                        rs.getString("SeatNumber"),
+                        rs.getString("SeatType"),
+                        rs.getDouble("Price")
+                    );
+                    seat.setAvailability(rs.getBoolean("Availability"));
+                    
+                    reservationSeatsMap
+                        .computeIfAbsent(reservationId, k -> new ArrayList<>())
+                        .add(seat);
+                }
+                
+                // Assign seats to bookings
+                for (Booking booking : bookings) {
+                    String reservationId = booking.getReservation().getReservationID();
+                    List<Seat> seats = reservationSeatsMap.get(reservationId);
+                    
+                    if (seats != null && !seats.isEmpty()) {
+                        booking.getReservation().getSeats().addAll(seats);
+                    }
+                }
+                
+            } catch (SQLException e) {
+                System.err.println("Error fetching seats: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
         
         return bookings;
@@ -372,20 +436,11 @@ public class BookingHistoryController implements Initializable {
         HBox actionButtons = new HBox(10); 
         actionButtons.getStyleClass().add("action-buttons");
         
-        Button viewTicketBtn = new Button("View E-Ticket");
-        viewTicketBtn.getStyleClass().add("btn-primary");
-        viewTicketBtn.setOnAction(e -> viewETicket(booking));
-        
         Button viewDetailsBtn = new Button("View Details");
         viewDetailsBtn.getStyleClass().add("btn-secondary");
         viewDetailsBtn.setOnAction(e -> showBookingDetails(booking));
-        
-        // For Booking History, only show View actions (no payment or cancellation)
-        if (booking.isPaid() && ("Confirmed".equals(booking.getStatus()) || "Completed".equals(booking.getStatus()))) {
-            actionButtons.getChildren().addAll(viewTicketBtn, viewDetailsBtn);
-        } else {
-            actionButtons.getChildren().add(viewDetailsBtn);
-        }
+     
+        actionButtons.getChildren().add(viewDetailsBtn);
         
         HBox detailSpacer = new HBox();
         HBox.setHgrow(detailSpacer, Priority.ALWAYS);
@@ -444,53 +499,103 @@ public class BookingHistoryController implements Initializable {
         if(refreshButton != null) refreshButton.setDisable(loading);
     }
 
-    private void viewETicket(Booking booking) {
-        try {
-            if (!booking.isPaid()) {
-                showAlert("Payment Required", "Please complete payment to view your E-Ticket.");
-                return;
-            }
-            
-            ETicket eTicket = booking.generateETicket();
-            showAlert("E-Ticket", 
-                "E-Ticket Details:\n" +
-                "Ticket ID: " + eTicket.getTicketID() + "\n" +
-                "Booking ID: " + booking.getBookingID() + "\n" +
-                "Route: " + booking.getReservation().getRoute().getSource() + " -> " + 
-                          booking.getReservation().getRoute().getDestination() + "\n" +
-                "Date: " + booking.getReservation().getSchedule().getDate() + "\n" +
-                "Time: " + booking.getReservation().getSchedule().getDepartureTime() + " - " + 
-                          booking.getReservation().getSchedule().getArrivalTime());
-            
-        } catch (Exception e) {
-            showAlert("Error", "Failed to generate E-Ticket: " + e.getMessage());
-        }
+    // Helper method for the Grid layout
+    private void addTicketDetail(GridPane grid, String label, String value, int col, int row) {
+        VBox box = new VBox(2);
+        Label l = new Label(label);
+        l.setStyle("-fx-font-size: 10px; -fx-text-fill: #888;");
+        Label v = new Label(value);
+        v.setStyle("-fx-font-weight: bold; -fx-text-fill: #333;");
+        box.getChildren().addAll(l, v);
+        grid.add(box, col, row);
     }
 
     private void showBookingDetails(Booking booking) {
-        StringBuilder details = new StringBuilder();
-        details.append("📋 Booking Details\n\n");
-        details.append("Booking ID: ").append(booking.getBookingID()).append("\n");
-        details.append("Status: ").append(booking.getStatus()).append("\n");
-        details.append("Payment Status: ").append(getPaymentStatusText(booking)).append("\n");
-        details.append("Booked On: ").append(new SimpleDateFormat("MMM dd, yyyy 'at' HH:mm").format(booking.getBookingDateTime())).append("\n");
-        details.append("Total Amount: PKR ").append(booking.getTotalAmount()).append("\n\n");
-        
-        if (booking.getReservation() != null) {
-            details.append("🚌 Journey Details\n\n");
-            details.append("Route: ").append(booking.getReservation().getRoute().getSource())
-                   .append(" → ").append(booking.getReservation().getRoute().getDestination()).append("\n");
-            details.append("Travel Date: ").append(booking.getReservation().getSchedule().getDate()).append("\n");
-            details.append("Departure: ").append(booking.getReservation().getSchedule().getDepartureTime()).append("\n");
-            details.append("Arrival: ").append(booking.getReservation().getSchedule().getArrivalTime()).append("\n");
-            details.append("Class: ").append(booking.getReservation().getSeatClass()).append("\n");
+        try {
+            // 1. Setup Dialog
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.setTitle("Booking Details");
+            dialog.setHeaderText(null);
+            dialog.setGraphic(null);
+            
+            // Connect to CSS
+            DialogPane dialogPane = dialog.getDialogPane();
+            dialogPane.getStylesheets().add(getClass().getResource("/ui/MyBookings.css").toExternalForm());
+            dialogPane.getStyleClass().add("ticket-dialog");
+
+            // 2. Main Card Container
+            VBox card = new VBox(15);
+            card.getStyleClass().add("ticket-card"); // Reuses the E-Ticket card style
+            card.setMinWidth(400);
+            card.setAlignment(javafx.geometry.Pos.TOP_CENTER);
+
+            // 3. Header
+            Label title = new Label("BOOKING DETAILS");
+            title.getStyleClass().add("details-title"); // CSS class
+            
+            Separator sep1 = new Separator();
+            sep1.getStyleClass().add("details-separator"); // CSS class
+
+            // 4. Route Info
+            String source = booking.getReservation().getRoute().getSource();
+            String dest = booking.getReservation().getRoute().getDestination();
+            Label routeLbl = new Label(source + " ➝ " + dest);
+            routeLbl.getStyleClass().add("details-route"); // CSS class
+
+            // 5. Details Grid
+            GridPane grid = new GridPane();
+            grid.setHgap(30);
+            grid.setVgap(15);
+            grid.setAlignment(javafx.geometry.Pos.CENTER);
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy");
+
+            // Row 0
+            addTicketDetail(grid, "Booking ID:", "#" + booking.getBookingID(), 0, 0);
+            addTicketDetail(grid, "Booked On:", dateFormat.format(booking.getBookingDateTime()), 1, 0);
+
+            // Row 1
+            addTicketDetail(grid, "Travel Date:", booking.getReservation().getSchedule().getDate().toString(), 0, 1);
+            addTicketDetail(grid, "Time:", booking.getReservation().getSchedule().getDepartureTime() + " - " + booking.getReservation().getSchedule().getArrivalTime(), 1, 1);
+
+            // Row 2
+            addTicketDetail(grid, "Class:", booking.getReservation().getSeatClass(), 0, 2);
+            addTicketDetail(grid, "Total Amount:", "PKR " + String.format("%.2f", booking.getTotalAmount()), 1, 2);
+
+            // 6. Status Badges
+            HBox badgeBox = new HBox(10);
+            badgeBox.setAlignment(javafx.geometry.Pos.CENTER);
+            badgeBox.setPadding(new Insets(10, 0, 0, 0));
+
+            Label statusBadge = new Label(booking.getStatus());
+            statusBadge.getStyleClass().addAll("status", getBookingStatusStyleClass(booking.getStatus()));
+            
+            Label paymentBadge = new Label(getPaymentStatusText(booking));
+            paymentBadge.getStyleClass().addAll("status", getPaymentStatusStyleClass(booking));
+            
+            badgeBox.getChildren().addAll(statusBadge, paymentBadge);
+
+            // 7. Assemble
+            Separator sep2 = new Separator();
+            sep2.setVisible(false); // Invisible spacer
+            
+            card.getChildren().addAll(title, sep1, routeLbl, grid, sep2, badgeBox);
+            
+            dialogPane.setContent(card);
+            dialogPane.getButtonTypes().add(ButtonType.CLOSE);
+            
+            // Explicitly style the close button if needed
+            Button closeBtn = (Button) dialogPane.lookupButton(ButtonType.CLOSE);
+            closeBtn.getStyleClass().add("btn-primary");
+
+            dialog.showAndWait();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText("Could not open details: " + e.getMessage());
+            alert.show();
         }
-        
-        Alert detailsAlert = new Alert(Alert.AlertType.INFORMATION);
-        detailsAlert.setTitle("Booking Details");
-        detailsAlert.setHeaderText("Complete Booking Information");
-        detailsAlert.setContentText(details.toString());
-        detailsAlert.showAndWait();
     }
 
     private void handleBack() {

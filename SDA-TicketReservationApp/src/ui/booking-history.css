@@ -150,3 +150,54 @@
     -fx-fill: #888;
     -fx-text-alignment: center;
 }
+/* The actual Card VBox */
+.ticket-card {
+    -fx-background-color: #ffffff;
+    -fx-background-image: linear-gradient(to bottom, #ffffff 0%, #fcfcfc 100%);
+    -fx-padding: 30px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 15, 0, 0, 5);
+    -fx-border-color: #d1d1d1;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+/* The Window Container for the Ticket */
+.ticket-dialog > .dialog-pane {
+    -fx-background-color: transparent; /* Let the card handle the background */
+    -fx-padding: 0;
+}
+
+.ticket-dialog > .dialog-pane > .content.label {
+    -fx-padding: 0;
+}
+
+/* Make the Close button match the theme */
+.ticket-dialog .button {
+    -fx-background-color: #3F5F3C;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.ticket-dialog .button:hover {
+    -fx-background-color: #2F4F2C;
+}
+.details-title {
+    -fx-font-family: 'Segoe UI', sans-serif;
+    -fx-font-weight: bold;
+    -fx-text-fill: #3F5F3C;
+    -fx-font-size: 18px;
+}
+
+.details-separator .line {
+    -fx-border-style: dashed;
+    -fx-border-width: 1px 0 0 0;
+    -fx-border-color: #cccccc;
+}
+
+.details-route {
+    -fx-font-family: 'Segoe UI', sans-serif;
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}

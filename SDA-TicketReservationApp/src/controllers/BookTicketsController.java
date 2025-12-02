@@ -424,20 +424,77 @@ public class BookTicketsController implements Initializable {
                 boolean seatsUpdated = updateSeatAvailability(reservationID, selectedSeatList);
                 
                 if (seatsUpdated) {
-                    // Show success message
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Booking Confirmed");
-                    alert.setHeaderText("Booking Created Successfully!");
-                    alert.setContentText("Booking ID: " + bookingID + 
-                                    "\nTotal Amount: PKR " + String.format("%.2f", totalAmount) +
-                                    "\n\nSelected Seats: " + getSeatNumbersAsString(selectedSeatList) +
-                                    "\n\nYour booking is confirmed but payment is pending." +
-                                    "\nPlease complete payment from 'My Bookings' page.");
-                    alert.showAndWait();
-                    
-                    System.out.println("Booking saved successfully (payment pending): " + bookingID);
-                    return true;
-                } else {
+                // --- Show Success Alert (Pretty Theme) ---
+                
+                // 1. Create Alert and clean up default styling
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Booking Confirmed");
+                alert.setHeaderText(null);
+                alert.setGraphic(null);
+
+                // 2. Connect to your existing CSS
+                DialogPane dialogPane = alert.getDialogPane();
+                // MAKE SURE THIS PATH IS CORRECT FOR THE CONTROLLER THIS CODE IS IN
+                dialogPane.getStylesheets().add(getClass().getResource("/ui/MyBookings.css").toExternalForm());
+                dialogPane.getStyleClass().add("ticket-dialog");
+
+                // 3. Build Custom Content Card
+                VBox card = new VBox(15);
+                card.getStyleClass().add("ticket-card"); // Reuses the white card style with shadow
+                card.setMinWidth(400);
+                card.setAlignment(javafx.geometry.Pos.TOP_CENTER);
+
+                // Header Section
+                Label titleLbl = new Label("BOOKING SUCCESSFUL!");
+                // Matching the dark green header style
+                titleLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #3F5F3C; -fx-font-size: 18px;");
+
+                Separator sep = new Separator();
+                sep.setStyle("-fx-border-style: dashed; -fx-border-width: 1px 0 0 0; -fx-border-color: #ccc; -fx-background-color: transparent;");
+
+                // Emphasize Booking ID
+                Label bookingIdLbl = new Label("Booking ID: #" + bookingID);
+                // Matching the large emphasis text style
+                bookingIdLbl.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+
+                // Details Grid
+                GridPane grid = new GridPane();
+                grid.setHgap(30); grid.setVgap(15);
+                grid.setAlignment(javafx.geometry.Pos.CENTER);
+
+                // Inline helper for adding styled grid rows
+                java.util.function.BiConsumer<String, String> addRow = (label, value) -> {
+                    int row = grid.getRowCount();
+                    VBox box = new VBox(2);
+                    box.setAlignment(javafx.geometry.Pos.CENTER);
+                    Label l = new Label(label); l.setStyle("-fx-font-size: 10px; -fx-text-fill: #888;");
+                    Label v = new Label(value); v.setStyle("-fx-font-weight: bold; -fx-text-fill: #333; -fx-font-size: 14px;");
+                    box.getChildren().addAll(l, v);
+                    grid.add(box, 0, row);
+                };
+
+                addRow.accept("Total Amount:", "PKR " + String.format("%.2f", totalAmount));
+                addRow.accept("Selected Seats:", getSeatNumbersAsString(selectedSeatList));
+
+                // Instruction Message
+                Label instructionLbl = new Label("Your booking is confirmed but payment is pending.\nPlease complete payment from the 'My Bookings' page.");
+                instructionLbl.setWrapText(true);
+                // Grey text, centered, with top padding
+                instructionLbl.setStyle("-fx-text-fill: #555; -fx-font-size: 13px; -fx-text-alignment: center; -fx-padding: 15 0 0 0;");
+
+                // Assemble Card
+                card.getChildren().addAll(titleLbl, sep, bookingIdLbl, grid, instructionLbl);
+                dialogPane.setContent(card);
+
+                // Style the OK button to match the green theme
+                Button okBtn = (Button) dialogPane.lookupButton(ButtonType.OK);
+                okBtn.setStyle("-fx-background-color: #3F5F3C; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 5px;");
+
+                alert.showAndWait();
+                
+                System.out.println("Booking saved successfully (payment pending): " + bookingID);
+                return true;
+            } else {
                     // If seat update failed, rollback booking
                     bookingCatalog.cancelBooking(bookingID);
                     rollbackSeatAvailability(selectedSeatList);
