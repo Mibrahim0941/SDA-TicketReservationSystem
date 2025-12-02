@@ -151,3 +151,4 @@ GO
 select*from Reservation
 select * from booking
 Select* from Schedule
+select* from seat
