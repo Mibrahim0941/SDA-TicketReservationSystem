@@ -800,15 +800,84 @@ public class MyBookingsController implements Initializable {
     }
 
     private boolean updateBookingStatus(String bookingId, String status) {
-        String query = "UPDATE Booking SET Status = ? WHERE BookingID = ?";
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, status);
-            stmt.setString(2, bookingId);
-            return stmt.executeUpdate() > 0;
+        Connection conn = null;
+        PreparedStatement bookingStmt = null;
+        PreparedStatement seatStmt = null;
+        
+        try {
+            conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            conn.setAutoCommit(false); // Start transaction
+            
+            // 1. First, get the reservation ID for this booking
+            String getReservationQuery = "SELECT ReservationID FROM Booking WHERE BookingID = ?";
+            String reservationId = null;
+            
+            try (PreparedStatement getResStmt = conn.prepareStatement(getReservationQuery)) {
+                getResStmt.setString(1, bookingId);
+                ResultSet rs = getResStmt.executeQuery();
+                if (rs.next()) {
+                    reservationId = rs.getString("ReservationID");
+                }
+            }
+            
+            if (reservationId == null) {
+                System.err.println("No reservation found for booking: " + bookingId);
+                return false;
+            }
+            
+            // 2. Update booking status
+            String bookingQuery = "UPDATE Booking SET Status = ? WHERE BookingID = ?";
+            bookingStmt = conn.prepareStatement(bookingQuery);
+            bookingStmt.setString(1, status);
+            bookingStmt.setString(2, bookingId);
+            int bookingUpdated = bookingStmt.executeUpdate();
+            
+            if (bookingUpdated <= 0) {
+                conn.rollback();
+                return false;
+            }
+            
+            // 3. Release seats (set ReservationID to NULL and Availability to 1)
+            String seatQuery = "UPDATE Seat SET ReservationID = NULL, Availability = 1 WHERE ReservationID = ?";
+            seatStmt = conn.prepareStatement(seatQuery);
+            seatStmt.setString(1, reservationId);
+            int seatsUpdated = seatStmt.executeUpdate();
+            
+            System.out.println("Released " + seatsUpdated + " seats for reservation: " + reservationId);
+            
+            // 4. If needed, also update payment status (optional - for refunds)
+            if ("Cancelled".equals(status)) {
+                String updatePaymentQuery = "UPDATE Payment SET PaymentStatus = 'Refunded' " +
+                                        "WHERE PaymentID = (SELECT PaymentID FROM Booking WHERE BookingID = ?)";
+                try (PreparedStatement paymentStmt = conn.prepareStatement(updatePaymentQuery)) {
+                    paymentStmt.setString(1, bookingId);
+                    paymentStmt.executeUpdate();
+                }
+            }
+            
+            conn.commit(); // Commit the transaction
+            return true;
+            
         } catch (SQLException e) {
-            System.err.println("Error updating status: " + e.getMessage());
+            System.err.println("Error updating booking status: " + e.getMessage());
+            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback(); // Rollback on error
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
             return false;
+        } finally {
+            // Close resources
+            try {
+                if (seatStmt != null) seatStmt.close();
+                if (bookingStmt != null) bookingStmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 

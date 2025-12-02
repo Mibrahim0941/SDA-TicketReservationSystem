@@ -199,11 +199,11 @@ public class BookTicketsController implements Initializable {
         subTitle.setText("Select Seats (" + schedule.getScheduleClass() + ")");
         seatsContainer.getChildren().clear();
         
-        if (schedule.getSeats().isEmpty()) {
-            loadSeatsFromDB(schedule);
-        }
+        // ALWAYS load fresh seat data from database, don't check if empty
+        loadSeatsFromDB(schedule);
         
-        // Store seats in map for quick access
+        // Clear the map and repopulate with fresh data
+        seatMap.clear();
         for (Seat seat : schedule.getSeats()) {
             seatMap.put(seat.getSeatNo(), seat);
         }
@@ -342,24 +342,35 @@ public class BookTicketsController implements Initializable {
     // =========================================================
 
     private void loadSeatsFromDB(Schedule schedule) {
-        String query = "SELECT * FROM Seat WHERE ScheduleID = ?";
+        String query = "SELECT * FROM Seat WHERE ScheduleID = ? ORDER BY SeatNumber";
         List<Seat> dbSeats = new ArrayList<>();
         
-        try (Connection conn = DriverManager.getConnection(DatabaseConfig.getDbUrl(), DatabaseConfig.getDbUser(), DatabaseConfig.getDbPassword());
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+        try (Connection conn = DriverManager.getConnection(DatabaseConfig.getDbUrl(), 
+                                                        DatabaseConfig.getDbUser(), 
+                                                        DatabaseConfig.getDbPassword());
+            PreparedStatement stmt = conn.prepareStatement(query)) {
+            
             stmt.setString(1, schedule.getScheduleID());
             ResultSet rs = stmt.executeQuery();
             
+            // Clear existing seats first
+            schedule.getSeats().clear();
+            
             while(rs.next()) {
-                Seat s = new Seat(rs.getString("SeatNumber"), rs.getString("SeatType"), rs.getDouble("Price"));
+                Seat s = new Seat(rs.getString("SeatNumber"), 
+                                rs.getString("SeatType"), 
+                                rs.getDouble("Price"));
                 s.setAvailability(rs.getBoolean("Availability"));
                 dbSeats.add(s);
             }
+            
+            // Set fresh seat list from database
+            schedule.setSeats((ArrayList<Seat>) dbSeats);
+            
         } catch (Exception e) {
             System.err.println("Seat load error: " + e.getMessage());
             e.printStackTrace();
         }
-        schedule.setSeats((ArrayList<Seat>) dbSeats);
     }
 
     private void handleBooking() {
