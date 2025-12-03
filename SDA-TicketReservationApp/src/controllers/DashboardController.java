@@ -86,7 +86,7 @@ public class DashboardController implements Initializable {
         this.currentCustomer = customer;
         updateUserGreeting();
         loadCustomerData();
-        showHome(); // Show home content by default
+        showHome(); 
     }
     
     private void updateUserGreeting() {
@@ -97,12 +97,10 @@ public class DashboardController implements Initializable {
     
     private void loadCustomerData() {
         if (currentCustomer != null) {
-            // Display ONLY username and email
             String displayName = currentCustomer.getUsername() != null ? 
                 currentCustomer.getUsername() : "User";
             welcomeTitle.setText("Welcome, " + displayName + "!");
             
-            // Set username and email sidebar labels
             customerIdLabel.setText("Username: " + displayName);
             
             if (currentCustomer.getEmail() != null) {
@@ -110,8 +108,6 @@ public class DashboardController implements Initializable {
             } else {
                 memberSinceLabel.setText("Email: Not provided");
             }
-            
-            // CRITICAL FIX: Removed code that tries to set text on deleted labels (statusLabel, etc.)
         }
     }
     
@@ -157,10 +153,7 @@ public class DashboardController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/bookTickets.fxml"));
             Parent bookTicketsContent = loader.load();
             
-            // Note: Ensure BookTicketsController class exists and has setUserData
-            // If you don't have this controller yet, remove this block
              Object controller = loader.getController();
-             // Reflection check to avoid crash if class missing
              try {
                  java.lang.reflect.Method method = controller.getClass().getMethod("setUserData", String.class, Customer.class);
                  method.invoke(controller, currentUsername, currentCustomer);
@@ -242,8 +235,6 @@ public class DashboardController implements Initializable {
             Parent profileContent = loader.load();
             
             Object controller = loader.getController();
-            // Using reflection or strict casting depending on your exact Controller class name
-            // Assuming class name is UpdateProfileController
              if (controller instanceof UpdateProfileController) {
                  ((UpdateProfileController) controller).setUserData(currentUsername, primaryStage, currentCustomer);
              }
@@ -270,12 +261,10 @@ public class DashboardController implements Initializable {
             Parent supportContent = loader.load();
             
             Object controller = loader.getController();
-            // Assuming class name is CustomerSupportController
              try {
                  java.lang.reflect.Method method = controller.getClass().getMethod("setCustomerData", String.class, Customer.class);
                  method.invoke(controller, currentUsername, currentCustomer);
              } catch (Exception ex) {
-                 // Ignore if method missing
              }
             
             contentArea.getChildren().add(supportContent);
@@ -321,8 +310,6 @@ public class DashboardController implements Initializable {
     private void handleLogout() {
         try {
             System.out.println("Logging out user: " + currentUsername);
-            // Assuming CustomerLoginController exists and has a show method
-            // If class name is different, adjust here.
             Class<?> loginControllerClass = Class.forName("controllers.CustomerLoginController");
             java.lang.reflect.Method showMethod = loginControllerClass.getMethod("show", Stage.class);
             showMethod.invoke(null, primaryStage);
