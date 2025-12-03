@@ -70,7 +70,7 @@
                   <VBox spacing="4" styleClass="nav-subsection">
                      <Text text="Account" styleClass="nav-subsection-title"/>
                      <Button fx:id="profileButton" text="👤 My Profile" styleClass="nav-button"/>
-                     <Button fx:id="settingsButton" text="⚙️ Settings" styleClass="nav-button"/>
+                     <Button fx:id="notificationsButton" text="🔔 Notifications" styleClass="nav-button"/>
                   </VBox>
                   
                   <VBox spacing="4" styleClass="nav-subsection">

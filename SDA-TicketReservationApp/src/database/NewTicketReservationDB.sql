@@ -152,3 +152,24 @@ select*from Reservation
 select * from booking
 Select* from Schedule
 select * from Seat
+
+-- Create Notifications Table
+CREATE TABLE Notifications (
+    NotificationID INT IDENTITY(1,1) PRIMARY KEY,
+    UserID NVARCHAR(50) NOT NULL,
+    Title NVARCHAR(200) NOT NULL,
+    Message NVARCHAR(1000) NOT NULL,
+    Type NVARCHAR(20) NOT NULL CHECK (Type IN ('booking', 'payment', 'reminder', 'system', 'promotion')),
+    IsRead BIT DEFAULT 0,
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    RelatedID NVARCHAR(100) NULL, -- BookingID, PaymentID, etc.
+    FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
+);
+
+-- Insert sample notifications (optional)
+INSERT INTO Notifications (UserID, Title, Message, Type, RelatedID) VALUES
+('CUST-8299105d-4063-45fd-bc64-d86c7271dbee', '🎉 Welcome to TicketGenie!', 'Thank you for registering with TicketGenie. Enjoy seamless bus ticket booking experience.', 'system', NULL),
+('CUST-8299105d-4063-45fd-bc64-d86c7271dbee', '🎫 Booking Successful', 'Your booking #B12345 from Lahore to Islamabad has been confirmed. Please complete payment.', 'booking', 'B12345');
+
+Select * from Notifications
+select * from users

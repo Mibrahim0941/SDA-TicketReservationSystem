@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="controllers.NotificationsController" 
+      spacing="20" styleClass="notifications-page">
+   
+   <padding>
+      <Insets top="20" right="30" bottom="20" left="30"/>
+   </padding>
+   
+   <!-- Header -->
+   <HBox spacing="15" alignment="CENTER_LEFT">
+      <Button fx:id="backButton" text="← Back" styleClass="btn-back"/>
+      
+      <VBox spacing="5">
+         <Text fx:id="pageTitle" text="Notifications" styleClass="page-title"/>
+         <Text fx:id="subTitle" text="Stay updated with your booking activities" styleClass="page-subtitle"/>
+      </VBox>
+      
+      <Region HBox.hgrow="ALWAYS"/>
+      
+      <HBox spacing="10" alignment="CENTER_RIGHT">
+         <ComboBox fx:id="filterCombo" promptText="Filter..." styleClass="filter-combo"/>
+         <Button fx:id="refreshButton" text="🔄 Refresh" styleClass="btn-secondary"/>
+         <Button fx:id="markAllReadButton" text="✓ Mark All Read" styleClass="btn-primary"/>
+      </HBox>
+   </HBox>
+   
+   <!-- Loading Indicator -->
+   <StackPane alignment="CENTER">
+      <ProgressIndicator fx:id="loadingIndicator" visible="false" styleClass="loading-indicator"/>
+   </StackPane>
+   
+   <!-- Notifications Container -->
+   <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="notifications-scroll">
+      <VBox fx:id="notificationsContainer" spacing="15" styleClass="notifications-container">
+         <padding>
+            <Insets top="10" right="5" bottom="20" left="5"/>
+         </padding>
+      </VBox>
+   </ScrollPane>
+</VBox>

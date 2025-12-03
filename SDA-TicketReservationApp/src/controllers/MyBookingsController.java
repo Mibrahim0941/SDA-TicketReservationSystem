@@ -18,6 +18,7 @@ import models.Customer;
 import models.ETicket;
 import models.Payment;
 import models.Seat;
+import services.NotificationService;
 import config.DatabaseConfig;
 
 import java.io.IOException;
@@ -760,6 +761,18 @@ public class MyBookingsController implements Initializable {
             bookStmt.executeUpdate();
 
             conn.commit(); // Commit Transaction
+            try {
+                NotificationService notificationService = NotificationService.getInstance();
+                notificationService.sendPaymentSuccessNotification(
+                    currentCustomer,
+                    booking.getBookingID(),
+                    payment.getAmount()
+                );
+                System.out.println("✅ Payment notification sent for booking: " + booking.getBookingID());
+            } catch (Exception e) {
+                System.err.println("⚠️ Failed to send payment notification: " + e.getMessage());
+                e.printStackTrace();
+            }
             return true;
 
         } catch (SQLException e) {
@@ -792,6 +805,17 @@ public class MyBookingsController implements Initializable {
             if (response == ButtonType.OK) {
                 if (updateBookingStatus(booking.getBookingID(), "Cancelled")) {
                     booking.setStatus("Cancelled"); 
+                    try {
+                        NotificationService notificationService = NotificationService.getInstance();
+                        notificationService.sendCancellationNotification(
+                            currentCustomer,
+                            booking.getBookingID()
+                        );
+                        System.out.println("✅ Cancellation notification sent for booking: " + booking.getBookingID());
+                    } catch (Exception e) {
+                        System.err.println("⚠️ Failed to send cancellation notification: " + e.getMessage());
+                        e.printStackTrace();
+                    }
                     showAlert("Booking Cancelled", "Booking cancelled successfully.");
                     loadUserBookings();
                 } else {

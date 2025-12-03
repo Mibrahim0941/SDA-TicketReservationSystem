@@ -10,8 +10,9 @@ import catalogs.BookingCatalog;
 import catalogs.RouteCatalog;
 import config.DatabaseConfig;
 import models.*;
+import services.NotificationService;
 import database.DatabaseConnection;
-
+import services.NotificationService;
 import java.net.URL;
 import java.sql.*;
 import java.time.LocalDate;
@@ -491,7 +492,18 @@ public class BookTicketsController implements Initializable {
                 okBtn.setStyle("-fx-background-color: #3F5F3C; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 5px;");
 
                 alert.showAndWait();
-                
+                try {
+                    NotificationService notificationService = NotificationService.getInstance();
+                    notificationService.sendBookingSuccessNotification(
+                        currentCustomer,
+                        bookingID,
+                        selectedRoute.getSource() + " to " + selectedRoute.getDestination()
+                    );
+                    System.out.println("✅ Notification sent for booking: " + bookingID);
+                } catch (Exception e) {
+                    System.err.println("⚠️ Failed to send notification: " + e.getMessage());
+                    e.printStackTrace();
+                }
                 System.out.println("Booking saved successfully (payment pending): " + bookingID);
                 return true;
             } else {

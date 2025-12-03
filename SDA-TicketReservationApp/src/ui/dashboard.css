@@ -269,3 +269,123 @@
         -fx-font-size: 14px;
     }
 }
+
+/* Notifications Page Styles */
+.notifications-page {
+    -fx-background-color: #f5f5f5;
+}
+
+.page-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-fill: #333333;
+}
+
+.page-subtitle {
+    -fx-font-size: 14px;
+    -fx-fill: #666666;
+}
+
+.btn-back {
+    -fx-background-color: transparent;
+    -fx-text-fill: #2196F3;
+    -fx-font-weight: bold;
+    -fx-border-color: transparent;
+    -fx-padding: 8 15;
+}
+
+.btn-back:hover {
+    -fx-background-color: #E3F2FD;
+    -fx-border-radius: 5;
+}
+
+.filter-combo {
+    -fx-pref-width: 180px;
+    -fx-font-size: 14px;
+}
+
+/* Notification Cards */
+.notification-card {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 5, 0, 0, 2);
+    -fx-padding: 15;
+    -fx-border-color: transparent;
+    -fx-border-width: 2;
+}
+
+.notification-card.unread {
+    -fx-border-color: #2196F3;
+    -fx-background-color: #E8F5E9;
+}
+
+.notification-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333;
+}
+
+.notification-time {
+    -fx-font-size: 12px;
+    -fx-text-fill: #888888;
+}
+
+.notification-message {
+    -fx-font-size: 14px;
+    -fx-text-fill: #555555;
+    -fx-wrap-text: true;
+}
+
+.notification-type-booking {
+    -fx-background-color: #E8F5E9;
+    -fx-text-fill: #2E7D32;
+    -fx-padding: 3 10;
+    -fx-background-radius: 15;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.notification-type-payment {
+    -fx-background-color: #FFF3E0;
+    -fx-text-fill: #EF6C00;
+    -fx-padding: 3 10;
+    -fx-background-radius: 15;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.notification-type-system {
+    -fx-background-color: #E3F2FD;
+    -fx-text-fill: #1565C0;
+    -fx-padding: 3 10;
+    -fx-background-radius: 15;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.notification-type-reminder {
+    -fx-background-color: #FFF8E1;
+    -fx-text-fill: #FF8F00;
+    -fx-padding: 3 10;
+    -fx-background-radius: 15;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+/* Buttons */
+.btn-small {
+    -fx-font-size: 12px;
+    -fx-padding: 3 8;
+}
+
+.empty-label {
+    -fx-font-size: 16px;
+    -fx-text-fill: #888888;
+    -fx-padding: 40;
+}
+
+.loading-indicator {
+    -fx-pref-width: 50px;
+    -fx-pref-height: 50px;
+}

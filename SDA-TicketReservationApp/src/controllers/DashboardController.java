@@ -13,7 +13,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import models.Customer;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -27,15 +26,13 @@ public class DashboardController implements Initializable {
     @FXML private Label customerIdLabel;
     @FXML private Label memberSinceLabel;
     
-    // REMOVED: statusLabel, totalBookingsLabel, etc. are no longer needed
-    
     // Navigation buttons
     @FXML private Button homeButton;
     @FXML private Button bookTicketsButton;
     @FXML private Button myBookingsButton;
     @FXML private Button historyButton;
     @FXML private Button profileButton;
-    @FXML private Button settingsButton;
+    @FXML private Button notificationsButton; // Changed from settingsButton
     @FXML private Button supportButton;
     @FXML private Button logoutButton;
     
@@ -118,14 +115,14 @@ public class DashboardController implements Initializable {
         }
     }
     
-    private void setupEventHandlers() {
+     private void setupEventHandlers() {
         // Navigation button handlers
         if(homeButton != null) homeButton.setOnAction(e -> showHome());
         if(bookTicketsButton != null) bookTicketsButton.setOnAction(e -> showBookTickets());
         if(myBookingsButton != null) myBookingsButton.setOnAction(e -> showMyBookings());
         if(historyButton != null) historyButton.setOnAction(e -> showHistory());
         if(profileButton != null) profileButton.setOnAction(e -> showProfile());
-        if(settingsButton != null) settingsButton.setOnAction(e -> showSettings());
+        if(notificationsButton != null) notificationsButton.setOnAction(e -> showNotifications()); // Changed
         if(supportButton != null) supportButton.setOnAction(e -> showSupport());
         if(logoutButton != null) logoutButton.setOnAction(e -> handleLogout());
     }
@@ -291,10 +288,29 @@ public class DashboardController implements Initializable {
     }
     
     @FXML
-    private void showSettings() {
+    private void showNotifications() {
         clearContentArea();
-        showAlert("Feature Coming Soon", "Settings feature will be available soon!");
-        showHome();
+        try {
+            if (currentCustomer == null) {
+                showAlert("Error", "Customer information not available.");
+                return;
+            }
+            
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/notifications.fxml"));
+            Parent notificationsContent = loader.load();
+            
+            Object controller = loader.getController();
+            if (controller instanceof NotificationsController) {
+                ((NotificationsController) controller).setUserData(currentUsername, currentCustomer);
+            }
+            
+            contentArea.getChildren().add(notificationsContent);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Error", "Failed to load Notifications: " + e.getMessage());
+            showHome();
+        }
     }
     
     private void clearContentArea() {
