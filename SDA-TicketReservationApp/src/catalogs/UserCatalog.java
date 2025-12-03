@@ -7,23 +7,20 @@ import database.DatabaseConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
+
 
 public class UserCatalog {
     private java.util.ArrayList<User> users;
 
     public UserCatalog(String type) {
         this.users = new java.util.ArrayList<>();
-        loadUsersFromDatabase(type); // Only called once at startup
+        loadUsersFromDatabase(type);
     }
 
-    // Load users from database ONLY at startup
     private void loadUsersFromDatabase(String type) {
         String query = "SELECT u.UserID, u.Name, u.Password, u.Username, u.UserType, c.Email, c.PhoneNum " +
                       "FROM Users u INNER JOIN ContactInfo c ON u.ContactID = c.ContactID where u.UserType = ?";
         
-
-        // DON'T use try-with-resources for Connection - use regular try-catch
         try {
             java.sql.Connection conn = DatabaseConnection.getConnection();
             java.sql.PreparedStatement stmt = conn.prepareStatement(query);
@@ -34,43 +31,32 @@ public class UserCatalog {
                 User user = createUserFromResultSet(rs);
                 users.add(user);
             }
-            
-            // Close only statement and result set, NOT the connection
             rs.close();
             stmt.close();
-            
             System.out.println("Loaded " + users.size() + " users from database.");
             
         } catch (java.sql.SQLException e) {
             System.err.println("Error loading users from database: " + e.getMessage());
-            // Continue with empty list if DB fails
         }
     }
 
-    // Add user to both local list AND database (for persistence)
     public boolean addToCatalog(User user) {
-        // First add to local list (in-memory)
         users.add(user);
-        
-        // Then persist to database
         return persistUserToDatabase(user);
     }
 
-    // Database persistence method (only called when adding/updating)
     private boolean persistUserToDatabase(User user) {
         java.sql.Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
             
-            // Insert into ContactInfo
             String contactQuery = "INSERT INTO ContactInfo (Email, PhoneNum) VALUES (?, ?)";
             java.sql.PreparedStatement contactStmt = conn.prepareStatement(contactQuery, java.sql.Statement.RETURN_GENERATED_KEYS);
             contactStmt.setString(1, user.getEmail());
             contactStmt.setString(2, user.getPhoneNum());
             contactStmt.executeUpdate();
             
-            // Get generated ContactID
             int contactId = -1;
             java.sql.ResultSet generatedKeys = contactStmt.getGeneratedKeys();
             if (generatedKeys.next()) {
@@ -83,10 +69,7 @@ public class UserCatalog {
                 throw new java.sql.SQLException("Failed to get ContactID");
             }
             
-            // Determine user type
             String userType = getUserType(user);
-            
-            // Insert into Users
             String userQuery = "INSERT INTO Users (UserID, Name, Password, Username, ContactID, UserType) VALUES (?, ?, ?, ?, ?, ?)";
             java.sql.PreparedStatement userStmt = conn.prepareStatement(userQuery);
             userStmt.setString(1, user.getUserID());
@@ -111,7 +94,6 @@ public class UserCatalog {
                 }
             }
             System.err.println("Error persisting user to database: " + e.getMessage());
-            // User is still in local list even if DB fails
             return false;
         } finally {
             if (conn != null) {
@@ -124,7 +106,6 @@ public class UserCatalog {
         }
     }
 
-    // Helper methods
     private User createUserFromResultSet(java.sql.ResultSet rs) throws java.sql.SQLException {
         String userID = rs.getString("UserID");
         String name = rs.getString("Name");
@@ -151,7 +132,6 @@ public class UserCatalog {
         return "Customer";
     }
 
-    // ALL these methods use ONLY the local list - no database calls!
     public boolean authenticateUser(String username, String password) {
         for (User user : users) {
             if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
@@ -195,11 +175,9 @@ public class UserCatalog {
         return users.size();
     }
 
-    // Check database for email (only used during registration validation)
     public boolean isEmailTakenInDatabase(String email) {
         String query = "SELECT COUNT(*) FROM ContactInfo WHERE Email = ?";
         
-        // DON'T use try-with-resources for Connection
         try {
             java.sql.Connection conn = DatabaseConnection.getConnection();
             java.sql.PreparedStatement stmt = conn.prepareStatement(query);
@@ -208,7 +186,6 @@ public class UserCatalog {
             
             boolean result = rs.next() && rs.getInt(1) > 0;
             
-            // Close only statement and result set
             rs.close();
             stmt.close();
             
@@ -220,7 +197,6 @@ public class UserCatalog {
         }
     }
 
-    // Get users by role
     public java.util.ArrayList<User> getUsersByRole(String role) {
         java.util.ArrayList<User> result = new java.util.ArrayList<>();
         for (User user : users) {
@@ -231,7 +207,6 @@ public class UserCatalog {
         return result;
     }
 
-    // Remove user from catalog
     public boolean removeUser(String username) {
         User user = getUserByUsername(username);
         if (user != null) {
@@ -243,39 +218,31 @@ public class UserCatalog {
     
 
     public boolean updateUser(User updatedUser) {
-        // Find the existing user in the local list by UserID (not username)
         User existingUser = getUserByID(updatedUser.getUserID());
         if (existingUser == null) {
             System.out.println("User not found in catalog: " + updatedUser.getUserID());
             return false;
         }
     
-        // Update the local user object
         existingUser.setName(updatedUser.getName());
         existingUser.setUsername(updatedUser.getUsername());
         existingUser.setEmail(updatedUser.getEmail());
         existingUser.setPhoneNum(updatedUser.getPhoneNum());
-    
-        // Update in database
         return updateUserProfileInDatabase(updatedUser);
     }
 
     public boolean updateUserPassword(String userID, String newPassword) {
-        // Find the existing user in the local list by UserID
         User existingUser = getUserByID(userID);
             if (existingUser == null) {
                 System.out.println("User not found in catalog: " + userID);
             return false;
         }
-    
-        // Update the local user password
+
         existingUser.setPassword(newPassword);
     
-        // Update in database (only password)
         return updatePasswordInDatabase(userID, newPassword);
     }
 
-    // Add this helper method to UserCatalog to find user by ID
     public User getUserByID(String userID) {
         for (User user : users) {
             if (user.getUserID().equals(userID)) {
@@ -293,15 +260,12 @@ public class UserCatalog {
         try {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
-        
-            // First, get the ContactID for this user
             int contactId = getContactIdForUser(user.getUserID());
             if (contactId == -1) {
                 System.out.println("ContactID not found for user: " + user.getUserID());
                 return false;
             }
         
-            // Update ContactInfo table
             String contactUpdate = "UPDATE ContactInfo SET Email = ?, PhoneNum = ? WHERE ContactID = ?";
             contactStmt = conn.prepareStatement(contactUpdate);
             contactStmt.setString(1, user.getEmail());
@@ -311,7 +275,6 @@ public class UserCatalog {
             int contactRows = contactStmt.executeUpdate();
             System.out.println("ContactInfo rows updated: " + contactRows);
             
-            // Then update Users table (only name and username, not password)
             String userUpdate = "UPDATE Users SET Name = ?, Username = ? WHERE UserID = ?";
             userStmt = conn.prepareStatement(userUpdate);
             userStmt.setString(1, user.getName());

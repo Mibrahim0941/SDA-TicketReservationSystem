@@ -139,21 +139,20 @@ public class AdminDashboardController implements Initializable {
         }
     }
 
-    private void loadStatistics() {
-        // Load actual statistics from catalogs
+    private void loadStatistics() 
+    {
         try {
             catalogs.RouteCatalog routeCatalog = catalogs.RouteCatalog.getInstance();
             catalogs.PromoCodeCatalog promoCatalog = new catalogs.PromoCodeCatalog();
             catalogs.PolicyCatalog policyCatalog = new catalogs.PolicyCatalog();
             
             if (totalRoutesLabel != null) totalRoutesLabel.setText(String.valueOf(routeCatalog.getAllRoutes().size()));
-            if (activeSchedulesLabel != null) activeSchedulesLabel.setText("48"); // Would need to calculate
-            if (totalBookingsLabel != null) totalBookingsLabel.setText("1,234"); // Would need booking catalog
-            if (revenueLabel != null) revenueLabel.setText("PKR 45,678"); // Would need revenue calculation
+            if (activeSchedulesLabel != null) activeSchedulesLabel.setText("48");
+            if (totalBookingsLabel != null) totalBookingsLabel.setText("1,234"); 
+            if (revenueLabel != null) revenueLabel.setText("PKR 45,678"); s
             
         } catch (Exception e) {
             System.err.println("Error loading statistics: " + e.getMessage());
-            // Set default values
             if (totalRoutesLabel != null) totalRoutesLabel.setText("25");
             if (activeSchedulesLabel != null) activeSchedulesLabel.setText("48");
             if (totalBookingsLabel != null) totalBookingsLabel.setText("1,234");
