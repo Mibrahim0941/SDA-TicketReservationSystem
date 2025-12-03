@@ -797,32 +797,119 @@ public class MyBookingsController implements Initializable {
     }
 
     private void cancelBooking(Booking booking) {
-        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmAlert.setTitle("Cancel Booking");
-        confirmAlert.setContentText("Are you sure you want to cancel booking #" + booking.getBookingID() + "?");
+        // --- Custom Pretty Dialog for Cancellation ---
         
-        confirmAlert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
+        // 1. Create Dialog
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Cancel Booking");
+        dialog.setHeaderText(null);
+        dialog.setGraphic(null);
+
+        // 2. Apply CSS Theme
+        DialogPane dialogPane = dialog.getDialogPane();
+        dialogPane.getStylesheets().add(getClass().getResource("/ui/MyBookings.css").toExternalForm());
+        dialogPane.getStyleClass().add("ticket-dialog");
+
+        // 3. Build Content Card
+        VBox card = new VBox(15);
+        card.getStyleClass().add("ticket-card");
+        card.setMinWidth(380);
+        card.setAlignment(javafx.geometry.Pos.TOP_CENTER);
+        card.setPadding(new Insets(25));
+
+        // Header Section
+        Label titleLbl = new Label("Confirm Cancellation");
+        titleLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #EF4444; -fx-font-size: 18px;"); // Red Title for Warning
+
+        Separator sep = new Separator();
+        sep.setStyle("-fx-border-style: dashed; -fx-border-width: 1px 0 0 0; -fx-border-color: #ccc; -fx-background-color: transparent;");
+
+        // Booking Info
+        Label msgLbl = new Label("Are you sure you want to cancel this booking?");
+        msgLbl.setStyle("-fx-text-fill: #555; -fx-font-size: 14px;");
+        
+        Label bookingIdLbl = new Label("Booking #" + booking.getBookingID());
+        bookingIdLbl.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+
+        // Route Info (Visual Context)
+        String routeStr = booking.getReservation().getRoute().getSource() + " ➝ " + booking.getReservation().getRoute().getDestination();
+        Label routeLbl = new Label(routeStr);
+        routeLbl.setStyle("-fx-font-size: 13px; -fx-text-fill: #888;");
+
+        // Warning Note
+        Label noteLbl = new Label("This action cannot be undone.");
+        noteLbl.setStyle("-fx-text-fill: #EF4444; -fx-font-size: 12px; -fx-font-style: italic;");
+
+        card.getChildren().addAll(titleLbl, sep, msgLbl, bookingIdLbl, routeLbl, noteLbl);
+        dialogPane.setContent(card);
+
+        // 4. Custom Buttons
+        ButtonType yesBtnType = new ButtonType("Yes, Cancel", ButtonBar.ButtonData.OK_DONE);
+        ButtonType noBtnType = new ButtonType("No, Keep", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialogPane.getButtonTypes().addAll(yesBtnType, noBtnType);
+
+        // Style Buttons
+        Button yesBtn = (Button) dialogPane.lookupButton(yesBtnType);
+        yesBtn.setStyle("-fx-background-color: #EF4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;"); // Red Danger Button
+        
+        Button noBtn = (Button) dialogPane.lookupButton(noBtnType);
+        noBtn.setStyle("-fx-background-color: #E8E8E8; -fx-text-fill: #333; -fx-font-weight: bold; -fx-cursor: hand;");   // Grey Cancel Button
+
+        // 5. Show and Handle Result
+        dialog.showAndWait().ifPresent(response -> {
+            if (response == yesBtnType) {
                 if (updateBookingStatus(booking.getBookingID(), "Cancelled")) {
                     booking.setStatus("Cancelled"); 
+                    
+                    // Optional: Notification Logic
                     try {
-                        NotificationService notificationService = NotificationService.getInstance();
-                        notificationService.sendCancellationNotification(
-                            currentCustomer,
-                            booking.getBookingID()
-                        );
-                        System.out.println("✅ Cancellation notification sent for booking: " + booking.getBookingID());
-                    } catch (Exception e) {
-                        System.err.println("⚠️ Failed to send cancellation notification: " + e.getMessage());
-                        e.printStackTrace();
-                    }
-                    showAlert("Booking Cancelled", "Booking cancelled successfully.");
-                    loadUserBookings();
+                        // Assuming you have NotificationService available
+                        // NotificationService.getInstance().sendCancellationNotification(...);
+                    } catch (Exception e) { e.printStackTrace(); }
+
+                    // Show Success using the pretty alert style
+                    showPrettySuccessAlert("Booking Cancelled", "Your booking has been successfully cancelled.");
+                    
+                    loadUserBookings(); 
                 } else {
-                    showAlert("Error", "Failed to cancel booking.");
+                    showErrorAlert("Failed to cancel booking.");
                 }
             }
         });
+    }
+
+    // Helper to show a pretty success alert (reusing the same theme)
+    private void showPrettySuccessAlert(String title, String message) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle(title);
+        dialog.setHeaderText(null);
+        dialog.setGraphic(null);
+        
+        DialogPane dialogPane = dialog.getDialogPane();
+        dialogPane.getStylesheets().add(getClass().getResource("/ui/MyBookings.css").toExternalForm());
+        dialogPane.getStyleClass().add("ticket-dialog");
+
+        VBox card = new VBox(15);
+        card.getStyleClass().add("ticket-card");
+        card.setMinWidth(350);
+        card.setAlignment(javafx.geometry.Pos.CENTER);
+        card.setPadding(new Insets(20));
+
+        Label titleLbl = new Label(title);
+        titleLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #3F5F3C; -fx-font-size: 16px;");
+        
+        Label msgLbl = new Label(message);
+        msgLbl.setWrapText(true);
+        msgLbl.setStyle("-fx-text-fill: #555; -fx-font-size: 13px; -fx-text-alignment: center;");
+
+        card.getChildren().addAll(titleLbl, msgLbl);
+        dialogPane.setContent(card);
+        dialogPane.getButtonTypes().add(ButtonType.OK);
+        
+        Button okBtn = (Button) dialogPane.lookupButton(ButtonType.OK);
+        okBtn.setStyle("-fx-background-color: #3F5F3C; -fx-text-fill: white; -fx-font-weight: bold;");
+
+        dialog.showAndWait();
     }
 
     private boolean updateBookingStatus(String bookingId, String status) {

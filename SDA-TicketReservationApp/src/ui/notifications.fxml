@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<VBox spacing="20" style="-fx-background-color: #F5EFE7;" stylesheets="/notifications.css" 
+<VBox spacing="20" style="-fx-background-color: #F5EFE7;" stylesheets="@notifications.css" 
       xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
       fx:controller="controllers.NotificationsController">
     

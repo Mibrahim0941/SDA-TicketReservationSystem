@@ -8,7 +8,7 @@
 .dashboard-title {
     -fx-font-size: 32px; /* Slightly larger for emphasis */
     -fx-font-weight: 900; /* Use 900 for extra bold */
-    -fx-fill: #2E7D32; /* Brighter, more vibrant green */
+    -fx-fill: #3F5F3C; /* Brighter, more vibrant green */
     -fx-font-family: 'Segoe UI', Arial, sans-serif;
     -fx-effect: dropshadow(gaussian, rgba(46, 125, 50, 0.15), 2, 0.5, 0, 1); /* Subtle shadow for depth */
 }
@@ -16,7 +16,7 @@
 .dashboard-subtitle {
     -fx-font-size: 16px;
     -fx-font-weight: 700; /* Bold */
-    -fx-fill: #4CAF50; /* Lighter, fresh green */
+    -fx-fill: #7E9E7A; /* Lighter, fresh green */
     -fx-font-family: 'Segoe UI', Arial, sans-serif;
     -fx-opacity: 0.9;
 }
