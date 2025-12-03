@@ -106,14 +106,7 @@
                   </HBox>
                </VBox>
 
-               <VBox spacing="15" styleClass="activity-section">
-                  <Text text="Recent Activity" styleClass="section-title"/>
-                  <VBox fx:id="recentActivityContainer" spacing="10" styleClass="activity-list">
-                     <Text text="• Booked trip to Islamabad - 2 days ago" styleClass="activity-item"/>
-                     <Text text="• Updated profile information - 1 week ago" styleClass="activity-item"/>
-                     <Text text="• Earned 50 reward points - 2 weeks ago" styleClass="activity-item"/>
-                  </VBox>
-               </VBox>
+               
             </VBox>
          </VBox>
       </ScrollPane>

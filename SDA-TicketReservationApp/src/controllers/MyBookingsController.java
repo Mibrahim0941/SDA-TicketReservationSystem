@@ -26,6 +26,7 @@ import java.net.URL;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Date;
 
 public class MyBookingsController implements Initializable {
     @FXML private Text pageTitle;
@@ -549,6 +550,59 @@ public class MyBookingsController implements Initializable {
         grid.add(box, col, row);
     }
 
+    private Double validateAndApplyPromoCode(String promoCode, double originalAmount) {
+        if (promoCode == null || promoCode.trim().isEmpty()) {
+            return null; // No promo code provided
+        }
+        
+        String query = "SELECT Percentage, ValidityDate, IsActive FROM PromotionalCodes WHERE Code = ?";
+        
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            PreparedStatement stmt = conn.prepareStatement(query)) {
+            
+            stmt.setString(1, promoCode.trim().toUpperCase());
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                // Check if promo code is active
+                boolean isActive = rs.getBoolean("IsActive");
+                if (!isActive) {
+                    showAlert("Invalid Promo Code", "This promo code is no longer active.");
+                    return null;
+                }
+                
+                // Check validity date
+                Date validityDate = rs.getDate("ValidityDate");
+                Date currentDate = new Date(System.currentTimeMillis());
+                if (validityDate.before(currentDate)) {
+                    showAlert("Expired Promo Code", "This promo code has expired.");
+                    return null;
+                }
+                
+                // Get discount percentage
+                double percentage = rs.getDouble("Percentage");
+                
+                // Calculate discounted amount
+                double discountAmount = originalAmount * (percentage / 100);
+                double finalAmount = originalAmount - discountAmount;
+                
+                showAlert("Promo Code Applied!", String.format("🎉 %.1f%% discount applied! You saved PKR %.2f", 
+                    percentage, discountAmount));
+                
+                return finalAmount;
+                
+            } else {
+                showAlert("Invalid Promo Code", "The promo code you entered is invalid.");
+                return null;
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error validating promo code: " + e.getMessage());
+            showAlert("Error", "Failed to validate promo code. Please try again.");
+            return null;
+        }
+    }
+
     private void proceedToPayment(Booking booking) {
         Dialog<Map<String, String>> dialog = new Dialog<>();
         dialog.setTitle("Secure Payment");
@@ -587,14 +641,23 @@ public class MyBookingsController implements Initializable {
         VBox accountBox = new VBox(8);
         Label accLbl = new Label("Account Number");
         accLbl.getStyleClass().add("input-label");
+
+        VBox PromoBox = new VBox(8);
+        Label promoLbl = new Label("Promo Code");
+        promoLbl.getStyleClass().add("input-label");
         
         TextField accountField = new TextField();
         accountField.setPromptText("Enter account/card number");
         accountField.getStyleClass().add("payment-input");
+
+        TextField promoField = new TextField();
+        promoField.setPromptText("Enter promo code");
+        promoField.getStyleClass().add("payment-input");
         
         accountBox.getChildren().addAll(accLbl, accountField);
+        PromoBox.getChildren().addAll(promoLbl, promoField);
 
-        container.getChildren().addAll(headerBox, methodBox, accountBox);
+        container.getChildren().addAll(headerBox, methodBox, accountBox, PromoBox);
         dialogPane.setContent(container);
 
         ButtonType confirmType = new ButtonType("Confirm Payment", ButtonBar.ButtonData.OK_DONE);
@@ -620,6 +683,7 @@ public class MyBookingsController implements Initializable {
                 Map<String, String> result = new HashMap<>();
                 result.put("method", methodCombo.getValue());
                 result.put("account", accountField.getText());
+                result.put("promo", promoField.getText()); // Add promo code to result
                 return result;
             }
             return null;
@@ -628,22 +692,61 @@ public class MyBookingsController implements Initializable {
         Optional<Map<String, String>> result = dialog.showAndWait();
         result.ifPresent(data -> {
             String selectedMethod = data.get("method");
+            String promoCode = data.get("promo");
+            
+            // Apply promo code if provided
+            double finalAmount = booking.getTotalAmount();
+            if (promoCode != null && !promoCode.trim().isEmpty()) {
+                Double discountedAmount = validateAndApplyPromoCode(promoCode, finalAmount);
+                if (discountedAmount != null) {
+                    finalAmount = discountedAmount;
+                } else {
+                    // If promo code is invalid, return without processing payment
+                    return;
+                }
+            }
             
             String newPaymentId = "PAY-" + System.currentTimeMillis();
-            Payment payment = new Payment(newPaymentId, booking, booking.getTotalAmount(), selectedMethod);
+            Payment payment = new Payment(newPaymentId, booking, finalAmount, selectedMethod);
             payment.setStatus("Completed");
             
+            // Update payment amount with discount if applied
+            booking.setTotalAmount(finalAmount);
+            
             boolean success = processPaymentTransaction(booking, payment);
-
+            
             if (success) {
                 booking.setPayment(payment);
                 booking.setStatus("Confirmed");
+                
+                // Store promo code usage if applied
+                if (promoCode != null && !promoCode.trim().isEmpty()) {
+                    recordPromoCodeUsage(promoCode, booking.getBookingID());
+                }
+                
                 showAlert("Success", "Payment confirmed successfully!");
                 loadUserBookings();
             } else {
                 showErrorAlert("Payment processing failed.");
             }
-        });
+        });      
+    }
+
+    private void recordPromoCodeUsage(String promoCode, String bookingId) {
+        String query = "INSERT INTO PromoCodeUsage (PromoCode, BookingID, UsedDate, CustomerID) VALUES (?, ?, GETDATE(), ?)";
+        
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            PreparedStatement stmt = conn.prepareStatement(query)) {
+            
+            stmt.setString(1, promoCode.trim().toUpperCase());
+            stmt.setString(2, bookingId);
+            stmt.setString(3, currentCustomer.getUserID());
+            stmt.executeUpdate();
+            
+        } catch (SQLException e) {
+            System.err.println("Error recording promo code usage: " + e.getMessage());
+            // Don't show error to user - this is just for tracking
+        }
     }
 
     private boolean processPaymentTransaction(Booking booking, Payment payment) {

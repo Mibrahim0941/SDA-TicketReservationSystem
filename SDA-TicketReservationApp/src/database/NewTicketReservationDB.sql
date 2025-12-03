@@ -166,6 +166,18 @@ CREATE TABLE Notifications (
     FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
 );
 
+Select* from PromotionalCodes
+CREATE TABLE PromoCodeUsage (
+    UsageID INT IDENTITY(1,1) PRIMARY KEY,
+    PromoCode VARCHAR(50) NOT NULL,
+    BookingID NVARCHAR(20) NOT NULL,
+    CustomerID NVARCHAR(50) NOT NULL,
+    UsedDate DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (PromoCode) REFERENCES PromotionalCodes(Code),
+    FOREIGN KEY (BookingID) REFERENCES Booking(BookingID),
+    FOREIGN KEY (CustomerID) REFERENCES Users(UserID)
+);
+
 -- Insert sample notifications (optional)
 INSERT INTO Notifications (UserID, Title, Message, Type, RelatedID) VALUES
 ('CUST-8299105d-4063-45fd-bc64-d86c7271dbee', '🎉 Welcome to TicketGenie!', 'Thank you for registering with TicketGenie. Enjoy seamless bus ticket booking experience.', 'system', NULL),
