@@ -14,47 +14,114 @@
     <!-- Header Section -->
     <HBox alignment="CENTER_LEFT" spacing="20" styleClass="header-section">
         <VBox spacing="5">
-            <Text fx:id="welcomeTitle" styleClass="dashboard-title" text="Manage Seats" />
-            <Text fx:id="userGreeting" styleClass="dashboard-subtitle" text="Manage Seats - Admin" />
+            <Text fx:id="welcomeTitle" styleClass="dashboard-title" text="🎫 Seat Management" />
+            <Text fx:id="userGreeting" styleClass="dashboard-subtitle" text="Admin Panel - Manage Seats &amp; Pricing" />
         </VBox>
         
         <HBox alignment="CENTER_RIGHT" spacing="10" HBox.hgrow="ALWAYS">
-            <Button fx:id="refreshButton" styleClass="btn-secondary" text="Refresh" />
-            <Button fx:id="backButton" styleClass="btn-secondary" text="Back to Dashboard" />
+            <Button fx:id="refreshButton" styleClass="btn-secondary" text="🔄 Refresh" />
+            <Button fx:id="backButton" styleClass="btn-secondary" text="← Back to Dashboard" />
         </HBox>
     </HBox>
 
     <!-- Selection Section -->
     <HBox spacing="15" styleClass="form-container">
         <VBox spacing="10" HBox.hgrow="ALWAYS">
-            <Label styleClass="input-label" text="Select Route" />
+            <Label styleClass="input-label" text="📍 Select Route" />
             <ComboBox fx:id="routeComboBox" styleClass="combo-box" />
         </VBox>
         
         <VBox spacing="10" HBox.hgrow="ALWAYS">
-            <Label styleClass="input-label" text="Select Schedule" />
+            <Label styleClass="input-label" text="📅 Select Schedule" />
             <ComboBox fx:id="scheduleComboBox" styleClass="combo-box" />
         </VBox>
     </HBox>
+
+    <!-- Seat Type Management Section -->
+    <VBox spacing="15" styleClass="seat-type-section">
+        <Label styleClass="section-title" text="💰 Seat Type Management" />
+        
+        <!-- Seat Type Filter Buttons -->
+        <HBox fx:id="seatTypeButtonsContainer" spacing="10" alignment="CENTER">
+            <!-- Buttons will be dynamically added -->
+        </HBox>
+        
+        <!-- Current Selection Info -->
+        <Label fx:id="seatTypeInfoLabel" text="Select a seat type to view specific seats" 
+               styleClass="seat-type-info" />
+        
+        <!-- Seat Type Percentage Controls -->
+        <GridPane hgap="15" vgap="10" styleClass="percentage-grid">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="25" />
+                <ColumnConstraints percentWidth="25" />
+                <ColumnConstraints percentWidth="25" />
+                <ColumnConstraints percentWidth="25" />
+            </columnConstraints>
+            
+            <!-- Type A -->
+            <VBox GridPane.columnIndex="0" spacing="5">
+                <Label text="🔷 Type A (Standard)" styleClass="type-label" />
+                <TextField fx:id="typeAPercentage" promptText="0.0%" styleClass="percentage-field" />
+            </VBox>
+            
+            <!-- Type B -->
+            <VBox GridPane.columnIndex="1" spacing="5">
+                <Label text="🔶 Type B (Premium)" styleClass="type-label" />
+                <TextField fx:id="typeBPercentage" promptText="10.0%" styleClass="percentage-field" />
+            </VBox>
+            
+            <!-- Type C -->
+            <VBox GridPane.columnIndex="2" spacing="5">
+                <Label text="🔸 Type C (Business)" styleClass="type-label" />
+                <TextField fx:id="typeCPercentage" promptText="20.0%" styleClass="percentage-field" />
+            </VBox>
+            
+            <!-- Type D -->
+            <VBox GridPane.columnIndex="3" spacing="5">
+                <Label text="💎 Type D (First Class)" styleClass="type-label" />
+                <TextField fx:id="typeDPercentage" promptText="30.0%" styleClass="percentage-field" />
+            </VBox>
+        </GridPane>
+        
+        <!-- Action Buttons -->
+        <HBox spacing="15" alignment="CENTER">
+            <Button fx:id="applyPercentagesButton" styleClass="btn-primary" text="✅ Apply Percentages" />
+            <Button fx:id="generateSeatsButton" styleClass="btn-generate" text="🚌 Generate Seat Layout" />
+        </HBox>
+    </VBox>
 
     <!-- Main Content Area -->
     <HBox spacing="20" VBox.vgrow="ALWAYS">
         <!-- Seats Grid -->
         <VBox spacing="10" HBox.hgrow="ALWAYS">
-            <Label styleClass="section-title" text="Seat Layout" />
-            <ScrollPane fitToWidth="true" prefHeight="500" style="-fx-background-color: transparent;">
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label styleClass="section-title" text="🚌 Seat Layout" />
+                <Label styleClass="layout-info" text="(Click seats to toggle status)" />
+            </HBox>
+            <ScrollPane fitToWidth="true" prefHeight="450" styleClass="seats-scroll">
                 <content>
-                    <GridPane fx:id="seatsGrid" hgap="5" vgap="5" styleClass="seats-grid">
+                    <GridPane fx:id="seatsGrid" hgap="10" vgap="10" styleClass="seats-grid">
                         <!-- Seats will be dynamically added here -->
                     </GridPane>
                 </content>
             </ScrollPane>
         </VBox>
 
-        <!-- Seat Details -->
-        <VBox spacing="10" prefWidth="300">
-            <Label styleClass="section-title" text="Seat Information" />
-            <TextArea fx:id="seatDetailsArea" editable="false" prefHeight="500" styleClass="details-area" />
+        <!-- Seat Details & Statistics -->
+        <VBox spacing="10" prefWidth="350">
+            <Label styleClass="section-title" text="📊 Seat Information &amp; Statistics" />
+            <TextArea fx:id="seatDetailsArea" editable="false" prefHeight="450" styleClass="details-area" />
+            
+            <!-- Quick Statistics -->
+            <GridPane hgap="10" vgap="8" styleClass="quick-stats">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="50" />
+                    <ColumnConstraints percentWidth="50" />
+                </columnConstraints>
+                
+                <!-- Stats will be dynamically populated -->
+            </GridPane>
         </VBox>
     </HBox>
 

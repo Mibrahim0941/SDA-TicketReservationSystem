@@ -31,6 +31,46 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
 }
 
+/* Seat Type Management Section */
+.seat-type-section {
+    -fx-background-color: white;
+    -fx-background-radius: 15px;
+    -fx-padding: 20px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
+}
+
+.seat-type-info {
+    -fx-text-fill: #7f8c8d;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 0;
+    -fx-alignment: CENTER;
+}
+
+.percentage-grid {
+    -fx-padding: 15px 0;
+}
+
+.type-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333;
+}
+
+.percentage-field {
+    -fx-background-color: #f8f9fa;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-border-color: #e2e8f0;
+    -fx-padding: 8px 12px;
+    -fx-font-size: 14px;
+}
+
+.percentage-field:focused {
+    -fx-border-color: #3F5F3C;
+    -fx-effect: dropshadow(three-pass-box, rgba(63,95,60,0.2), 5, 0, 0, 0);
+}
+
 /* Input Styles */
 .input-label {
     -fx-font-size: 12px;
@@ -57,7 +97,18 @@
     -fx-text-fill: #3F5F3C;
 }
 
+.layout-info {
+    -fx-font-size: 12px;
+    -fx-text-fill: #7E9E7A;
+    -fx-font-style: italic;
+}
+
 /* Seats Grid */
+.seats-scroll {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
 .seats-grid {
     -fx-background-color: white;
     -fx-background-radius: 10px;
@@ -65,7 +116,18 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 5, 0, 0, 3);
 }
 
-/* Seat Status Colors */
+/* Seat Buttons (will be created dynamically) */
+.seat-button {
+    -fx-font-weight: bold;
+    -fx-font-size: 10px;
+    -fx-min-width: 35px;
+    -fx-min-height: 35px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 3, 0, 0, 1);
+}
+
 .seat-available {
     -fx-background-color: #27ae60;
     -fx-text-fill: white;
@@ -92,6 +154,15 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 5, 0, 0, 3);
 }
 
+.quick-stats {
+    -fx-background-color: white;
+    -fx-background-radius: 10px;
+    -fx-padding: 15px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 5, 0, 0, 3);
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 10px;
+}
+
 /* Buttons */
 .button {
     -fx-cursor: hand;
@@ -109,6 +180,7 @@
 }
 .btn-primary:hover {
     -fx-background-color: #2F4F2C;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 2);
 }
 
 .btn-secondary {
@@ -118,6 +190,68 @@
 }
 .btn-secondary:hover {
     -fx-background-color: #D0D0D0;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 2);
+}
+
+.btn-generate {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-border-color: #2980b9;
+}
+.btn-generate:hover {
+    -fx-background-color: #2980b9;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 2);
+}
+
+/* Seat Type Buttons (will be created dynamically) */
+.type-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
+}
+
+.type-button:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 2);
+}
+
+.type-button-A {
+    -fx-background-color: #3498db;
+}
+
+.type-button-B {
+    -fx-background-color: #2ecc71;
+}
+
+.type-button-C {
+    -fx-background-color: #e67e22;
+}
+
+.type-button-D {
+    -fx-background-color: #9b59b6;
+}
+
+/* Seat Type Colors */
+.seat-type-A {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+}
+
+.seat-type-B {
+    -fx-background-color: #2ecc71;
+    -fx-text-fill: white;
+}
+
+.seat-type-C {
+    -fx-background-color: #e67e22;
+    -fx-text-fill: white;
+}
+
+.seat-type-D {
+    -fx-background-color: #9b59b6;
+    -fx-text-fill: white;
 }
 
 /* Statistics */
@@ -143,4 +277,28 @@
     -fx-font-size: 14px;
     -fx-font-weight: bold;
     -fx-text-fill: #3F5F3C;
+}
+
+/* Legend */
+.legend-item {
+    -fx-padding: 5px 0;
+    -fx-font-size: 12px;
+}
+
+/* Alert Dialog Styles */
+.dialog-pane {
+    -fx-background-color: white;
+    -fx-border-color: #3F5F3C;
+    -fx-border-width: 2px;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: #3F5F3C;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
 }
