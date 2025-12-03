@@ -12,10 +12,9 @@ public class User {
         this.name = name;
         this.password = password;
         this.username = username;
-        this.contactInfo = new ContactInfo(email, phoneNum); // Composition - created with User
+        this.contactInfo = new ContactInfo(email, phoneNum); 
     }
 
-    // Getters and setters
     public String getUserID() {
         return userID;
     }
@@ -52,10 +51,6 @@ public class User {
         return contactInfo;
     }
 
-    // No setter for contactInfo to enforce composition
-    // ContactInfo can only be created through User constructor
-    
-    // Delegate methods to ContactInfo
     public String getEmail() {
         return contactInfo.getEmail();
     }
@@ -86,7 +81,6 @@ class ContactInfo {
         this.phoneNum = phoneNum;
     }
 
-    // Getters and setters
     public String getEmail() {
         return email;
     }

@@ -9,9 +9,7 @@ import java.util.List;
 public class NotificationCatalog {
     private static NotificationCatalog instance;
     
-    private NotificationCatalog() {
-        // Private constructor for singleton
-    }
+    private NotificationCatalog() {}
     
     public static synchronized NotificationCatalog getInstance() {
         if (instance == null) {
@@ -20,7 +18,6 @@ public class NotificationCatalog {
         return instance;
     }
     
-    // Add a notification
     public boolean addNotification(Notification notification) {
         String query = "INSERT INTO Notifications (UserID, Title, Message, Type, RelatedID) VALUES (?, ?, ?, ?, ?)";
         
@@ -46,9 +43,8 @@ public class NotificationCatalog {
         }
     }
     
-    // Get notifications for a user
     public List<Notification> getNotificationsByUser(String userID) {
-        return getNotificationsByUser(userID, 50); // Default limit 50
+        return getNotificationsByUser(userID, 50); 
     }
     
     public List<Notification> getNotificationsByUser(String userID, int limit) {
@@ -77,7 +73,6 @@ public class NotificationCatalog {
         return notifications;
     }
     
-    // Get unread notifications count for a user
     public int getUnreadCount(String userID) {
         String query = "SELECT COUNT(*) as count FROM Notifications WHERE UserID = ? AND IsRead = 0";
         
@@ -102,7 +97,6 @@ public class NotificationCatalog {
         return 0;
     }
     
-    // Mark notification as read
     public boolean markAsRead(int notificationID) {
         String query = "UPDATE Notifications SET IsRead = 1 WHERE NotificationID = ?";
         
@@ -122,7 +116,6 @@ public class NotificationCatalog {
         }
     }
     
-    // Mark all notifications as read for a user
     public boolean markAllAsRead(String userID) {
         String query = "UPDATE Notifications SET IsRead = 1 WHERE UserID = ?";
         
@@ -144,7 +137,6 @@ public class NotificationCatalog {
         }
     }
     
-    // Delete a notification
     public boolean deleteNotification(int notificationID) {
         String query = "DELETE FROM Notifications WHERE NotificationID = ?";
         
@@ -164,7 +156,6 @@ public class NotificationCatalog {
         }
     }
     
-    // Delete all notifications for a user
     public boolean deleteAllNotifications(String userID) {
         String query = "DELETE FROM Notifications WHERE UserID = ?";
         
@@ -186,7 +177,6 @@ public class NotificationCatalog {
         }
     }
     
-    // Get notifications by type
     public List<Notification> getNotificationsByType(String userID, String type) {
         List<Notification> notifications = new ArrayList<>();
         String query = "SELECT TOP 20 * FROM Notifications WHERE UserID = ? AND Type = ? ORDER BY CreatedAt DESC";
@@ -213,7 +203,6 @@ public class NotificationCatalog {
         return notifications;
     }
     
-    // Get recent notifications (last 7 days)
     public List<Notification> getRecentNotifications(String userID, int days) {
         List<Notification> notifications = new ArrayList<>();
         String query = "SELECT * FROM Notifications WHERE UserID = ? AND CreatedAt >= DATEADD(day, -?, GETDATE()) ORDER BY CreatedAt DESC";
@@ -240,7 +229,7 @@ public class NotificationCatalog {
         return notifications;
     }
     
-    // Map ResultSet to Notification object
+
     private Notification mapResultSetToNotification(ResultSet rs) throws SQLException {
         return new Notification(
             rs.getInt("NotificationID"),

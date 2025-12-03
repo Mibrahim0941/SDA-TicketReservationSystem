@@ -22,21 +22,18 @@ public class DashboardController implements Initializable {
     @FXML private Text welcomeTitle;
     @FXML private Text userGreeting;
     
-    // Sidebar elements
     @FXML private Label customerIdLabel;
     @FXML private Label memberSinceLabel;
     
-    // Navigation buttons
     @FXML private Button homeButton;
     @FXML private Button bookTicketsButton;
     @FXML private Button myBookingsButton;
     @FXML private Button historyButton;
     @FXML private Button profileButton;
-    @FXML private Button notificationsButton; // Changed from settingsButton
+    @FXML private Button notificationsButton;
     @FXML private Button supportButton;
     @FXML private Button logoutButton;
     
-    // Content area
     @FXML private VBox contentArea;
     @FXML private VBox homeContent;
     @FXML private ScrollPane contentScrollPane;
@@ -70,8 +67,6 @@ public class DashboardController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         System.out.println("DashboardController initialized");
         setupEventHandlers();
-        
-        // Configure scroll pane
         if (contentScrollPane != null) {
             contentScrollPane.setFitToWidth(true);
             contentScrollPane.setFitToHeight(true);
@@ -112,13 +107,12 @@ public class DashboardController implements Initializable {
     }
     
      private void setupEventHandlers() {
-        // Navigation button handlers
         if(homeButton != null) homeButton.setOnAction(e -> showHome());
         if(bookTicketsButton != null) bookTicketsButton.setOnAction(e -> showBookTickets());
         if(myBookingsButton != null) myBookingsButton.setOnAction(e -> showMyBookings());
         if(historyButton != null) historyButton.setOnAction(e -> showHistory());
         if(profileButton != null) profileButton.setOnAction(e -> showProfile());
-        if(notificationsButton != null) notificationsButton.setOnAction(e -> showNotifications()); // Changed
+        if(notificationsButton != null) notificationsButton.setOnAction(e -> showNotifications());
         if(supportButton != null) supportButton.setOnAction(e -> showSupport());
         if(logoutButton != null) logoutButton.setOnAction(e -> handleLogout());
     }
@@ -317,7 +311,6 @@ public class DashboardController implements Initializable {
         } catch (Exception e) {
             System.err.println("Error during logout: " + e.getMessage());
             e.printStackTrace();
-            // Fallback if reflection fails
             try {
                  FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/customer_login.fxml"));
                  Parent root = loader.load();

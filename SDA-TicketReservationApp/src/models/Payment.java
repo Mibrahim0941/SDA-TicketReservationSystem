@@ -4,8 +4,8 @@ import java.util.Date;
 
 public class Payment {
     private String paymentID;
-    private Booking booking; // Reference to booking instead of bookingID
-    private String status; // Pending, Completed, Failed, Refunded
+    private Booking booking; 
+    private String status; 
     private Date confirmedOn;
     private double amount;
     private String transactionID;
@@ -69,7 +69,6 @@ public class Payment {
         this.paymentMethod = paymentMethod;
     }
 
-    // Methods from UML diagram
     public double calculateTotal(double taxRate) {
         return amount * (1 + taxRate);
     }
@@ -89,7 +88,6 @@ public class Payment {
 
     public boolean applyPromoCodes(String promoCode) {
         System.out.println("Applying promo code: " + promoCode);
-        // Simulate promo code application - 10% discount for demo
         if ("WELCOME10".equals(promoCode)) {
             this.amount = this.amount * 0.9;
             return true;

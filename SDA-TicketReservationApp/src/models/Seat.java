@@ -16,8 +16,7 @@ public class Seat {
         this.price = price;
         this.availability = true;
     }
-    
-    // Getters and Setters
+
     public String getSeatNo() {
         return seatNo;
     }
@@ -50,7 +49,6 @@ public class Seat {
         this.price = price;
     }
     
-    // Methods from class diagram
     public boolean checkAvailability() {
         return availability;
     }

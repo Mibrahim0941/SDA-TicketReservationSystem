@@ -7,12 +7,9 @@ public class SupportQuery {
     private boolean status;
     private String queryID;
     private String response;
-    
-    // Associations
     private SupportStaff supportStaff;
     private Customer customer;
-    
-    // Constructors
+
     public SupportQuery() {
     }
     
@@ -22,10 +19,9 @@ public class SupportQuery {
         this.queryID = queryID;
         this.supportStaff = supportStaff;
         this.customer = customer;
-        this.status = false; // default status
+        this.status = false; 
     }
     
-    // Getters and Setters
     public String getText() {
         return text;
     }
@@ -82,13 +78,12 @@ public class SupportQuery {
         this.customer = customer;
     }
     
-    // Methods from schema
     public boolean matchID(String id) {
         return this.queryID.equals(id);
     }
     
     public void selfResponse(String response) {
         this.response = response;
-        this.status = true; // Mark as resolved when response is provided
+        this.status = true; 
     }
 }

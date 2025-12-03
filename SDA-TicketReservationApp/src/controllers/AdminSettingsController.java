@@ -39,8 +39,6 @@ public class AdminSettingsController {
     public static void show(Stage stage, String username, Admin admin) {
         try {
             System.out.println("Loading Admin Settings Page for user: " + username);
-            
-            // URL check karo pehle
             URL fxmlUrl = AdminSettingsController.class.getResource("/ui/admin-settings.fxml");
             if (fxmlUrl == null) {
                 System.err.println("CRITICAL ERROR: FXML file not found at /ui/admin-settings.fxml");
@@ -48,12 +46,8 @@ public class AdminSettingsController {
                 return;
             }
             System.out.println("FXML URL: " + fxmlUrl);
-            
-            // Loader create karo aur load karo
             FXMLLoader loader = new FXMLLoader(fxmlUrl);
-            Parent root = loader.load();  // Ye line 42 hogi
-            
-            // Ab controller mil jayega
+            Parent root = loader.load(); 
             AdminSettingsController controller = loader.getController();
             if (controller == null) {
                 System.err.println("WARNING: Controller not injected! Check FXML fx:controller attribute");
@@ -61,10 +55,7 @@ public class AdminSettingsController {
                 controller.setAdminData(username, admin);
             }
             
-            // Scene setup
             Scene scene = new Scene(root, 1200, 800);
-            
-            // CSS check karo
             URL cssUrl = AdminSettingsController.class.getResource("/ui/admin-settings.css");
             if (cssUrl != null) {
                 scene.getStylesheets().add(cssUrl.toExternalForm());
@@ -118,7 +109,6 @@ public class AdminSettingsController {
     }
 
     private void loadSettings() {
-        // Load current settings (in real app, these would come from database)
         systemNameField.setText("TicketGenie Booking System");
         adminEmailField.setText("admin@ticketgenie.com");
         emailNotificationsCheck.setSelected(true);
@@ -142,12 +132,9 @@ public class AdminSettingsController {
             return;
         }
         
-        // Save system settings logic would go here
         boolean emailNotifications = emailNotificationsCheck.isSelected();
         boolean autoBackup = autoBackupCheck.isSelected();
         boolean maintenanceMode = maintenanceModeCheck.isSelected();
-        
-        // Simulate saving to database
         System.out.println("Saving system settings:");
         System.out.println("System Name: " + systemName);
         System.out.println("Admin Email: " + adminEmail);
@@ -183,21 +170,16 @@ public class AdminSettingsController {
             return;
         }
         
-        // Password validation
         if (!isValidPassword(newPassword)) {
             showError("Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character");
             return;
         }
         
-        // Simulate password change logic
-        // In real application, this would verify current password and update in database
         System.out.println("Changing password for user: " + currentUsername);
         System.out.println("Current password verification...");
         System.out.println("New password: " + newPassword);
         
         showSuccess("Password changed successfully!");
-        
-        // Clear password fields
         currentPasswordField.clear();
         newPasswordField.clear();
         confirmPasswordField.clear();
@@ -208,12 +190,10 @@ public class AdminSettingsController {
     }
 
     private boolean isValidPassword(String password) {
-        // At least one uppercase, one lowercase, one digit, one special character, min 6 chars
         return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{6,}$");
     }
 
     private void handleReset() {
-        // Reset to default settings
         loadSettings();
         currentPasswordField.clear();
         newPasswordField.clear();

@@ -11,10 +11,9 @@ public class QueryCatalog {
 
     public QueryCatalog() {
         this.queries = new java.util.ArrayList<>();
-        loadQueriesFromDatabase(); // Only called once at startup
+        loadQueriesFromDatabase();
     }
 
-    // Load queries from database ONLY at startup
     private void loadQueriesFromDatabase() {
         String query = "SELECT " +
                   "q.QueryID, q.Text, q.AskedOn, q.Status, q.Response, " +
@@ -32,7 +31,6 @@ public class QueryCatalog {
                   "LEFT JOIN ContactInfo staff_contact ON staff.ContactID = staff_contact.ContactID " +
                   "ORDER BY q.AskedOn DESC";
 
-        // DON'T use try-with-resources for Connection - use regular try-catch
         try {
             java.sql.Connection conn = DatabaseConnection.getConnection();
             java.sql.PreparedStatement stmt = conn.prepareStatement(query);
@@ -45,7 +43,6 @@ public class QueryCatalog {
                 }
             }
             
-            // Close only statement and result set, NOT the connection
             rs.close();
             stmt.close();
             
@@ -53,20 +50,14 @@ public class QueryCatalog {
             
         } catch (java.sql.SQLException e) {
             System.err.println("Error loading queries from database: " + e.getMessage());
-            // Continue with empty list if DB fails
         }
     }
 
-    // Add query to both local list AND database (for persistence)
     public boolean addToCatalog(SupportQuery query) {
-        // First add to local list (in-memory)
         queries.add(query);
-        
-        // Then persist to database
         return persistQueryToDatabase(query);
     }
 
-    // Database persistence method (only called when adding/updating)
     private boolean persistQueryToDatabase(SupportQuery query) {
         java.sql.Connection conn = null;
         try {
@@ -83,7 +74,6 @@ public class QueryCatalog {
             stmt.setBoolean(4, query.isStatus());
             stmt.setString(5, query.getResponse());
             
-            // Set CustomerID and SupportStaffID if associations exist
             if (query.getCustomer() != null) {
                 stmt.setString(6, query.getCustomer().getUserID());
             } else {
@@ -117,7 +107,6 @@ public class QueryCatalog {
                 }
             }
             System.err.println("Error persisting query to database: " + e.getMessage());
-            // Query is still in local list even if DB fails
             return false;
         } finally {
             if (conn != null) {
@@ -130,7 +119,6 @@ public class QueryCatalog {
         }
     }
 
-    // Helper method to create SupportQuery from ResultSet
     private SupportQuery createQueryFromResultSet(java.sql.ResultSet rs) throws java.sql.SQLException {
         try {
             String queryID = rs.getString("QueryID");
@@ -139,35 +127,32 @@ public class QueryCatalog {
             boolean status = rs.getBoolean("Status");
             String response = rs.getString("Response");
             
-            // Create Customer object if customer data exists
             Customer customer = null;
             String customerID = rs.getString("CustomerID");
             if (customerID != null && !rs.wasNull()) {
                 customer = new Customer(
                     customerID,
                     rs.getString("CustomerName"),
-                    "", // password - not stored in query table
-                    "", // username - not stored in query table
+                    "", 
+                    "", 
                     rs.getString("CustomerEmail"),
                     rs.getString("CustomerPhone")
                 );
             }
             
-            // Create SupportStaff object if staff data exists
             SupportStaff supportStaff = null;
             String staffID = rs.getString("SupportStaffID");
             if (staffID != null && !rs.wasNull()) {
                 supportStaff = new SupportStaff(
                     staffID,
                     rs.getString("StaffName"),
-                    "", // password - not stored in query table
-                    "", // username - not stored in query table
+                    "", 
+                    "",
                     rs.getString("StaffEmail"),
                     rs.getString("StaffPhone")
                 );
             }
             
-            // Create SupportQuery using your exact constructor
             SupportQuery query = new SupportQuery(text, askedOn, queryID, supportStaff, customer);
             query.setStatus(status);
             query.setResponse(response);
@@ -180,7 +165,7 @@ public class QueryCatalog {
         }
     }
 
-    // ALL these methods use ONLY the local list - no database calls!
+    
     public SupportQuery findQuery(String queryID) {
         for (SupportQuery query : queries) {
             if (query.matchID(queryID)) {
@@ -191,25 +176,20 @@ public class QueryCatalog {
     }
 
     public SupportQuery supportQuery() {
-        // This matches your schema method - creates a new empty SupportQuery
         return new SupportQuery();
     }
 
-    // Method to update query response and status
     public boolean updateQueryResponse(String queryID, String response) {
         SupportQuery query = findQuery(queryID);
         if (query != null) {
-            query.selfResponse(response); // This also sets status to true
+            query.selfResponse(response); 
             return updateQueryInDatabase(query);
         }
         return false;
     }
 
-    // Update query in database
     private boolean updateQueryInDatabase(SupportQuery query) {
         String updateQuery = "UPDATE SupportQueries SET Text = ?, Status = ?, Response = ?, SupportStaffID = ? WHERE QueryID = ?";
-        
-        // DON'T use try-with-resources for Connection
         try {
             java.sql.Connection conn = DatabaseConnection.getConnection();
             java.sql.PreparedStatement stmt = conn.prepareStatement(updateQuery);
@@ -295,12 +275,10 @@ public class QueryCatalog {
         return count;
     }
 
-    // Remove query from catalog
     public boolean removeQuery(String queryID) {
         SupportQuery query = findQuery(queryID);
         if (query != null) {
             queries.remove(query);
-            // Optional: Also remove from database if needed
             return removeQueryFromDatabase(queryID);
         }
         return false;
@@ -325,7 +303,6 @@ public class QueryCatalog {
         }
     }
 
-    // Assign support staff to a query
     public boolean assignSupportStaff(String queryID, SupportStaff staff) {
         SupportQuery query = findQuery(queryID);
         if (query != null) {
@@ -339,7 +316,6 @@ public class QueryCatalog {
         return updateQueryInDatabase(query);
     }
 
-    // Get unassigned queries (queries without support staff)
     public java.util.ArrayList<SupportQuery> getUnassignedQueries() {
         java.util.ArrayList<SupportQuery> result = new java.util.ArrayList<>();
         for (SupportQuery query : queries) {

@@ -44,12 +44,10 @@ public class ManageSeatsController {
     @FXML private Button refreshButton;
     @FXML private Button backButton;
     
-    // New UI elements for seat type management
     @FXML private HBox seatTypeButtonsContainer;
     @FXML private VBox seatTypeManagementPane;
     @FXML private Label seatTypeInfoLabel;
     
-    // Seat type percentage controls
     @FXML private TextField typeAPercentage;
     @FXML private TextField typeBPercentage;
     @FXML private TextField typeCPercentage;
@@ -173,18 +171,14 @@ public class ManageSeatsController {
     }
 
     private void initializeSeatTypeManagement() {
-        // Initialize seat type percentage fields with default values
         typeAPercentage.setText("0.0");
         typeBPercentage.setText("10.0");
         typeCPercentage.setText("20.0");
         typeDPercentage.setText("30.0");
-        
-        // Create seat type buttons
         createSeatTypeButtons();
     }
 
     private void initializeSeatTypePercentages() {
-        // Default percentages for each seat type
         seatTypePercentages.put("A", 0.0);    // Standard
         seatTypePercentages.put("B", 10.0);   // Premium (+10%)
         seatTypePercentages.put("C", 20.0);   // Business (+20%)
@@ -192,14 +186,11 @@ public class ManageSeatsController {
     }
 
     private void createSeatTypeButtons() {
-        if (seatTypeButtonsContainer == null) return;
-        
+        if (seatTypeButtonsContainer == null) return; 
         seatTypeButtonsContainer.getChildren().clear();
-        
         String[] seatTypes = {"A", "B", "C", "D"};
         String[] seatTypeNames = {"Standard", "Premium", "Business", "First Class"};
         String[] colors = {"#3498db", "#2ecc71", "#e67e22", "#9b59b6"};
-        
         for (int i = 0; i < seatTypes.length; i++) {
             String seatType = seatTypes[i];
             String seatTypeName = seatTypeNames[i];
@@ -276,8 +267,7 @@ public class ManageSeatsController {
                 if (seatDetailsArea != null) {
                     seatDetailsArea.clear();
                 }
-                
-                // Reset seat type info
+
                 if (seatTypeInfoLabel != null) {
                     seatTypeInfoLabel.setText("Select a seat type to view specific seats");
                     seatTypeInfoLabel.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 14px;");
@@ -308,9 +298,6 @@ public class ManageSeatsController {
         
         for (Seat seat : currentSeats) {
             if (seat.getSeatType().equals(seatType)) {
-                // Create seat button for this seat type
-                // Note: We need seat ID from database - this requires a different approach
-                // For now, we'll create buttons without seat ID
                 Button seatButton = new Button(seat.getSeatNo());
                 
                 String baseStyle = "-fx-font-weight: bold; -fx-font-size: 10px; -fx-min-width: 35px; -fx-min-height: 35px; " +
@@ -415,11 +402,6 @@ public class ManageSeatsController {
             
             if (rs.next()) {
                 double typePercentage = rs.getDouble("TypePercentage");
-                
-                // Load percentages from database or use defaults
-                // You might need a separate table for seat type percentages
-                // For now, we'll use the UI fields
-                
             }
             
         } catch (SQLException e) {
@@ -459,8 +441,6 @@ public class ManageSeatsController {
             double typeB = Double.parseDouble(typeBPercentage.getText());
             double typeC = Double.parseDouble(typeCPercentage.getText());
             double typeD = Double.parseDouble(typeDPercentage.getText());
-            
-            // Validate percentages
             if (typeA < 0 || typeB < 0 || typeC < 0 || typeD < 0) {
                 showError("Percentages cannot be negative");
                 return;
@@ -472,8 +452,6 @@ public class ManageSeatsController {
             seatTypePercentages.put("D", typeD);
             
             showSuccess("Seat type percentages updated successfully!");
-            
-            // Update prices for existing seats if schedule is selected
             Schedule selectedSchedule = scheduleComboBox.getValue();
             if (selectedSchedule != null) {
                 updateSeatPrices(selectedSchedule.getScheduleID());
@@ -492,8 +470,6 @@ public class ManageSeatsController {
         }
         
         double basePrice = selectedRoute.getBasePrice();
-        
-        // Update prices for each seat type
         for (Map.Entry<String, Double> entry : seatTypePercentages.entrySet()) {
             String seatType = entry.getKey();
             double percentage = entry.getValue();
@@ -521,7 +497,6 @@ public class ManageSeatsController {
             }
         }
         
-        // Refresh the view
         loadSeatsFromDatabase(scheduleID);
         showSuccess("Seat prices updated successfully!");
     }
@@ -580,10 +555,9 @@ public class ManageSeatsController {
     }
 
     private boolean createSeatsForSchedule(String scheduleID, double basePrice) {
-        // Define seat configuration (you can modify this as needed)
         String[] rows = {"A", "B", "C", "D", "E", "F", "G", "H"};
         int seatsPerRow = 4;
-        String[] seatTypes = {"A", "B", "C", "D"}; // Rotate seat types
+        String[] seatTypes = {"A", "B", "C", "D"};
         
         String insertSql = "INSERT INTO Seat (ScheduleID, SeatNumber, SeatType, Price, Availability) VALUES (?, ?, ?, ?, 1)";
         
@@ -599,8 +573,6 @@ public class ManageSeatsController {
                 for (int seatNum = 1; seatNum <= seatsPerRow; seatNum++) {
                     String seatNumber = row + seatNum;
                     String seatType = seatTypes[seatTypeIndex % seatTypes.length];
-                    
-                    // Calculate price based on seat type percentage
                     double percentage = seatTypePercentages.getOrDefault(seatType, 0.0);
                     double seatPrice = basePrice + (basePrice * percentage / 100);
                     
@@ -635,8 +607,6 @@ public class ManageSeatsController {
             stats.append("Total Seats: ").append(totalSeats).append("\n");
             stats.append("Available Seats: ").append(availableSeats).append(" (").append(String.format("%.1f", availabilityRate)).append("%)\n");
             stats.append("Occupied Seats: ").append(occupiedSeats).append(" (").append(String.format("%.1f", occupancyRate)).append("%)\n\n");
-            
-            // Add seat type statistics
             Map<String, Integer> typeCounts = new HashMap<>();
             Map<String, Integer> typeAvailable = new HashMap<>();
             
@@ -696,8 +666,6 @@ public class ManageSeatsController {
             routeComboBox.setValue(null);
             scheduleComboBox.setValue(null);
             scheduleComboBox.getItems().clear();
-            
-            // Reset seat type info
             if (seatTypeInfoLabel != null) {
                 seatTypeInfoLabel.setText("Select a seat type to view specific seats");
                 seatTypeInfoLabel.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 14px;");

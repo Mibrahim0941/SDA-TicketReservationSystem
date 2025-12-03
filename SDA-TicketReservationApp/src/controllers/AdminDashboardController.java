@@ -16,7 +16,14 @@ import models.Admin;
 
 import java.io.IOException;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ResourceBundle;
+
+import config.DatabaseConfig;
 
 public class AdminDashboardController implements Initializable {
 
@@ -139,24 +146,100 @@ public class AdminDashboardController implements Initializable {
         }
     }
 
-    private void loadStatistics() 
-    {
+    private void loadStatistics() {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        
         try {
             catalogs.RouteCatalog routeCatalog = catalogs.RouteCatalog.getInstance();
-            catalogs.PromoCodeCatalog promoCatalog = new catalogs.PromoCodeCatalog();
-            catalogs.PolicyCatalog policyCatalog = new catalogs.PolicyCatalog();
+            int totalRoutes = routeCatalog.getAllRoutes().size();
+            if (totalRoutesLabel != null) totalRoutesLabel.setText(String.valueOf(totalRoutes));
+            conn = DriverManager.getConnection(
+                DatabaseConfig.getDbUrl(), 
+                DatabaseConfig.getDbUser(), 
+                DatabaseConfig.getDbPassword()
+            );
+            String activeSchedulesQuery = 
+                "SELECT COUNT(*) as active_schedules FROM Schedule " +
+                "WHERE Date >= CAST(GETDATE() AS DATE) AND IsActive = 1";
             
+            stmt = conn.prepareStatement(activeSchedulesQuery);
+            rs = stmt.executeQuery();
+            int activeSchedules = 0;
+            if (rs.next()) {
+                activeSchedules = rs.getInt("active_schedules");
+            }
+            if (activeSchedulesLabel != null) activeSchedulesLabel.setText(String.valueOf(activeSchedules));
+            rs.close();
+            stmt.close();
+            String totalBookingsQuery = 
+                "SELECT COUNT(*) as total_bookings FROM Booking " +
+                "WHERE Status = 'Confirmed'";
+            
+            stmt = conn.prepareStatement(totalBookingsQuery);
+            rs = stmt.executeQuery();
+            int totalBookings = 0;
+            if (rs.next()) {
+                totalBookings = rs.getInt("total_bookings");
+            }
+            if (totalBookingsLabel != null) totalBookingsLabel.setText(formatNumber(totalBookings));
+            rs.close();
+            stmt.close();
+            String revenueQuery = 
+                "SELECT COALESCE(SUM(p.Amount), 0) as total_revenue " +
+                "FROM Payment p " +
+                "INNER JOIN Booking b ON p.PaymentID = b.PaymentID " +
+                "WHERE p.PaymentStatus = 'Completed' AND b.Status = 'Confirmed'";
+            
+            stmt = conn.prepareStatement(revenueQuery);
+            rs = stmt.executeQuery();
+            double totalRevenue = 0;
+            if (rs.next()) {
+                totalRevenue = rs.getDouble("total_revenue");
+            }
+            if (revenueLabel != null) revenueLabel.setText("PKR " + formatCurrency(totalRevenue));
+        } catch (SQLException e) {
+            System.err.println("Database error loading statistics: " + e.getMessage());
+            e.printStackTrace();
+            catalogs.RouteCatalog routeCatalog = catalogs.RouteCatalog.getInstance();
             if (totalRoutesLabel != null) totalRoutesLabel.setText(String.valueOf(routeCatalog.getAllRoutes().size()));
-            if (activeSchedulesLabel != null) activeSchedulesLabel.setText("48");
-            if (totalBookingsLabel != null) totalBookingsLabel.setText("1,234"); 
-            if (revenueLabel != null) revenueLabel.setText("PKR 45,678"); s
+            if (activeSchedulesLabel != null) activeSchedulesLabel.setText("0");
+            if (totalBookingsLabel != null) totalBookingsLabel.setText("0");
+            if (revenueLabel != null) revenueLabel.setText("PKR 0.00");
             
         } catch (Exception e) {
             System.err.println("Error loading statistics: " + e.getMessage());
-            if (totalRoutesLabel != null) totalRoutesLabel.setText("25");
-            if (activeSchedulesLabel != null) activeSchedulesLabel.setText("48");
-            if (totalBookingsLabel != null) totalBookingsLabel.setText("1,234");
-            if (revenueLabel != null) revenueLabel.setText("PKR 45,678");
+            e.printStackTrace();
+            if (totalRoutesLabel != null) totalRoutesLabel.setText("N/A");
+            if (activeSchedulesLabel != null) activeSchedulesLabel.setText("N/A");
+            if (totalBookingsLabel != null) totalBookingsLabel.setText("N/A");
+            if (revenueLabel != null) revenueLabel.setText("PKR N/A");
+            
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private String formatNumber(int number) {
+        try {
+            return String.format("%,d", number);
+        } catch (Exception e) {
+            return String.valueOf(number);
+        }
+    }
+
+    private String formatCurrency(double amount) {
+        try {
+            return String.format("%,.2f", amount);
+        } catch (Exception e) {
+            return String.format("%.2f", amount);
         }
     }
 
@@ -260,4 +343,5 @@ public class AdminDashboardController implements Initializable {
             alert.showAndWait();
         });
     }
+    
 }

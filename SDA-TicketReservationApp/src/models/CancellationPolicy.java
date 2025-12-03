@@ -15,7 +15,6 @@ public class CancellationPolicy {
         this.description = description;
     }
     
-    // Getters and Setters
     public String getPolicyID() {
         return policyID;
     }
@@ -48,7 +47,6 @@ public class CancellationPolicy {
         this.description = description;
     }
     
-    // Methods from class diagram
     public boolean match(int hoursBeforeDeparture) {
         return hoursBeforeDeparture >= timeBeforeDeparture;
     }

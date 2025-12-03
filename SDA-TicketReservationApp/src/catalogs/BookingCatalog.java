@@ -77,21 +77,15 @@ public class BookingCatalog {
         try {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
-            
-            // First, ensure reservation exists
             Reservation reservation = booking.getReservation();
             if (reservation == null) {
                 System.err.println("Cannot create booking without reservation");
                 return false;
             }
-            
-            // Insert or update reservation first
             if (!persistReservation(reservation, conn)) {
                 conn.rollback();
                 return false;
             }
-            
-            // Check if booking already exists
             String checkQuery = "SELECT COUNT(*) FROM Booking WHERE BookingID = ?";
             java.sql.PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
             checkStmt.setString(1, booking.getBookingID());
@@ -100,8 +94,6 @@ public class BookingCatalog {
             boolean exists = rs.getInt(1) > 0;
             checkStmt.close();
             rs.close();
-            
-            // Insert or update payment if exists
             if (booking.hasPayment()) {
                 if (!persistPayment(booking.getPayment(), conn)) {
                     conn.rollback();
@@ -183,8 +175,8 @@ public class BookingCatalog {
         }
     }
 
-    private boolean persistReservation(Reservation reservation, java.sql.Connection conn) throws java.sql.SQLException {
-        // Check if reservation exists
+    private boolean persistReservation(Reservation reservation, java.sql.Connection conn) throws java.sql.SQLException 
+    {
         String checkQuery = "SELECT COUNT(*) FROM Reservation WHERE ReservationID = ?";
         java.sql.PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
         checkStmt.setString(1, reservation.getReservationID());
@@ -219,8 +211,8 @@ public class BookingCatalog {
         return rowsAffected > 0;
     }
 
-    private boolean persistPayment(Payment payment, java.sql.Connection conn) throws java.sql.SQLException {
-        // Check if payment exists
+    private boolean persistPayment(Payment payment, java.sql.Connection conn) throws java.sql.SQLException 
+    {
         String checkQuery = "SELECT COUNT(*) FROM Payment WHERE PaymentID = ?";
         java.sql.PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
         checkStmt.setString(1, payment.getPaymentID());
@@ -270,18 +262,15 @@ public class BookingCatalog {
             Date bookingDateTime = new Date(rs.getTimestamp("BookingDateTime").getTime());
             double totalAmount = rs.getDouble("TotalAmount");
             String status = rs.getString("Status");
-            
-            // Create Customer object
             Customer customer = new Customer(
                 customerID,
                 rs.getString("CustomerName"),
-                "", // password
-                "", // username
+                "", 
+                "", 
                 rs.getString("CustomerEmail"),
                 rs.getString("CustomerPhone")
             );
             
-            // Create Schedule object
             Schedule schedule = new Schedule(
                 rs.getString("ScheduleID"),
                 rs.getDate("ScheduleDate").toLocalDate(),
@@ -290,7 +279,6 @@ public class BookingCatalog {
                 rs.getString("ScheduleClass")
             );
             
-            // Create Route object
             Route route = new Route(
                 rs.getString("RouteID"),
                 rs.getString("Source"),
@@ -298,20 +286,17 @@ public class BookingCatalog {
                 rs.getDouble("BasePrice")
             );
             
-            // Create Reservation object
             Reservation reservation = new Reservation(
                 rs.getString("ReservationID"),
                 schedule,
                 route,
-                rs.getString("ScheduleClass") // Using schedule class as seat class
+                rs.getString("ScheduleClass") 
             );
             
-            // Create Booking object
             Booking booking = new Booking(bookingID, customerID, reservation, bookingDateTime);
             booking.setStatus(status);
             booking.setTotalAmount(totalAmount);
             
-            // Create Payment if exists
             String paymentID = rs.getString("PaymentID");
             if (paymentID != null && !rs.wasNull()) {
                 Payment payment = new Payment(
@@ -367,8 +352,6 @@ public class BookingCatalog {
         try {
             java.sql.Connection conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
-            
-            // Update payment if exists
             if (booking.hasPayment()) {
                 if (!updatePaymentInDatabase(booking.getPayment(), conn)) {
                     conn.rollback();
@@ -548,11 +531,8 @@ public class BookingCatalog {
         try {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
-            
-            // First get booking to check if it has payment
             Booking booking = findBooking(bookingID);
             if (booking != null && booking.hasPayment()) {
-                // Remove payment first
                 String deletePaymentQuery = "DELETE FROM Payment WHERE PaymentID = ?";
                 java.sql.PreparedStatement paymentStmt = conn.prepareStatement(deletePaymentQuery);
                 paymentStmt.setString(1, booking.getPayment().getPaymentID());
@@ -560,7 +540,6 @@ public class BookingCatalog {
                 paymentStmt.close();
             }
             
-            // Remove booking
             String deleteQuery = "DELETE FROM Booking WHERE BookingID = ?";
             java.sql.PreparedStatement stmt = conn.prepareStatement(deleteQuery);
             stmt.setString(1, bookingID);

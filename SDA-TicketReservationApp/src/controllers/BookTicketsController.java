@@ -12,7 +12,6 @@ import config.DatabaseConfig;
 import models.*;
 import services.NotificationService;
 import database.DatabaseConnection;
-import services.NotificationService;
 import java.net.URL;
 import java.sql.*;
 import java.time.LocalDate;
@@ -21,42 +20,35 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class BookTicketsController implements Initializable {
-
-    // --- FXML Injection ---
     @FXML private Text pageTitle;
     @FXML private Label subTitle;
     @FXML private Button backButton;
 
-    // Search
     @FXML private HBox searchLayer;
     @FXML private TextField searchSource;
     @FXML private TextField searchDestination;
     @FXML private Button searchButton;
     @FXML private Button clearButton;
 
-    // Layers
     @FXML private ScrollPane routeLayer;
     @FXML private ScrollPane scheduleLayer;
     @FXML private ScrollPane seatLayer;
 
-    // Containers
     @FXML private VBox routesContainer;
     @FXML private VBox schedulesContainer;
     @FXML private VBox seatsContainer;
 
-    // Summary
     @FXML private VBox summaryLayer;
     @FXML private Text lblSelectedSeats;
     @FXML private Text lblTotalPrice;
     @FXML private Button btnConfirm;
 
-    // --- Data ---
     private Customer currentCustomer;
     private RouteCatalog routeCatalog;
     private BookingCatalog bookingCatalog;
     private Route selectedRoute;
     private Schedule selectedSchedule;
-    private Set<Seat> selectedSeats = new HashSet<>(); // Changed from String to Seat objects
+    private Set<Seat> selectedSeats = new HashSet<>(); 
     private Map<String, Seat> seatMap = new HashMap<>();
     
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("MMM dd, yyyy");
@@ -70,7 +62,6 @@ public class BookTicketsController implements Initializable {
         loadRoutes();
     }
 
-    // --- Setters ---
     public void setUserData(String username, Customer customer) {
         this.currentCustomer = customer;
     }
@@ -89,10 +80,6 @@ public class BookTicketsController implements Initializable {
         if (backButton != null) backButton.setOnAction(e -> handleBack());
         if (btnConfirm != null) btnConfirm.setOnAction(e -> handleBooking());
     }
-
-    // =========================================================
-    // LAYER 1: ROUTES
-    // =========================================================
 
     private void loadRoutes() {
         showLayer("ROUTES");
@@ -142,10 +129,6 @@ public class BookTicketsController implements Initializable {
         }
     }
 
-    // =========================================================
-    // LAYER 2: SCHEDULES
-    // =========================================================
-
     private void showSchedules(Route route) {
         this.selectedRoute = route;
         showLayer("SCHEDULES");
@@ -186,10 +169,6 @@ public class BookTicketsController implements Initializable {
         }
     }
 
-    // =========================================================
-    // LAYER 3: SEATS
-    // =========================================================
-
     private void showSeats(Schedule schedule) {
         this.selectedSchedule = schedule;
         this.selectedSeats.clear();
@@ -199,16 +178,11 @@ public class BookTicketsController implements Initializable {
         
         subTitle.setText("Select Seats (" + schedule.getScheduleClass() + ")");
         seatsContainer.getChildren().clear();
-        
-        // ALWAYS load fresh seat data from database, don't check if empty
         loadSeatsFromDB(schedule);
-        
-        // Clear the map and repopulate with fresh data
         seatMap.clear();
         for (Seat seat : schedule.getSeats()) {
             seatMap.put(seat.getSeatNo(), seat);
         }
-        
         renderBusLayout(schedule.getSeats());
     }
 
@@ -225,8 +199,6 @@ public class BookTicketsController implements Initializable {
         Label front = new Label("🚌 FRONT");
         front.setStyle("-fx-text-fill: #AAA; -fx-font-weight: bold; -fx-padding: 0 0 10 0; -fx-border-style: dashed; -fx-border-color: #CCC; -fx-border-width: 0 0 1 0;");
         busLayout.getChildren().add(front);
-
-        // Group Seats by Row Char
         Map<Character, List<Seat>> rows = seats.stream()
             .collect(Collectors.groupingBy(s -> s.getSeatNo().charAt(0)));
         
@@ -279,13 +251,10 @@ public class BookTicketsController implements Initializable {
             lblTotalPrice.setText("PKR 0.00");
             btnConfirm.setDisable(true);
         } else {
-            // Create comma-separated list of seat numbers
             String seatNumbers = selectedSeats.stream()
                 .map(Seat::getSeatNo)
                 .collect(Collectors.joining(", "));
             lblSelectedSeats.setText(seatNumbers);
-            
-            // Calculate total based on selected seats
             double total = selectedSeats.stream()
                 .mapToDouble(Seat::getPrice)
                 .sum();
@@ -294,10 +263,6 @@ public class BookTicketsController implements Initializable {
             btnConfirm.setDisable(false);
         }
     }
-
-    // =========================================================
-    // STATE MANAGEMENT
-    // =========================================================
 
     private void showLayer(String layer) {
         routeLayer.setVisible(false);
@@ -338,10 +303,6 @@ public class BookTicketsController implements Initializable {
         }
     }
 
-    // =========================================================
-    // DB UTILS
-    // =========================================================
-
     private void loadSeatsFromDB(Schedule schedule) {
         String query = "SELECT * FROM Seat WHERE ScheduleID = ? ORDER BY SeatNumber";
         List<Seat> dbSeats = new ArrayList<>();
@@ -353,8 +314,6 @@ public class BookTicketsController implements Initializable {
             
             stmt.setString(1, schedule.getScheduleID());
             ResultSet rs = stmt.executeQuery();
-            
-            // Clear existing seats first
             schedule.getSeats().clear();
             
             while(rs.next()) {
@@ -364,8 +323,6 @@ public class BookTicketsController implements Initializable {
                 s.setAvailability(rs.getBoolean("Availability"));
                 dbSeats.add(s);
             }
-            
-            // Set fresh seat list from database
             schedule.setSeats((ArrayList<Seat>) dbSeats);
             
         } catch (Exception e) {
@@ -386,16 +343,9 @@ public class BookTicketsController implements Initializable {
 
    private boolean saveBookingUsingCatalog() {
         try {
-            // 1. Generate unique IDs
             String reservationID = "RES" + System.currentTimeMillis();
             String bookingID = "B" + System.currentTimeMillis();
-            
-            // 2. Calculate total amount based on selected seats
-            double totalAmount = selectedSeats.stream()
-                .mapToDouble(Seat::getPrice)
-                .sum();
-            
-            // 3. Create Reservation
+            double totalAmount = selectedSeats.stream().mapToDouble(Seat::getPrice).sum();
             Reservation reservation = new Reservation(
                 reservationID,
                 selectedSchedule,
@@ -403,11 +353,8 @@ public class BookTicketsController implements Initializable {
                 selectedSchedule.getScheduleClass()
             );
             
-            // 4. Add selected Seat objects to reservation (not just seat numbers)
             List<Seat> selectedSeatList = new ArrayList<>(selectedSeats);
             reservation.selectSeats(selectedSeatList);
-            
-            // 5. Create Booking WITHOUT payment initially
             Booking booking = new Booking(
                 bookingID,
                 currentCustomer.getUserID(),
@@ -415,55 +362,37 @@ public class BookTicketsController implements Initializable {
                 new java.util.Date()
             );
             booking.setTotalAmount(totalAmount);
-            booking.setStatus("Confirmed");          
-            
-            // 6. Save to database using BookingCatalog
+            booking.setStatus("Confirmed");    
             boolean bookingSaved = bookingCatalog.addBooking(booking);
             
             if (bookingSaved) {
-                // 7. Update seat availability in database
                 boolean seatsUpdated = updateSeatAvailability(reservationID, selectedSeatList);
                 
                 if (seatsUpdated) {
-                // --- Show Success Alert (Pretty Theme) ---
-                
-                // 1. Create Alert and clean up default styling
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Booking Confirmed");
                 alert.setHeaderText(null);
                 alert.setGraphic(null);
-
-                // 2. Connect to your existing CSS
                 DialogPane dialogPane = alert.getDialogPane();
-                // MAKE SURE THIS PATH IS CORRECT FOR THE CONTROLLER THIS CODE IS IN
                 dialogPane.getStylesheets().add(getClass().getResource("/ui/MyBookings.css").toExternalForm());
                 dialogPane.getStyleClass().add("ticket-dialog");
-
-                // 3. Build Custom Content Card
                 VBox card = new VBox(15);
-                card.getStyleClass().add("ticket-card"); // Reuses the white card style with shadow
+                card.getStyleClass().add("ticket-card");
                 card.setMinWidth(400);
                 card.setAlignment(javafx.geometry.Pos.TOP_CENTER);
-
-                // Header Section
                 Label titleLbl = new Label("BOOKING SUCCESSFUL!");
-                // Matching the dark green header style
                 titleLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #3F5F3C; -fx-font-size: 18px;");
 
                 Separator sep = new Separator();
                 sep.setStyle("-fx-border-style: dashed; -fx-border-width: 1px 0 0 0; -fx-border-color: #ccc; -fx-background-color: transparent;");
 
-                // Emphasize Booking ID
                 Label bookingIdLbl = new Label("Booking ID: #" + bookingID);
-                // Matching the large emphasis text style
                 bookingIdLbl.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
 
-                // Details Grid
                 GridPane grid = new GridPane();
                 grid.setHgap(30); grid.setVgap(15);
                 grid.setAlignment(javafx.geometry.Pos.CENTER);
 
-                // Inline helper for adding styled grid rows
                 java.util.function.BiConsumer<String, String> addRow = (label, value) -> {
                     int row = grid.getRowCount();
                     VBox box = new VBox(2);
@@ -477,17 +406,12 @@ public class BookTicketsController implements Initializable {
                 addRow.accept("Total Amount:", "PKR " + String.format("%.2f", totalAmount));
                 addRow.accept("Selected Seats:", getSeatNumbersAsString(selectedSeatList));
 
-                // Instruction Message
                 Label instructionLbl = new Label("Your booking is confirmed but payment is pending.\nPlease complete payment from the 'My Bookings' page.");
                 instructionLbl.setWrapText(true);
-                // Grey text, centered, with top padding
                 instructionLbl.setStyle("-fx-text-fill: #555; -fx-font-size: 13px; -fx-text-alignment: center; -fx-padding: 15 0 0 0;");
 
-                // Assemble Card
                 card.getChildren().addAll(titleLbl, sep, bookingIdLbl, grid, instructionLbl);
                 dialogPane.setContent(card);
-
-                // Style the OK button to match the green theme
                 Button okBtn = (Button) dialogPane.lookupButton(ButtonType.OK);
                 okBtn.setStyle("-fx-background-color: #3F5F3C; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 5px;");
 
@@ -507,7 +431,6 @@ public class BookTicketsController implements Initializable {
                 System.out.println("Booking saved successfully (payment pending): " + bookingID);
                 return true;
             } else {
-                    // If seat update failed, rollback booking
                     bookingCatalog.cancelBooking(bookingID);
                     rollbackSeatAvailability(selectedSeatList);
                     Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -518,7 +441,6 @@ public class BookTicketsController implements Initializable {
                     return false;
                 }
             } else {
-                // If booking failed
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Booking Failed");
                 alert.setHeaderText("Failed to create booking");
@@ -547,8 +469,6 @@ public class BookTicketsController implements Initializable {
         try {
             conn = DatabaseConnection.getConnection();
             int updatedCount = 0;
-            
-            // Use batch update for efficiency
             try (PreparedStatement ps = conn.prepareStatement(updateSeatQuery)) {
                 for (Seat seat : seats) {
                     ps.setString(1, reservationID);
@@ -560,23 +480,17 @@ public class BookTicketsController implements Initializable {
                 int[] results = ps.executeBatch();
                 updatedCount = Arrays.stream(results).sum();
             }
-            
-            // Check if all seats were updated (means they were available)
             return updatedCount == seats.size();
             
         } catch (Exception e) {
             System.err.println("Error updating seat availability: " + e.getMessage());
             e.printStackTrace();
             return false;
-        } finally {
-            // DO NOT close the connection here if it's a shared connection
-            // Let DatabaseConnection manage it
-        }
+        } 
     }
 
     private void rollbackSeatAvailability(List<Seat> seats) {
         String updateSeatQuery = "UPDATE Seat SET Availability = 1, ReservationID = NULL WHERE SeatNumber = ? AND ScheduleID = ?";
-        
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
@@ -592,12 +506,9 @@ public class BookTicketsController implements Initializable {
         } catch (Exception e) {
             System.err.println("Error rolling back seat availability: " + e.getMessage());
             e.printStackTrace();
-        } finally {
-            // DO NOT close the connection here
-        }
+        } 
     }
 
-    // Optional: Get customer's booking history
     public List<Booking> getCustomerBookings() {
         if (currentCustomer != null) {
             return bookingCatalog.getBookingsByCustomer(currentCustomer.getUserID());
@@ -605,23 +516,21 @@ public class BookTicketsController implements Initializable {
         return new ArrayList<>();
     }
 
-    // Optional: Check if seats are still available
-    private boolean validateSeatAvailability() {
-        for (Seat seat : selectedSeats) {
-            if (!seat.isAvailability()) {
-                return false;
-            }
-        }
-        return true;
-    }
+    // private boolean validateSeatAvailability() {
+    //     for (Seat seat : selectedSeats) {
+    //         if (!seat.isAvailability()) {
+    //             return false;
+    //         }
+    //     }
+    //     return true;
+    // }
 
-    // Optional: Clear selection and refresh
-    private void clearSelection() {
-        selectedSeats.clear();
-        updateSummary();
-        // Refresh seat view
-        if (selectedSchedule != null) {
-            showSeats(selectedSchedule);
-        }
-    }
+    // private void clearSelection() {
+    //     selectedSeats.clear();
+    //     updateSummary();
+    //     // Refresh seat view
+    //     if (selectedSchedule != null) {
+    //         showSeats(selectedSchedule);
+    //     }
+    // }
 }

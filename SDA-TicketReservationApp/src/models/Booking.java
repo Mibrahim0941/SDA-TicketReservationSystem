@@ -6,7 +6,7 @@ public class Booking {
     private String customerID;
     private Reservation reservation;
     private Date bookingDateTime;
-    private Payment payment; // Payment reference - can be null if not paid
+    private Payment payment;
     private String status; // Confirmed, Cancelled, Completed
     private double totalAmount;
 
@@ -15,12 +15,11 @@ public class Booking {
         this.customerID = customerID;
         this.reservation = reservation;
         this.bookingDateTime = bookingDateTime;
-        this.payment = null; // No payment initially
+        this.payment = null; 
         this.status = "Confirmed";
         this.totalAmount = calculateTotalAmount();
     }
 
-    // Getters and Setters
     public String getBookingID() {
         return bookingID;
     }
@@ -61,17 +60,14 @@ public class Booking {
         this.totalAmount = totalAmount;
     }
 
-    // Check if booking has payment
     public boolean hasPayment() {
         return payment != null;
     }
 
-    // Check if booking is paid
     public boolean isPaid() {
         return hasPayment() && payment.isPaid();
     }
 
-    // Get payment status
     public String getPaymentStatus() {
         if (!hasPayment()) {
             return "Unpaid";
@@ -93,7 +89,6 @@ public class Booking {
             return;
         }
 
-        // Create new payment if doesn't exist
         if (!hasPayment()) {
             this.payment = new Payment("PAY" + bookingID, this, totalAmount, "Credit Card");
         }
@@ -127,17 +122,14 @@ public class Booking {
     }
 
     private double calculateTotalAmount() {
-        // Calculate based on route base price and schedule class
         double basePrice = reservation.getRoute().getBasePrice();
         String seatClass = reservation.getSeatClass();
-        
-        // Apply class multiplier
         switch (seatClass.toLowerCase()) {
             case "business":
                 return basePrice * 1.5;
             case "first":
                 return basePrice * 2.0;
-            default: // economy
+            default:
                 return basePrice;
         }
     }

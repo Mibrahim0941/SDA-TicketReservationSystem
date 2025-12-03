@@ -28,12 +28,10 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class MyBookingsController implements Initializable {
-
-    // --- FXML Components ---
     @FXML private Text pageTitle;
     @FXML private Text userGreeting;
     @FXML private Text noBookingsText;
-    @FXML private VBox bookingsContainer; // This is inside the ScrollPane in FXML
+    @FXML private VBox bookingsContainer;
     @FXML private HBox filterContainer;
     
     @FXML private ComboBox<String> statusFilter;
@@ -44,7 +42,6 @@ public class MyBookingsController implements Initializable {
     @FXML private Button refreshButton;
     @FXML private ProgressIndicator loadingIndicator;
 
-    // --- State & Config ---
     private String currentUsername;
     private Customer currentCustomer;
     private List<Booking> userBookings;
@@ -56,8 +53,6 @@ public class MyBookingsController implements Initializable {
     private static final String ALL_BOOKINGS = "All Bookings";
     private static final String ALL_PAYMENTS = "All Payments";
 
-    // --- Initialization & Navigation ---
-
     public static void show(Stage stage, String username, Customer customer) {
         try {
             FXMLLoader loader = new FXMLLoader(MyBookingsController.class.getResource("/ui/myBookings.fxml"));
@@ -67,8 +62,6 @@ public class MyBookingsController implements Initializable {
             controller.setUserData(username, customer);
             
             Scene scene = new Scene(root, 1000, 700);
-            
-            // Explicitly load CSS to ensure styling applies immediately
             URL stylesheet = MyBookingsController.class.getResource("/ui/MyBookings.css");
             if (stylesheet != null) {
                 scene.getStylesheets().add(stylesheet.toExternalForm());
@@ -130,17 +123,11 @@ public class MyBookingsController implements Initializable {
         }
     }
 
-    // --- Data Loading Logic ---
-
     private void loadUserBookings() {
         setLoadingState(true);
-        
-        // Run database operation in background thread
         new Thread(() -> {
             try {
                 List<Booking> bookings = fetchBookingsFromDatabase();
-                
-                // Update UI on JavaFX Application Thread
                 Platform.runLater(() -> {
                     userBookings = bookings;
                     applyFilters();
@@ -157,8 +144,6 @@ public class MyBookingsController implements Initializable {
 
     private List<Booking> fetchBookingsFromDatabase() {
         List<Booking> bookings = new ArrayList<>();
-        
-        // First, fetch all bookings without seats
         String bookingQuery = 
             "SELECT " +
             "    b.BookingID, b.CustomerID, b.BookingDateTime, b.TotalAmount, b.Status, " +
@@ -175,7 +160,7 @@ public class MyBookingsController implements Initializable {
             "ORDER BY b.BookingDateTime DESC";
         
         Map<String, Booking> bookingMap = new HashMap<>();
-        Map<String, String> bookingReservationMap = new HashMap<>(); // BookingID -> ReservationID
+        Map<String, String> bookingReservationMap = new HashMap<>(); 
         
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
             PreparedStatement stmt = conn.prepareStatement(bookingQuery)) {
@@ -202,7 +187,6 @@ public class MyBookingsController implements Initializable {
             return bookings;
         }
         
-        // Now fetch seats for each booking's reservation
         if (!bookingReservationMap.isEmpty()) {
             String seatQuery = 
                 "SELECT ReservationID, SeatNumber, SeatType, Price, Availability " +
@@ -220,8 +204,6 @@ public class MyBookingsController implements Initializable {
                 }
                 
                 ResultSet rs = stmt.executeQuery();
-                
-                // Group seats by reservation ID
                 Map<String, List<Seat>> reservationSeatsMap = new HashMap<>();
                 
                 while (rs.next()) {
@@ -238,7 +220,6 @@ public class MyBookingsController implements Initializable {
                         .add(seat);
                 }
                 
-                // Assign seats to bookings
                 for (Booking booking : bookings) {
                     String reservationId = booking.getReservation().getReservationID();
                     List<Seat> seats = reservationSeatsMap.get(reservationId);
@@ -259,7 +240,6 @@ public class MyBookingsController implements Initializable {
 
     private Booking createBookingFromResultSet(ResultSet rs) throws SQLException {
         try {
-            // Reconstruct object graph from flat result set
             models.Route route = new models.Route(
                 rs.getString("RouteID"),
                 rs.getString("Source"),
@@ -312,8 +292,6 @@ public class MyBookingsController implements Initializable {
         }
     }
 
-    // --- UI Generation (The Card System) ---
-
     private void applyFilters() {
         if (userBookings == null || userBookings.isEmpty()) {
             showNoBookings();
@@ -322,21 +300,17 @@ public class MyBookingsController implements Initializable {
         
         List<Booking> filteredBookings = new ArrayList<>(userBookings);
         filteredBookings.removeIf(booking -> "Cancelled".equalsIgnoreCase(booking.getStatus()));
-        // Status Filter
         String status = statusFilter.getValue();
         if (!ALL_BOOKINGS.equals(status)) {
             filteredBookings.removeIf(booking -> !booking.getStatus().equalsIgnoreCase(status));
         }
         
-        // Payment Filter
         String paymentStatus = paymentFilter.getValue();
         switch (paymentStatus) {
             case "Paid": filteredBookings.removeIf(b -> !b.isPaid()); break;
             case "Unpaid": filteredBookings.removeIf(b -> b.hasPayment() && b.isPaid()); break;
             case "Pending Payment": filteredBookings.removeIf(b -> b.hasPayment() || b.isPaid()); break;
         }
-        
-        // Search Filter
         String searchTerm = searchField.getText().toLowerCase();
         if (!searchTerm.isEmpty()) {
             filteredBookings.removeIf(b -> 
@@ -365,18 +339,13 @@ public class MyBookingsController implements Initializable {
         }
     }
 
-    /**
-     * Creates a card styled via CSS (.booking-card) containing all booking info.
-     */
     private VBox createBookingCard(Booking booking) {
         VBox card = new VBox(15);
-        card.getStyleClass().add("booking-card"); // CRITICAL: Applies white bg and shadow
+        card.getStyleClass().add("booking-card"); 
         
         models.Reservation reservation = booking.getReservation();
         models.Route route = reservation.getRoute();
         models.Schedule schedule = reservation.getSchedule();
-        
-        // 1. HEADER (ID + Status Badges)
         HBox header = new HBox(10); 
         header.getStyleClass().add("booking-header");
         
@@ -394,12 +363,10 @@ public class MyBookingsController implements Initializable {
         
         statusBadges.getChildren().addAll(bookingStatus, paymentStatus);
         
-        // Push badges to the right
         HBox spacer = new HBox();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         header.getChildren().addAll(bookingId, spacer, statusBadges);
         
-        // 2. ROUTE INFO
         VBox routeInfo = new VBox(8); 
         routeInfo.getStyleClass().add("route-info");
         
@@ -416,8 +383,6 @@ public class MyBookingsController implements Initializable {
         classText.getStyleClass().add("class");
         
         routeInfo.getChildren().addAll(routeText, scheduleText, classText);
-        
-        // 3. FOOTER (Details + Actions)
         HBox details = new HBox(10); 
         details.getStyleClass().add("booking-details");
         details.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
@@ -434,15 +399,12 @@ public class MyBookingsController implements Initializable {
         
         leftDetails.getChildren().addAll(bookingDate, price);
         
-        // Action Buttons
         HBox actionButtons = new HBox(10); 
         actionButtons.getStyleClass().add("action-buttons");
         
         Button viewTicketBtn = new Button("View E-Ticket");
         viewTicketBtn.getStyleClass().add("btn-primary");
         viewTicketBtn.setOnAction(e -> viewETicket(booking));
-        
-        // Logic for which buttons to show
         if (!booking.isPaid()) {
             Button payBtn = new Button("Pay Now");
             payBtn.getStyleClass().add("btn-pay");
@@ -469,8 +431,6 @@ public class MyBookingsController implements Initializable {
         card.getChildren().addAll(header, routeInfo, details);
         return card;
     }
-
-    // --- Helpers & Actions ---
 
     private String getPaymentStatusText(Booking booking) {
         if (!booking.hasPayment()) return "Unpaid";
@@ -525,24 +485,16 @@ public class MyBookingsController implements Initializable {
             }
 
             ETicket eTicket = booking.generateETicket();
-            
-            // --- Build Custom Ticket UI ---
             VBox ticketCard = new VBox(15);
             ticketCard.getStyleClass().add("ticket-card");
             ticketCard.setMinWidth(400);
-
-            // 1. Ticket Header
             HBox header = new HBox();
             header.setAlignment(javafx.geometry.Pos.CENTER);
             Label title = new Label("E-TICKET CONFIRMATION");
             title.setStyle("-fx-font-weight: bold; -fx-text-fill: #3F5F3C; -fx-font-size: 16px;");
             header.getChildren().add(title);
-
-            // 2. Dashed Line Separator
             Separator sep1 = new Separator();
             sep1.setStyle("-fx-border-style: dashed; -fx-border-width: 1px 0 0 0; -fx-border-color: #ccc; -fx-background-color: transparent;");
-
-            // 3. Route Info (Large)
             VBox routeBox = new VBox(5);
             routeBox.setAlignment(javafx.geometry.Pos.CENTER);
             Label routeLbl = new Label(
@@ -550,23 +502,17 @@ public class MyBookingsController implements Initializable {
                 booking.getReservation().getRoute().getDestination()
             );
             routeLbl.getStyleClass().add("route");
-            routeLbl.setStyle("-fx-font-size: 22px;"); // Make it bigger for the ticket
+            routeLbl.setStyle("-fx-font-size: 22px;"); 
             routeBox.getChildren().add(routeLbl);
-
-            // 4. Details Grid (Date, Time, Class, IDs)
             GridPane detailsGrid = new GridPane();
             detailsGrid.setHgap(20);
             detailsGrid.setVgap(10);
             detailsGrid.setAlignment(javafx.geometry.Pos.CENTER);
-
-            // Helper to add styled rows
             addTicketDetail(detailsGrid, "Date:", booking.getReservation().getSchedule().getDate().toString(), 0, 0);
             addTicketDetail(detailsGrid, "Time:", booking.getReservation().getSchedule().getDepartureTime() + " - " + booking.getReservation().getSchedule().getArrivalTime(), 0, 1);
             addTicketDetail(detailsGrid, "Class:", booking.getReservation().getSeatClass(), 1, 0);
             addTicketDetail(detailsGrid, "Price:", "PKR " + booking.getTotalAmount(), 1, 1);
             addTicketDetail(detailsGrid, "Selected Seat(s), :", booking.getReservation().viewSelectedSeats(), 0, 2);
-            
-            // 5. Footer (IDs)
             VBox footer = new VBox(5);
             footer.setAlignment(javafx.geometry.Pos.CENTER);
             footer.setPadding(new javafx.geometry.Insets(15, 0, 0, 0));
@@ -575,21 +521,13 @@ public class MyBookingsController implements Initializable {
             ticketId.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;");
             bookingId.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;");
             footer.getChildren().addAll(ticketId, bookingId);
-
-            // Combine all
             ticketCard.getChildren().addAll(header, sep1, routeBox, detailsGrid, new Separator(), footer);
-
-            // --- Show in Dialog ---
             Alert ticketDialog = new Alert(Alert.AlertType.NONE);
             ticketDialog.setTitle("Your E-Ticket");
             ticketDialog.getDialogPane().setContent(ticketCard);
             ticketDialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
-            
-            // Remove default header/graphic to keep it clean
             ticketDialog.setHeaderText(null);
             ticketDialog.setGraphic(null);
-            
-            // Apply CSS to the dialog
             DialogPane dialogPane = ticketDialog.getDialogPane();
             dialogPane.getStylesheets().add(getClass().getResource("/ui/MyBookings.css").toExternalForm());
             dialogPane.getStyleClass().add("ticket-dialog");
@@ -601,7 +539,6 @@ public class MyBookingsController implements Initializable {
         }
     }
 
-    // Helper method for the Grid layout
     private void addTicketDetail(GridPane grid, String label, String value, int col, int row) {
         VBox box = new VBox(2);
         Label l = new Label(label);
@@ -613,23 +550,16 @@ public class MyBookingsController implements Initializable {
     }
 
     private void proceedToPayment(Booking booking) {
-        // 1. Create Dialog
         Dialog<Map<String, String>> dialog = new Dialog<>();
         dialog.setTitle("Secure Payment");
         dialog.setHeaderText(null);
         dialog.setGraphic(null);
-
-        // Apply CSS
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource("/ui/MyBookings.css").toExternalForm());
         dialogPane.getStyleClass().add("payment-dialog");
-
-        // 2. Build Content Layout
         VBox container = new VBox(15);
-        container.setPadding(new Insets(20, 30, 20, 30)); // Top, Right, Bottom, Left
+        container.setPadding(new Insets(20, 30, 20, 30)); 
         container.getStyleClass().add("payment-container");
-
-        // --- Header Section ---
         VBox headerBox = new VBox(5);
         Label titleLabel = new Label("Complete Payment");
         titleLabel.getStyleClass().add("payment-title");
@@ -642,9 +572,6 @@ public class MyBookingsController implements Initializable {
         
         headerBox.getChildren().addAll(titleLabel, amountLabel, separator);
 
-        // --- Form Section ---
-        
-        // Payment Method
         VBox methodBox = new VBox(8);
         Label methodLbl = new Label("Payment Method");
         methodLbl.getStyleClass().add("input-label");
@@ -657,7 +584,6 @@ public class MyBookingsController implements Initializable {
         
         methodBox.getChildren().addAll(methodLbl, methodCombo);
 
-        // Account Number
         VBox accountBox = new VBox(8);
         Label accLbl = new Label("Account Number");
         accLbl.getStyleClass().add("input-label");
@@ -668,26 +594,20 @@ public class MyBookingsController implements Initializable {
         
         accountBox.getChildren().addAll(accLbl, accountField);
 
-        // Add all to container
         container.getChildren().addAll(headerBox, methodBox, accountBox);
         dialogPane.setContent(container);
 
-        // 3. Add Custom Buttons
         ButtonType confirmType = new ButtonType("Confirm Payment", ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
         dialogPane.getButtonTypes().addAll(confirmType, cancelType);
 
-        // 4. Style the Buttons & Validation
         Button confirmBtn = (Button) dialogPane.lookupButton(confirmType);
         Button cancelBtn = (Button) dialogPane.lookupButton(cancelType);
         
         confirmBtn.getStyleClass().addAll("dialog-btn", "btn-confirm");
         cancelBtn.getStyleClass().addAll("dialog-btn", "btn-cancel");
 
-        // Default to disabled
         confirmBtn.setDisable(true);
-
-        // Validation Listener
         javafx.beans.value.ChangeListener<String> validationListener = (obs, oldVal, newVal) -> {
             boolean isInvalid = methodCombo.getValue() == null || accountField.getText().trim().isEmpty();
             confirmBtn.setDisable(isInvalid);
@@ -695,7 +615,6 @@ public class MyBookingsController implements Initializable {
         methodCombo.valueProperty().addListener(validationListener);
         accountField.textProperty().addListener(validationListener);
 
-        // 5. Handle Result
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == confirmType) {
                 Map<String, String> result = new HashMap<>();
@@ -706,7 +625,6 @@ public class MyBookingsController implements Initializable {
             return null;
         });
 
-        // 6. Show Dialog & Process
         Optional<Map<String, String>> result = dialog.showAndWait();
         result.ifPresent(data -> {
             String selectedMethod = data.get("method");
@@ -728,11 +646,6 @@ public class MyBookingsController implements Initializable {
         });
     }
 
-    /**
-     * Performs an atomic transaction:
-     * 1. Inserts into Payment table.
-     * 2. Updates Booking table with PaymentID.
-     */
     private boolean processPaymentTransaction(Booking booking, Payment payment) {
         String insertPaymentSQL = "INSERT INTO Payment (PaymentID, Amount, PaymentMethod, PaymentStatus, PaymentDate) VALUES (?, ?, ?, ?, GETDATE())";
         String updateBookingSQL = "UPDATE Booking SET PaymentID = ?, Status = ? WHERE BookingID = ?";
@@ -745,7 +658,7 @@ public class MyBookingsController implements Initializable {
             conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
             conn.setAutoCommit(false); // Start Transaction
 
-            // 1. Insert Payment
+            // Insert Payment
             payStmt = conn.prepareStatement(insertPaymentSQL);
             payStmt.setString(1, payment.getPaymentID());
             payStmt.setDouble(2, payment.getAmount());
@@ -753,14 +666,14 @@ public class MyBookingsController implements Initializable {
             payStmt.setString(4, "Completed");
             payStmt.executeUpdate();
 
-            // 2. Update Booking
+            // Update Booking
             bookStmt = conn.prepareStatement(updateBookingSQL);
             bookStmt.setString(1, payment.getPaymentID());
             bookStmt.setString(2, "Confirmed"); // Or 'Completed' depending on your logic
             bookStmt.setString(3, booking.getBookingID());
             bookStmt.executeUpdate();
 
-            conn.commit(); // Commit Transaction
+            conn.commit();
             try {
                 NotificationService notificationService = NotificationService.getInstance();
                 notificationService.sendPaymentSuccessNotification(
@@ -779,7 +692,7 @@ public class MyBookingsController implements Initializable {
             System.err.println("Transaction Failed: " + e.getMessage());
             if (conn != null) {
                 try {
-                    conn.rollback(); // Rollback changes if error occurs
+                    conn.rollback(); 
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
@@ -797,77 +710,57 @@ public class MyBookingsController implements Initializable {
     }
 
     private void cancelBooking(Booking booking) {
-        // --- Custom Pretty Dialog for Cancellation ---
-        
-        // 1. Create Dialog
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Cancel Booking");
         dialog.setHeaderText(null);
         dialog.setGraphic(null);
-
-        // 2. Apply CSS Theme
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getStylesheets().add(getClass().getResource("/ui/MyBookings.css").toExternalForm());
         dialogPane.getStyleClass().add("ticket-dialog");
-
-        // 3. Build Content Card
         VBox card = new VBox(15);
         card.getStyleClass().add("ticket-card");
         card.setMinWidth(380);
         card.setAlignment(javafx.geometry.Pos.TOP_CENTER);
         card.setPadding(new Insets(25));
-
-        // Header Section
         Label titleLbl = new Label("Confirm Cancellation");
         titleLbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #EF4444; -fx-font-size: 18px;"); // Red Title for Warning
 
         Separator sep = new Separator();
         sep.setStyle("-fx-border-style: dashed; -fx-border-width: 1px 0 0 0; -fx-border-color: #ccc; -fx-background-color: transparent;");
 
-        // Booking Info
         Label msgLbl = new Label("Are you sure you want to cancel this booking?");
         msgLbl.setStyle("-fx-text-fill: #555; -fx-font-size: 14px;");
         
         Label bookingIdLbl = new Label("Booking #" + booking.getBookingID());
         bookingIdLbl.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
 
-        // Route Info (Visual Context)
         String routeStr = booking.getReservation().getRoute().getSource() + " ➝ " + booking.getReservation().getRoute().getDestination();
         Label routeLbl = new Label(routeStr);
         routeLbl.setStyle("-fx-font-size: 13px; -fx-text-fill: #888;");
 
-        // Warning Note
         Label noteLbl = new Label("This action cannot be undone.");
         noteLbl.setStyle("-fx-text-fill: #EF4444; -fx-font-size: 12px; -fx-font-style: italic;");
 
         card.getChildren().addAll(titleLbl, sep, msgLbl, bookingIdLbl, routeLbl, noteLbl);
         dialogPane.setContent(card);
 
-        // 4. Custom Buttons
         ButtonType yesBtnType = new ButtonType("Yes, Cancel", ButtonBar.ButtonData.OK_DONE);
         ButtonType noBtnType = new ButtonType("No, Keep", ButtonBar.ButtonData.CANCEL_CLOSE);
         dialogPane.getButtonTypes().addAll(yesBtnType, noBtnType);
 
-        // Style Buttons
         Button yesBtn = (Button) dialogPane.lookupButton(yesBtnType);
         yesBtn.setStyle("-fx-background-color: #EF4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;"); // Red Danger Button
         
         Button noBtn = (Button) dialogPane.lookupButton(noBtnType);
         noBtn.setStyle("-fx-background-color: #E8E8E8; -fx-text-fill: #333; -fx-font-weight: bold; -fx-cursor: hand;");   // Grey Cancel Button
 
-        // 5. Show and Handle Result
         dialog.showAndWait().ifPresent(response -> {
             if (response == yesBtnType) {
                 if (updateBookingStatus(booking.getBookingID(), "Cancelled")) {
                     booking.setStatus("Cancelled"); 
-                    
-                    // Optional: Notification Logic
                     try {
-                        // Assuming you have NotificationService available
-                        // NotificationService.getInstance().sendCancellationNotification(...);
+                         NotificationService.getInstance().sendCancellationNotification(currentCustomer,booking.getBookingID());
                     } catch (Exception e) { e.printStackTrace(); }
-
-                    // Show Success using the pretty alert style
                     showPrettySuccessAlert("Booking Cancelled", "Your booking has been successfully cancelled.");
                     
                     loadUserBookings(); 
@@ -878,7 +771,6 @@ public class MyBookingsController implements Initializable {
         });
     }
 
-    // Helper to show a pretty success alert (reusing the same theme)
     private void showPrettySuccessAlert(String title, String message) {
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle(title);
@@ -919,9 +811,7 @@ public class MyBookingsController implements Initializable {
         
         try {
             conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-            conn.setAutoCommit(false); // Start transaction
-            
-            // 1. First, get the reservation ID for this booking
+            conn.setAutoCommit(false);
             String getReservationQuery = "SELECT ReservationID FROM Booking WHERE BookingID = ?";
             String reservationId = null;
             
@@ -950,15 +840,12 @@ public class MyBookingsController implements Initializable {
                 return false;
             }
             
-            // 3. Release seats (set ReservationID to NULL and Availability to 1)
             String seatQuery = "UPDATE Seat SET ReservationID = NULL, Availability = 1 WHERE ReservationID = ?";
             seatStmt = conn.prepareStatement(seatQuery);
             seatStmt.setString(1, reservationId);
             int seatsUpdated = seatStmt.executeUpdate();
             
             System.out.println("Released " + seatsUpdated + " seats for reservation: " + reservationId);
-            
-            // 4. If needed, also update payment status (optional - for refunds)
             if ("Cancelled".equals(status)) {
                 String updatePaymentQuery = "UPDATE Payment SET PaymentStatus = 'Refunded' " +
                                         "WHERE PaymentID = (SELECT PaymentID FROM Booking WHERE BookingID = ?)";
@@ -968,7 +855,7 @@ public class MyBookingsController implements Initializable {
                 }
             }
             
-            conn.commit(); // Commit the transaction
+            conn.commit();
             return true;
             
         } catch (SQLException e) {
@@ -976,14 +863,13 @@ public class MyBookingsController implements Initializable {
             e.printStackTrace();
             if (conn != null) {
                 try {
-                    conn.rollback(); // Rollback on error
+                    conn.rollback(); 
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
             }
             return false;
         } finally {
-            // Close resources
             try {
                 if (seatStmt != null) seatStmt.close();
                 if (bookingStmt != null) bookingStmt.close();

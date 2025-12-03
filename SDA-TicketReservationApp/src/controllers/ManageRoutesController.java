@@ -220,8 +220,6 @@ public class ManageRoutesController {
                 showError("Base price must be greater than 0");
                 return;
             }
-            
-            // Get the actual route from catalog to ensure we're updating the right instance
             Route currentRoute = routeCatalog.getRoute(selectedRoute.getRouteID());
             if (currentRoute != null) {
                 currentRoute.setSource(source);

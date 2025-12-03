@@ -7,9 +7,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import models.Customer;
@@ -41,8 +39,6 @@ public class UpdateProfileController implements Initializable {
     private String currentUsername;
     private Stage primaryStage;
     private Customer currentCustomer;
-
-    // Show method
     public static void show(Stage stage, String username, Customer customer) {
         try {
             FXMLLoader loader = new FXMLLoader(UpdateProfileController.class.getResource("/ui/update-profile.fxml"));
@@ -79,7 +75,6 @@ public class UpdateProfileController implements Initializable {
             userGreeting.setText("Hello, " + username + "! 👋");
         }
         
-        // Load current user data
         loadUserData();
     }
     
@@ -91,13 +86,10 @@ public class UpdateProfileController implements Initializable {
     
     private void loadUserData() {
         if (currentCustomer != null) {
-            // Set current values in fields
             nameField.setText(currentCustomer.getName());
             usernameField.setText(currentCustomer.getUsername());
             emailField.setText(currentCustomer.getEmail());
             phoneField.setText(currentCustomer.getPhoneNum());
-            
-            // Clear password fields
             currentPasswordField.clear();
             newPasswordField.clear();
             confirmPasswordField.clear();
@@ -109,8 +101,6 @@ public class UpdateProfileController implements Initializable {
         String username = usernameField.getText().trim();
         String email = emailField.getText().trim();
         String phone = phoneField.getText().trim();
-        
-        // Validation
         if (name.isEmpty() || username.isEmpty() || email.isEmpty()) {
             showAlert("Error", "Please fill in all required fields (Name, Username, Email)");
             return;
@@ -121,7 +111,6 @@ public class UpdateProfileController implements Initializable {
             return;
         }
         
-        // Check if username is already taken by another user
         if (!currentCustomer.getUsername().equals(username)) {
             if (userCatalog.isUsernameTaken(username)) {
                 showAlert("Error", "Username is already taken. Please choose a different username.");
@@ -129,7 +118,6 @@ public class UpdateProfileController implements Initializable {
             }
         }
         
-        // Check if email is already taken by another user
         if (!currentCustomer.getEmail().equals(email)) {
             if (userCatalog.isEmailTaken(email)) {
                 showAlert("Error", "Email is already taken. Please use a different email address.");
@@ -138,19 +126,14 @@ public class UpdateProfileController implements Initializable {
         }
         
         try {
-            // Update the customer object
             currentCustomer.setName(name);
             currentCustomer.setUsername(username);
             currentCustomer.setEmail(email);
             currentCustomer.setPhoneNum(phone);
-            
-            // Update in catalog (which should handle database persistence)
-            // Note: You might need to add an update method to your UserCatalog
             boolean success = updateUserInCatalog();
             
             if (success) {
                 showAlert("Success", "Profile updated successfully!");
-                // Update the username for greeting
                 this.currentUsername = username;
                 userGreeting.setText("Hello, " + username + "! 👋");
             } else {
@@ -167,8 +150,6 @@ public class UpdateProfileController implements Initializable {
         String currentPassword = currentPasswordField.getText().trim();
         String newPassword = newPasswordField.getText().trim();
         String confirmPassword = confirmPasswordField.getText().trim();
-        
-        // Validation
         if (currentPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
             showAlert("Error", "Please fill in all password fields");
             return;
@@ -183,22 +164,17 @@ public class UpdateProfileController implements Initializable {
             showAlert("Error", "New password must be at least 6 characters long");
             return;
         }
-        
-        // Verify current password
         if (!currentCustomer.getPassword().equals(currentPassword)) {
             showAlert("Error", "Current password is incorrect");
             return;
         }
         
         try {
-        // Update only password in catalog
             boolean success = userCatalog.updateUserPassword(currentCustomer.getUserID(), newPassword);
         
             if (success) {
-                // Update local customer object password
                 currentCustomer.setPassword(newPassword);
                 showAlert("Success", "Password changed successfully!");
-                // Clear password fields
                 currentPasswordField.clear();
                 newPasswordField.clear();
                 confirmPasswordField.clear();

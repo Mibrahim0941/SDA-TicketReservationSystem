@@ -21,7 +21,6 @@ public class Route {
         this.schedules = new ArrayList<>();
     }
     
-    // Getters and Setters
     public String getRouteID() {
         return routeID;
     }
@@ -62,7 +61,6 @@ public class Route {
         this.schedules = schedules;
     }
     
-    // Methods from class diagram
     public boolean verifySrcDst(String src, String dst) {
         return this.source.equalsIgnoreCase(src) && this.destination.equalsIgnoreCase(dst);
     }

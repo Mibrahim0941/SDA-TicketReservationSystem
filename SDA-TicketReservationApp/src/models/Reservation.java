@@ -44,7 +44,6 @@ public class Reservation {
             seatNumbers.append(seat.getSeatNo()).append(", ");
         }
         
-        // Remove the trailing comma and space
         if (seatNumbers.length() > 0) {
             seatNumbers.setLength(seatNumbers.length() - 2);
         }

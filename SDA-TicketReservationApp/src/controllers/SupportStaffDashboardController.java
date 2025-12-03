@@ -28,7 +28,6 @@ public class SupportStaffDashboardController {
     private String staffUsername;
     private SupportStaff currentStaff;
 
-    // Dashboard Elements
     @FXML private Text welcomeTitle;
     @FXML private Text userGreeting;
     
@@ -99,8 +98,6 @@ public class SupportStaffDashboardController {
         if (userGreeting != null) {
             userGreeting.setText("Hello, " + username + "! 👋");
         }
-        
-        // Load data after UI is ready
         Platform.runLater(() -> {
             loadQueriesData();
             loadSupportStats();
@@ -146,8 +143,6 @@ public class SupportStaffDashboardController {
     private void initializeTable() {
         if (queriesTable != null) {
             System.out.println("Initializing table with columns...");
-            
-            // Set column cell value factories
             queryIdColumn.setCellValueFactory(new PropertyValueFactory<>("queryID"));
             
             customerNameColumn.setCellValueFactory(cellData -> {
@@ -184,16 +179,13 @@ public class SupportStaffDashboardController {
                 }
                 return new javafx.beans.property.SimpleStringProperty("Unknown");
             });
-            
-            // Add selection listener
+
             queriesTable.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldSelection, newSelection) -> {
                     System.out.println("Table selection changed to: " + (newSelection != null ? newSelection.getQueryID() : "null"));
                     showQueryDetails(newSelection);
                 }
             );
-            
-            // Force table to show columns
             queriesTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
             
             System.out.println("Table initialization complete");
@@ -207,23 +199,18 @@ public class SupportStaffDashboardController {
             try {
                 ArrayList<SupportQuery> queries = queryCatalog.getAllQueries();
                 System.out.println("Loading " + queries.size() + " queries into table");
-                
-                // Debug: Print what we're loading
                 for (SupportQuery query : queries) {
                     System.out.println("Adding to table: " + query.getQueryID() + " - " + 
                                      (query.getCustomer() != null ? query.getCustomer().getName() : "No Customer"));
                 }
                 
                 queriesTable.getItems().setAll(queries);
-                
-                // Refresh the table to ensure rendering
                 queriesTable.refresh();
                 
                 System.out.println("Table now has " + queriesTable.getItems().size() + " items");
                 
                 if (queries.isEmpty()) {
                     System.out.println("No queries found in the database");
-                    // Add a placeholder message
                     queriesTable.setPlaceholder(new Label("No customer queries found"));
                 }
                 
@@ -416,7 +403,6 @@ public class SupportStaffDashboardController {
         }
     }
 
-    // Helper methods
     private void showError(String message) {
         System.err.println("Error: " + message);
         showAlert("Error", message);

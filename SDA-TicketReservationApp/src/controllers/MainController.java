@@ -24,21 +24,12 @@ public class MainController {
     @FXML
     private VBox staffCard;
 
-    @FXML
-    public void initialize() {
-        // Initialization code if needed
-    }
-
-    // ADD THIS SHOW METHOD
     public static void show(Stage stage) {
         try {
             FXMLLoader loader = new FXMLLoader(MainController.class.getResource("/ui/mainpage.fxml"));
             Parent root = loader.load();
             
             Scene scene = new Scene(root, 900, 700);
-            
-            // Load CSS styles
-            
             scene.getStylesheets().add(MainController.class.getResource("/ui/style.css").toExternalForm());
             scene.getStylesheets().add(MainController.class.getResource("/ui/mainpage.css").toExternalForm());
             
@@ -58,8 +49,6 @@ public class MainController {
             Parent root = loader.load();
             
             Scene scene = new Scene(root, 900, 700);
-            
-            // Load CSS styles
             scene.getStylesheets().add(MainController.class.getResource("/ui/style.css").toExternalForm());
             scene.getStylesheets().add(MainController.class.getResource("/ui/loginoptions.css").toExternalForm());
             
@@ -73,10 +62,8 @@ public class MainController {
         }
     }
 
-
-    // ADD THIS OVERLOADED SHOW METHOD
     public static void show(Stage stage, String username) {
-        show(stage); // For now, just use the regular show method
+        show(stage); 
     }
 
     @FXML
@@ -94,7 +81,6 @@ public class MainController {
         System.out.println("Admin login selected");
         try {
             Stage currentStage = (Stage) adminCard.getScene().getWindow();
-            // Load admin login page (to be implemented)
             loadLoginPage(currentStage, "Admin");
         } catch (Exception e) {
             showError("Admin login page not implemented yet");
@@ -106,7 +92,6 @@ public class MainController {
         System.out.println("Customer login selected");
         try {
             Stage currentStage = (Stage) customerCard.getScene().getWindow();
-            // Load customer login page (your existing login.fxml)
             loadLoginPage(currentStage, "Customer");
         } catch (Exception e) {
             showError("Failed to load customer login page");
@@ -118,7 +103,6 @@ public class MainController {
         System.out.println("Staff login selected");
         try {
             Stage currentStage = (Stage) staffCard.getScene().getWindow();
-            // Load staff login page (to be implemented)
             loadLoginPage(currentStage, "Staff");
         } catch (Exception e) {
             showError("Staff login page not implemented yet");
@@ -131,8 +115,6 @@ public class MainController {
             Parent root = loader.load();
             
             Scene scene = new Scene(root, 900, 700);
-            
-            // Load CSS styles
             scene.getStylesheets().add(getClass().getResource("/ui/style.css").toExternalForm());
             scene.getStylesheets().add(getClass().getResource("/ui/loginoptions.css").toExternalForm());
             
@@ -150,17 +132,14 @@ public class MainController {
         try {
             switch (userType) {
                 case "Customer":
-                    // Use the new show method from LoginController
                     CustomerLoginController.show(stage);
                     break;
                     
                 case "Admin":
-                    // Placeholder for admin login
                     AdminLoginController.show(stage);
                     break;
                     
                 case "Staff":
-                    // Placeholder for staff login
                     StaffLoginController.show(stage);
                     break;
             }
@@ -186,7 +165,6 @@ public class MainController {
     //     alert.showAndWait();
     // }
 
-    // ADD THIS HELPER METHOD
     private static void showErrorAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");

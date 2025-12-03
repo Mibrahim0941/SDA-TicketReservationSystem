@@ -46,8 +46,6 @@ public class ManagePromoCodesController {
             ManagePromoCodesController controller = loader.getController();
             controller.setAdminData(username, admin);
             Scene scene = new Scene(root, 1200, 800);
-            
-            // Add stylesheet if it exists, but don't fail if it doesn't
             try {
                 scene.getStylesheets().add(ManagePromoCodesController.class.getResource("/ui/manage-promocodes.css").toExternalForm());
             } catch (NullPointerException e) {

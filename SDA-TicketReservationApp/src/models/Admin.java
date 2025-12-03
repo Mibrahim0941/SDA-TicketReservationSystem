@@ -22,11 +22,6 @@ public class Admin extends User {
         }
     }
 
-    public void updateSchedule(Route route, Schedule schedule, Schedule newSchedule) {
-        if (route != null && schedule != null) {
-            // Implementation for updating schedules
-        }
-    }
 
     public void manageSeatAvailability(Schedule schedule, Seat seat, boolean availability) {
         if (schedule != null && seat != null) {
@@ -34,10 +29,6 @@ public class Admin extends User {
         }
     }
 
-    public void generateReports(String reportType) {
-        // Implementation for generating reports
-        System.out.println("Generating " + reportType + " report...");
-    }
 
     public void setCancellationPolicy(PolicyCatalog policyCatalog, CancellationPolicy policy) {
         if (policyCatalog != null && policy != null) {

@@ -24,8 +24,6 @@ public class CustomerSupportController implements Initializable {
     private QueryCatalog queryCatalog = new QueryCatalog();
     private Customer currentCustomer;
     private String currentUsername;
-
-    // UI Elements
     @FXML private Text welcomeTitle;
     @FXML private Text userGreeting;
     
@@ -43,8 +41,6 @@ public class CustomerSupportController implements Initializable {
     @FXML private Button refreshButton;
     @FXML private Button backButton;
     @FXML private Button logoutButton;
-
-    // Show method to launch the support page
     public static void show(Stage stage, String username, Customer customer) {
         try {
             FXMLLoader loader = new FXMLLoader(CustomerSupportController.class.getResource("/ui/customer-support.fxml"));
@@ -80,8 +76,6 @@ public class CustomerSupportController implements Initializable {
         if (userGreeting != null) {
             userGreeting.setText("Hello, " + username + "! 👋");
         }
-        
-        // Load customer's queries
         Platform.runLater(() -> refreshData());
     }
 
@@ -101,7 +95,6 @@ public class CustomerSupportController implements Initializable {
 
     private void initializeTable() {
         if (queriesTable != null) {
-            // Initialize table columns
             queryIdColumn.setCellValueFactory(new PropertyValueFactory<>("queryID"));
             
             queryTextColumn.setCellValueFactory(cellData -> {
@@ -138,20 +131,14 @@ public class CustomerSupportController implements Initializable {
                 }
                 return new javafx.beans.property.SimpleStringProperty("No response yet");
             });
-            
-            // Set column widths
             queryIdColumn.setPrefWidth(80);
             queryTextColumn.setPrefWidth(200);
             statusColumn.setPrefWidth(120);
             dateColumn.setPrefWidth(100);
             responseColumn.setPrefWidth(120);
-            
-            // Add selection listener
             queriesTable.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldSelection, newSelection) -> showQueryDetails(newSelection)
             );
-            
-            // Load initial data
             loadCustomerQueries();
         }
     }
@@ -188,14 +175,13 @@ public class CustomerSupportController implements Initializable {
             } else {
                 details.append("\n--- Support Response ---\nNo response yet. Our team will get back to you soon!");
             }
-            
             queryDetailsArea.setText(details.toString());
         }
     }
 
     private void submitNewQuery() {
-        if (newQueryArea == null) return;
-        
+        if (newQueryArea == null) 
+            return;
         String queryText = newQueryArea.getText().trim();
         if (queryText.isEmpty()) {
             showError("Please enter your question or issue");
@@ -208,27 +194,20 @@ public class CustomerSupportController implements Initializable {
         }
 
         try {
-            // Generate a unique query ID
             String queryID = "QUERY_" + System.currentTimeMillis();
-            
-            // Create new support query
             SupportQuery newQuery = new SupportQuery(
                 queryText,
                 new java.util.Date(),
                 queryID,
-                null, // No staff assigned yet
+                null, 
                 currentCustomer
             );
-            
-            // Add to catalog
             boolean success = queryCatalog.addToCatalog(newQuery);
             
             if (success) {
                 showSuccess("Your query has been submitted successfully! Query ID: " + queryID);
                 newQueryArea.clear();
                 refreshData();
-                
-                // Select the new query in the table
                 queriesTable.getSelectionModel().select(newQuery);
             } else {
                 showError("Failed to submit your query. Please try again.");
@@ -265,7 +244,6 @@ public class CustomerSupportController implements Initializable {
         }
     }
 
-    // Helper methods
     private void showError(String message) {
         System.err.println("Error: " + message);
         showAlert("Error", message);

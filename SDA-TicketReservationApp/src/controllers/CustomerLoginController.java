@@ -22,11 +22,7 @@ import java.util.regex.Pattern;
 public class CustomerLoginController {
 
     private UserCatalog users = new UserCatalog("Customer");
-    
-    // Email validation pattern
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
-
-    // Login Form Elements (from login.fxml)
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
     @FXML private Button loginButton;
@@ -34,7 +30,6 @@ public class CustomerLoginController {
     @FXML private Button registerButton;
     @FXML private Text statusMessage;
 
-    // Register Form Elements (from register.fxml - will be null in login.fxml)
     @FXML private TextField fullNameField;
     @FXML private TextField emailField;
     @FXML private TextField phoneNumField;
@@ -46,7 +41,6 @@ public class CustomerLoginController {
     @FXML private Button clearRegisterButton;
     @FXML private Button backToLoginButton;
 
-    // ADD THIS SHOW METHOD
     public static void show(Stage stage) {
         try {
             FXMLLoader loader = new FXMLLoader(CustomerLoginController.class.getResource("/ui/customerlogin.fxml"));
@@ -70,7 +64,6 @@ public class CustomerLoginController {
         System.out.println("LoginController initialized");
     }
 
-    // Login functionality
     @FXML
     private void handleLogin() {
         String username = usernameField.getText().trim();
@@ -80,12 +73,8 @@ public class CustomerLoginController {
             showError("Please enter both username and password");
         } else if (authenticateUser(username, password)) {
             showSuccess("Login successful! Redirecting...");
-            
-            // Get the logged-in user
             User loggedInUser = users.getUserByUsername(username);
             Customer loggedInCustomer = (Customer)loggedInUser;
-            
-            // Simulate brief delay before redirect
             new Thread(() -> {
                 try {
                     Thread.sleep(1000);
@@ -99,7 +88,6 @@ public class CustomerLoginController {
         }
     }
 
-    // ADD THIS METHOD TO SHOW DASHBOARD
     private void showDashboard(String username,Customer loggedInUser) {
         try {
             Stage currentStage = (Stage) usernameField.getScene().getWindow();
@@ -117,23 +105,16 @@ public class CustomerLoginController {
         if (statusMessage != null) statusMessage.setText("");
     }
 
-    // Register navigation - goes to register.fxml
     @FXML
     private void handleRegister() {
         try {
             System.out.println("Attempting to load register.fxml...");
             
             Stage currentStage = (Stage) usernameField.getScene().getWindow();
-            
-            // Load the register FXML with a NEW controller instance
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/customerregister.fxml"));
-            
             Parent root = loader.load();
-            
-            // Create new scene
             Scene scene = new Scene(root, 900, 700);
             currentStage.setResizable(true);
-            // Load CSS
             try {
                 String cssPath = getClass().getResource("/ui/style.css").toExternalForm();
                 scene.getStylesheets().add(cssPath);
@@ -141,8 +122,6 @@ public class CustomerLoginController {
             } catch (Exception cssEx) {
                 System.err.println("Failed to load CSS: " + cssEx.getMessage());
             }
-            
-            // Set the stage
             currentStage.setScene(scene);
             currentStage.setTitle("TicketGenie - Register");
             currentStage.centerOnScreen();
@@ -156,7 +135,6 @@ public class CustomerLoginController {
         }
     }
 
-    // Register functionality - called from register.fxml
     @FXML
     private void handleCreateAccount() {
         System.out.println("handleCreateAccount called");
@@ -168,7 +146,6 @@ public class CustomerLoginController {
         String confirmPassword = confirmPasswordField.getText();
         String phoneNum = phoneNumField.getText().trim();
 
-        // Validation
         if (fullName.isEmpty() || email.isEmpty() || username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() || phoneNum.isEmpty()) {
             showError("Please fill in all fields");
             return;
@@ -199,14 +176,12 @@ public class CustomerLoginController {
             return;
         }
 
-        // Register new user
         String UserID = IDGenerator.generateCustomerID();
         User newUser = new Customer(UserID, fullName, password, username, email, phoneNum);
         users.addToCatalog(newUser);
         System.out.println(users.getUsers() + " users in catalog after registration.");
         showSuccess("Registration successful! Redirecting to login...");
         
-        // Redirect to login after short delay
         new Thread(() -> {
             try {
                 Thread.sleep(2000);
@@ -231,8 +206,6 @@ public class CustomerLoginController {
     private void handleBackToLogin() {
         try {
             Stage currentStage;
-            
-            // Get the current stage from any available component
             if (fullNameField != null) {
                 currentStage = (Stage) fullNameField.getScene().getWindow();
             } else if (usernameField != null) {
@@ -241,8 +214,6 @@ public class CustomerLoginController {
                 showError("Cannot navigate to login");
                 return;
             }
-            
-            // Use the static show method
             show(currentStage);
             
         } catch (Exception e) {
@@ -252,7 +223,6 @@ public class CustomerLoginController {
         }
     }
 
-    // Helper methods
     private boolean authenticateUser(String username, String password) {
         return users.authenticateUser(username, password);
     }
@@ -270,7 +240,6 @@ public class CustomerLoginController {
             statusMessage.getStyleClass().setAll("error-text");
             statusMessage.setText(message);
         } else {
-            // Fallback: show alert if statusMessage is not available
             showAlert("Error", message);
         }
     }
@@ -290,7 +259,6 @@ public class CustomerLoginController {
         alert.showAndWait();
     }
 
-    // ADD THIS HELPER METHOD
     private static void showErrorAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");
@@ -299,7 +267,6 @@ public class CustomerLoginController {
         alert.showAndWait();
     }
 
-    // Method to get users (for testing/demonstration)
     public List<User> getUsers() {
         return users.getUsers();
     }
@@ -308,8 +275,6 @@ public class CustomerLoginController {
     private void handleBackToMain() {
         try {
             Stage currentStage;
-            
-            // Get the current stage from any available component
             if (fullNameField != null) {
                 currentStage = (Stage) fullNameField.getScene().getWindow();
             } else if (usernameField != null) {
@@ -319,7 +284,6 @@ public class CustomerLoginController {
                 return;
             }
             
-            // Use the static show method from MainController
             MainController.show(currentStage);
             
         } catch (Exception e) {

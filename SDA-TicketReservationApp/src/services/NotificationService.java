@@ -20,7 +20,6 @@ public class NotificationService {
         return instance;
     }
     
-    // Send booking success notification
     public void sendBookingSuccessNotification(Customer customer, String bookingId, String route) {
         Notification notification = Notification.createBookingNotification(
             customer.getUserID(), bookingId, route
@@ -32,7 +31,6 @@ public class NotificationService {
         }
     }
     
-    // Send payment success notification
     public void sendPaymentSuccessNotification(Customer customer, String bookingId, double amount) {
         Notification notification = Notification.createPaymentNotification(
             customer.getUserID(), bookingId, amount
@@ -44,7 +42,6 @@ public class NotificationService {
         }
     }
     
-    // Send departure reminder
     public void sendDepartureReminder(Customer customer, String bookingId, String route, String departureTime) {
         Notification notification = Notification.createDepartureReminder(
             customer.getUserID(), bookingId, route, departureTime
@@ -56,7 +53,6 @@ public class NotificationService {
         }
     }
     
-    // Send cancellation notification
     public void sendCancellationNotification(Customer customer, String bookingId) {
         Notification notification = Notification.createCancellationNotification(
             customer.getUserID(), bookingId
@@ -68,7 +64,6 @@ public class NotificationService {
         }
     }
     
-    // Send welcome notification (for new users)
     public void sendWelcomeNotification(Customer customer) {
         Notification notification = Notification.createWelcomeNotification(customer.getUserID());
         
@@ -77,7 +72,6 @@ public class NotificationService {
         }
     }
     
-    // Send promotion notification
     public void sendPromotionNotification(Customer customer, String code, double discount) {
         Notification notification = Notification.createPromotionNotification(
             customer.getUserID(), code, discount
@@ -88,7 +82,6 @@ public class NotificationService {
         }
     }
     
-    // Send custom system notification
     public void sendSystemNotification(Customer customer, String title, String message) {
         Notification notification = new Notification(
             customer.getUserID(), 
@@ -102,12 +95,10 @@ public class NotificationService {
         }
     }
     
-    // Get unread count for badge
     public int getUnreadCount(String userID) {
         return notificationCatalog.getUnreadCount(userID);
     }
     
-    // Get recent notifications for display
     public java.util.List<Notification> getRecentNotifications(String userID) {
         return notificationCatalog.getNotificationsByUser(userID, 10); // Last 10 notifications
     }

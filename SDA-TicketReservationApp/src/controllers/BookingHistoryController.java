@@ -15,7 +15,6 @@ import javafx.stage.Stage;
 
 import models.Booking;
 import models.Customer;
-import models.ETicket;
 import models.Payment;
 import models.Seat;
 import config.DatabaseConfig;
@@ -27,8 +26,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class BookingHistoryController implements Initializable {
-
-    // --- FXML Components ---
     @FXML private Text pageTitle;
     @FXML private Text userGreeting;
     @FXML private Text noBookingsText;
@@ -43,7 +40,6 @@ public class BookingHistoryController implements Initializable {
     @FXML private Button refreshButton;
     @FXML private ProgressIndicator loadingIndicator;
 
-    // --- State & Config ---
     private String currentUsername;
     private Customer currentCustomer;
     private List<Booking> userBookings;
@@ -55,8 +51,6 @@ public class BookingHistoryController implements Initializable {
     private static final String ALL_BOOKINGS = "All Bookings";
     private static final String ALL_PAYMENTS = "All Payments";
 
-    // --- Initialization & Navigation ---
-
     public static void show(Stage stage, String username, Customer customer) {
         try {
             FXMLLoader loader = new FXMLLoader(BookingHistoryController.class.getResource("/ui/booking-history.fxml"));
@@ -66,8 +60,6 @@ public class BookingHistoryController implements Initializable {
             controller.setUserData(username, customer);
             
             Scene scene = new Scene(root, 1000, 700);
-            
-            // Load CSS explicitly like MyBookings
             URL stylesheet = BookingHistoryController.class.getResource("/ui/booking-history.css");
             if (stylesheet != null) {
                 scene.getStylesheets().add(stylesheet.toExternalForm());
@@ -129,17 +121,11 @@ public class BookingHistoryController implements Initializable {
         }
     }
 
-    // --- Data Loading Logic ---
-
     private void loadUserBookings() {
         setLoadingState(true);
-        
-        // Run database operation in background thread like MyBookings
         new Thread(() -> {
             try {
                 List<Booking> bookings = fetchBookingsFromDatabase();
-                
-                // Update UI on JavaFX Application Thread
                 Platform.runLater(() -> {
                     userBookings = bookings;
                     applyFilters();
@@ -172,7 +158,7 @@ public class BookingHistoryController implements Initializable {
                        "ORDER BY b.BookingDateTime DESC";
 
         Map<String, Booking> bookingMap = new HashMap<>();
-        Map<String, String> bookingReservationMap = new HashMap<>(); // BookingID -> ReservationID
+        Map<String, String> bookingReservationMap = new HashMap<>();
             
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -199,7 +185,6 @@ public class BookingHistoryController implements Initializable {
             return bookings;
         }
         
-        // Now fetch seats for each booking's reservation
         if (!bookingReservationMap.isEmpty()) {
             String seatQuery = 
                 "SELECT ReservationID, SeatNumber, SeatType, Price, Availability " +
@@ -217,8 +202,6 @@ public class BookingHistoryController implements Initializable {
                 }
                 
                 ResultSet rs = stmt.executeQuery();
-                
-                // Group seats by reservation ID
                 Map<String, List<Seat>> reservationSeatsMap = new HashMap<>();
                 
                 while (rs.next()) {
@@ -234,8 +217,7 @@ public class BookingHistoryController implements Initializable {
                         .computeIfAbsent(reservationId, k -> new ArrayList<>())
                         .add(seat);
                 }
-                
-                // Assign seats to bookings
+
                 for (Booking booking : bookings) {
                     String reservationId = booking.getReservation().getReservationID();
                     List<Seat> seats = reservationSeatsMap.get(reservationId);
@@ -256,7 +238,6 @@ public class BookingHistoryController implements Initializable {
 
     private Booking createBookingFromResultSet(ResultSet rs) throws SQLException {
         try {
-            // Reconstruct object graph from flat result set
             models.Route route = new models.Route(
                 rs.getString("RouteID"),
                 rs.getString("Source"),
@@ -309,8 +290,6 @@ public class BookingHistoryController implements Initializable {
         }
     }
 
-    // --- UI Generation (Same Card System as MyBookings) ---
-
     private void applyFilters() {
         if (userBookings == null || userBookings.isEmpty()) {
             showNoBookings();
@@ -318,14 +297,11 @@ public class BookingHistoryController implements Initializable {
         }
         
         List<Booking> filteredBookings = new ArrayList<>(userBookings);
-        
-        // Status Filter
         String status = statusFilter.getValue();
         if (!ALL_BOOKINGS.equals(status)) {
             filteredBookings.removeIf(booking -> !booking.getStatus().equalsIgnoreCase(status));
         }
         
-        // Payment Filter
         String paymentStatus = paymentFilter.getValue();
         switch (paymentStatus) {
             case "Paid": filteredBookings.removeIf(b -> !b.isPaid()); break;
@@ -334,7 +310,6 @@ public class BookingHistoryController implements Initializable {
             case "Refunded": filteredBookings.removeIf(b -> !"Refunded".equals(b.getPaymentStatus())); break;
         }
         
-        // Search Filter
         String searchTerm = searchField.getText().toLowerCase();
         if (!searchTerm.isEmpty()) {
             filteredBookings.removeIf(b -> 
@@ -368,13 +343,11 @@ public class BookingHistoryController implements Initializable {
      */
     private VBox createBookingCard(Booking booking) {
         VBox card = new VBox(15);
-        card.getStyleClass().add("booking-card"); // CRITICAL: Applies white bg and shadow
+        card.getStyleClass().add("booking-card"); 
         
         models.Reservation reservation = booking.getReservation();
         models.Route route = reservation.getRoute();
         models.Schedule schedule = reservation.getSchedule();
-        
-        // 1. HEADER (ID + Status Badges) - EXACT SAME as MyBookings
         HBox header = new HBox(10); 
         header.getStyleClass().add("booking-header");
         
@@ -391,13 +364,9 @@ public class BookingHistoryController implements Initializable {
         paymentStatus.getStyleClass().addAll("status", getPaymentStatusStyleClass(booking));
         
         statusBadges.getChildren().addAll(bookingStatus, paymentStatus);
-        
-        // Push badges to the right
         HBox spacer = new HBox();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         header.getChildren().addAll(bookingId, spacer, statusBadges);
-        
-        // 2. ROUTE INFO - EXACT SAME as MyBookings
         VBox routeInfo = new VBox(8); 
         routeInfo.getStyleClass().add("route-info");
         
@@ -414,8 +383,6 @@ public class BookingHistoryController implements Initializable {
         classText.getStyleClass().add("class");
         
         routeInfo.getChildren().addAll(routeText, scheduleText, classText);
-        
-        // 3. FOOTER (Details + Actions) - EXACT SAME as MyBookings
         HBox details = new HBox(10); 
         details.getStyleClass().add("booking-details");
         details.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
@@ -432,7 +399,6 @@ public class BookingHistoryController implements Initializable {
         
         leftDetails.getChildren().addAll(bookingDate, price);
         
-        // Action Buttons - For Booking History, we only show View actions
         HBox actionButtons = new HBox(10); 
         actionButtons.getStyleClass().add("action-buttons");
         
@@ -449,8 +415,6 @@ public class BookingHistoryController implements Initializable {
         card.getChildren().addAll(header, routeInfo, details);
         return card;
     }
-
-    // --- Helpers & Actions ---
 
     private String getPaymentStatusText(Booking booking) {
         if (!booking.hasPayment()) return "Unpaid";
@@ -499,7 +463,6 @@ public class BookingHistoryController implements Initializable {
         if(refreshButton != null) refreshButton.setDisable(loading);
     }
 
-    // Helper method for the Grid layout
     private void addTicketDetail(GridPane grid, String label, String value, int col, int row) {
         VBox box = new VBox(2);
         Label l = new Label(label);
@@ -512,37 +475,27 @@ public class BookingHistoryController implements Initializable {
 
     private void showBookingDetails(Booking booking) {
         try {
-            // 1. Setup Dialog
             Dialog<ButtonType> dialog = new Dialog<>();
             dialog.setTitle("Booking Details");
             dialog.setHeaderText(null);
             dialog.setGraphic(null);
-            
-            // Connect to CSS
             DialogPane dialogPane = dialog.getDialogPane();
             dialogPane.getStylesheets().add(getClass().getResource("/ui/MyBookings.css").toExternalForm());
             dialogPane.getStyleClass().add("ticket-dialog");
-
-            // 2. Main Card Container
             VBox card = new VBox(15);
-            card.getStyleClass().add("ticket-card"); // Reuses the E-Ticket card style
+            card.getStyleClass().add("ticket-card");
             card.setMinWidth(400);
             card.setAlignment(javafx.geometry.Pos.TOP_CENTER);
-
-            // 3. Header
             Label title = new Label("BOOKING DETAILS");
-            title.getStyleClass().add("details-title"); // CSS class
+            title.getStyleClass().add("details-title"); 
             
             Separator sep1 = new Separator();
-            sep1.getStyleClass().add("details-separator"); // CSS class
+            sep1.getStyleClass().add("details-separator");
 
-            // 4. Route Info
             String source = booking.getReservation().getRoute().getSource();
             String dest = booking.getReservation().getRoute().getDestination();
             Label routeLbl = new Label(source + " ➝ " + dest);
-            routeLbl.getStyleClass().add("details-route"); // CSS class
-
-            // 5. Details Grid
+            routeLbl.getStyleClass().add("details-route"); 
             GridPane grid = new GridPane();
             grid.setHgap(30);
             grid.setVgap(15);
@@ -550,19 +503,15 @@ public class BookingHistoryController implements Initializable {
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy");
 
-            // Row 0
             addTicketDetail(grid, "Booking ID:", "#" + booking.getBookingID(), 0, 0);
             addTicketDetail(grid, "Booked On:", dateFormat.format(booking.getBookingDateTime()), 1, 0);
 
-            // Row 1
             addTicketDetail(grid, "Travel Date:", booking.getReservation().getSchedule().getDate().toString(), 0, 1);
             addTicketDetail(grid, "Time:", booking.getReservation().getSchedule().getDepartureTime() + " - " + booking.getReservation().getSchedule().getArrivalTime(), 1, 1);
 
-            // Row 2
             addTicketDetail(grid, "Class:", booking.getReservation().getSeatClass(), 0, 2);
             addTicketDetail(grid, "Total Amount:", "PKR " + String.format("%.2f", booking.getTotalAmount()), 1, 2);
 
-            // 6. Status Badges
             HBox badgeBox = new HBox(10);
             badgeBox.setAlignment(javafx.geometry.Pos.CENTER);
             badgeBox.setPadding(new Insets(10, 0, 0, 0));
@@ -575,16 +524,13 @@ public class BookingHistoryController implements Initializable {
             
             badgeBox.getChildren().addAll(statusBadge, paymentBadge);
 
-            // 7. Assemble
             Separator sep2 = new Separator();
-            sep2.setVisible(false); // Invisible spacer
+            sep2.setVisible(false); 
             
             card.getChildren().addAll(title, sep1, routeLbl, grid, sep2, badgeBox);
             
             dialogPane.setContent(card);
             dialogPane.getButtonTypes().add(ButtonType.CLOSE);
-            
-            // Explicitly style the close button if needed
             Button closeBtn = (Button) dialogPane.lookupButton(ButtonType.CLOSE);
             closeBtn.getStyleClass().add("btn-primary");
 

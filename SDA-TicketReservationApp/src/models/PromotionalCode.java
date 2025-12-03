@@ -18,8 +18,7 @@ public class PromotionalCode {
         this.percentage = percentage;
         this.isActive = true;
     }
-    
-    // Getters and Setters
+
     public String getCode() {
         return code;
     }
@@ -52,7 +51,6 @@ public class PromotionalCode {
         isActive = active;
     }
     
-    // Methods from class diagram
     public boolean checkValidity() {
         if (!isActive) {
             return false;

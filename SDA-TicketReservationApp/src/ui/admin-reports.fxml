@@ -30,7 +30,6 @@
             <HBox spacing="15" alignment="CENTER">
                 <Button fx:id="generateBookingReportButton" styleClass="btn-primary" text="📊 Booking Report" />
                 <Button fx:id="generateRevenueReportButton" styleClass="btn-primary" text="💰 Revenue Report" />
-                <Button fx:id="generateRouteReportButton" styleClass="btn-primary" text="🚌 Route Report" />
             </HBox>
         </VBox>
     </HBox>
@@ -39,7 +38,6 @@
     <VBox spacing="10" VBox.vgrow="ALWAYS" styleClass="form-container">
         <HBox alignment="CENTER_LEFT" spacing="10">
             <Label styleClass="section-title" text="Generated Report" />
-            <Button fx:id="exportReportButton" styleClass="btn-secondary" text="Export Report" />
         </HBox>
         <TextArea fx:id="reportArea" editable="false" VBox.vgrow="ALWAYS" styleClass="report-area" />
     </VBox>

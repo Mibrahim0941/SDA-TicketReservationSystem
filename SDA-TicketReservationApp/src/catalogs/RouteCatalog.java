@@ -53,7 +53,6 @@ public class RouteCatalog {
         if (!databaseAvailable) return;
         
         try (Statement stmt = connection.createStatement()) {
-            // Create Route table if not exists
             String createRouteTable = """
                 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Route' AND xtype='U')
                 CREATE TABLE Route (
@@ -65,7 +64,6 @@ public class RouteCatalog {
                 )
                 """;
             
-            // Create Schedule table if not exists
             String createScheduleTable = """
                 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Schedule' AND xtype='U')
                 CREATE TABLE Schedule (
@@ -115,7 +113,6 @@ public class RouteCatalog {
             return false;
         }
         
-        // Check if route with same source and destination already exists
         boolean duplicateRoute = routes.values().stream()
             .anyMatch(r -> r.getSource().equalsIgnoreCase(route.getSource()) && 
                           r.getDestination().equalsIgnoreCase(route.getDestination()));
@@ -185,7 +182,6 @@ public class RouteCatalog {
             return true;
         } catch (SQLException e) {
             System.err.println("Save route failed: " + e.getMessage());
-            // Rollback in-memory change
             routes.remove(route.getRouteID());
             return false;
         }

@@ -35,14 +35,11 @@ public class NotificationsController implements Initializable {
     @FXML private Button refreshButton;
     @FXML private ComboBox<String> filterCombo;
     
-    private String currentUsername; // Added to keep track of username
+    private String currentUsername; 
     private Customer currentCustomer;
     private List<Notification> notifications = new ArrayList<>();
     
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a");
-
-    // --- 1. NAVIGATION & INITIALIZATION (Added show method to load CSS) ---
-
     public static void show(Stage stage, String username, Customer customer) {
         try {
             FXMLLoader loader = new FXMLLoader(NotificationsController.class.getResource("/ui/notifications.fxml"));
@@ -52,8 +49,6 @@ public class NotificationsController implements Initializable {
             controller.setUserData(username, customer);
             
             Scene scene = new Scene(root, 1000, 700);
-            
-            // Explicitly load CSS to ensure styling applies
             URL stylesheet = NotificationsController.class.getResource("/ui/notifications.css");
             if (stylesheet != null) {
                 scene.getStylesheets().add(stylesheet.toExternalForm());
@@ -102,15 +97,12 @@ public class NotificationsController implements Initializable {
     private void goBackToDashboard() {
         try {
             Stage currentStage = (Stage) backButton.getScene().getWindow();
-            // Assuming DashboardController exists and has a show method
             DashboardController.show(currentStage, currentUsername, currentCustomer);
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Error navigating back to dashboard");
         }
     }
-
-    // --- DATA LOADING ---
 
     private void loadNotifications() {
         setLoading(true);
@@ -163,118 +155,103 @@ public class NotificationsController implements Initializable {
         }
         return notificationsList;
     }
-    
-    // --- UI DISPLAY & CARD CREATION ---
 
-private VBox createNotificationCard(Notification notification) {
-    VBox card = new VBox(15);
-    card.getStyleClass().add("notification-card");
-    
-    if (notification != null && !notification.isRead()) {
-        card.getStyleClass().add("unread");
+    private VBox createNotificationCard(Notification notification) {
+        VBox card = new VBox(15);
+        card.getStyleClass().add("notification-card");
+        
+        if (notification != null && !notification.isRead()) {
+            card.getStyleClass().add("unread");
+        }
+        
+        HBox header = new HBox(10);
+        header.getStyleClass().add("notification-header");
+        
+        Label titleLabel = new Label(notification != null ? notification.getTitle() : "Notification");
+        titleLabel.getStyleClass().add("notification-title");
+        titleLabel.setWrapText(true);
+        
+        HBox spacer = new HBox();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        HBox rightSection = new HBox(10);
+        rightSection.setAlignment(Pos.CENTER_RIGHT);
+        
+        Label timeLabel = new Label(notification != null ? formatTime(notification.getCreatedAt()) : "Recently");
+        timeLabel.getStyleClass().add("notification-time");
+        
+        if (notification != null) {
+            Label typeLabel = new Label(notification.getType().toString());
+            typeLabel.getStyleClass().addAll("notification-type-badge", 
+                "notification-type-" + notification.getType().toString().toLowerCase());
+            rightSection.getChildren().addAll(typeLabel, timeLabel);
+        } else {
+            rightSection.getChildren().add(timeLabel);
+        }
+        
+        header.getChildren().addAll(titleLabel, spacer, rightSection);
+        Label messageLabel = new Label(notification != null ? notification.getMessage() : "");
+        messageLabel.getStyleClass().add("notification-message");
+        messageLabel.setWrapText(true);
+        messageLabel.setMaxWidth(Double.MAX_VALUE);
+        HBox details = new HBox(10);
+        details.getStyleClass().add("notification-details");
+        
+        VBox leftDetails = new VBox(5);
+        leftDetails.getStyleClass().add("details-left");
+        if (notification != null && notification.getRelatedID() != null && !notification.getRelatedID().isEmpty()) {
+            Label relatedLabel = new Label("Related to: " + notification.getRelatedID());
+            relatedLabel.getStyleClass().add("related-info");
+            leftDetails.getChildren().add(relatedLabel);
+        }
+        HBox actionButtons = new HBox(10);
+        actionButtons.setAlignment(Pos.CENTER_RIGHT);
+        
+        if (notification != null && !notification.isRead()) {
+            Button markReadBtn = new Button("Mark as Read");
+            markReadBtn.getStyleClass().add("btn-primary");
+            markReadBtn.setOnAction(e -> markAsRead(notification, card));
+            actionButtons.getChildren().add(markReadBtn);
+        }
+        
+        HBox detailSpacer = new HBox();
+        HBox.setHgrow(detailSpacer, Priority.ALWAYS);
+        details.getChildren().addAll(leftDetails, detailSpacer, actionButtons);
+        if (notification != null) {
+            card.setOnMouseClicked(e -> {
+                if (!notification.isRead()) {
+                    markAsRead(notification, card);
+                }
+            });
+        }
+        
+        card.getChildren().addAll(header, messageLabel, details);
+        
+        return card;
     }
-    
-    // Header with title and time - LIKE MYBOOKINGS HEADER
-    HBox header = new HBox(10);
-    header.getStyleClass().add("notification-header");
-    
-    Label titleLabel = new Label(notification != null ? notification.getTitle() : "Notification");
-    titleLabel.getStyleClass().add("notification-title");
-    titleLabel.setWrapText(true);
-    
-    HBox spacer = new HBox();
-    HBox.setHgrow(spacer, Priority.ALWAYS);
-    
-    HBox rightSection = new HBox(10);
-    rightSection.setAlignment(Pos.CENTER_RIGHT);
-    
-    Label timeLabel = new Label(notification != null ? formatTime(notification.getCreatedAt()) : "Recently");
-    timeLabel.getStyleClass().add("notification-time");
-    
-    if (notification != null) {
-        Label typeLabel = new Label(notification.getType().toString());
-        typeLabel.getStyleClass().addAll("notification-type-badge", 
-            "notification-type-" + notification.getType().toString().toLowerCase());
-        rightSection.getChildren().addAll(typeLabel, timeLabel);
-    } else {
-        rightSection.getChildren().add(timeLabel);
-    }
-    
-    header.getChildren().addAll(titleLabel, spacer, rightSection);
-    
-    // Message - Like route info in MyBookings
-    Label messageLabel = new Label(notification != null ? notification.getMessage() : "");
-    messageLabel.getStyleClass().add("notification-message");
-    messageLabel.setWrapText(true);
-    messageLabel.setMaxWidth(Double.MAX_VALUE);
-    
-    // Footer with actions - Like booking details in MyBookings
-    HBox details = new HBox(10);
-    details.getStyleClass().add("notification-details");
-    
-    VBox leftDetails = new VBox(5);
-    leftDetails.getStyleClass().add("details-left");
-    
-    // Show related ID if exists (like booking ID in MyBookings)
-    if (notification != null && notification.getRelatedID() != null && !notification.getRelatedID().isEmpty()) {
-        Label relatedLabel = new Label("Related to: " + notification.getRelatedID());
-        relatedLabel.getStyleClass().add("related-info");
-        leftDetails.getChildren().add(relatedLabel);
-    }
-    
-    // Action buttons
-    HBox actionButtons = new HBox(10);
-    actionButtons.setAlignment(Pos.CENTER_RIGHT);
-    
-    if (notification != null && !notification.isRead()) {
-        Button markReadBtn = new Button("Mark as Read");
-        markReadBtn.getStyleClass().add("btn-primary");
-        markReadBtn.setOnAction(e -> markAsRead(notification, card));
-        actionButtons.getChildren().add(markReadBtn);
-    }
-    
-    HBox detailSpacer = new HBox();
-    HBox.setHgrow(detailSpacer, Priority.ALWAYS);
-    details.getChildren().addAll(leftDetails, detailSpacer, actionButtons);
-    
-    // Click to mark as read
-    if (notification != null) {
-        card.setOnMouseClicked(e -> {
-            if (!notification.isRead()) {
-                markAsRead(notification, card);
-            }
-        });
-    }
-    
-    card.getChildren().addAll(header, messageLabel, details);
-    
-    return card;
-}
 
-private void displayNotifications(List<Notification> notificationsToDisplay) {
-    notificationsContainer.getChildren().clear();
-    
-    if (notificationsToDisplay == null || notificationsToDisplay.isEmpty()) {
-        VBox emptyContainer = new VBox();
-        emptyContainer.setAlignment(Pos.CENTER);
-        emptyContainer.setPadding(new Insets(40));
+    private void displayNotifications(List<Notification> notificationsToDisplay) {
+        notificationsContainer.getChildren().clear();
         
-        Label noNotifications = new Label("📭 No notifications to display.");
-        noNotifications.getStyleClass().add("empty-label");
-        noNotifications.setAlignment(Pos.CENTER);
+        if (notificationsToDisplay == null || notificationsToDisplay.isEmpty()) {
+            VBox emptyContainer = new VBox();
+            emptyContainer.setAlignment(Pos.CENTER);
+            emptyContainer.setPadding(new Insets(40));
+            
+            Label noNotifications = new Label("📭 No notifications to display.");
+            noNotifications.getStyleClass().add("empty-label");
+            noNotifications.setAlignment(Pos.CENTER);
+            
+            emptyContainer.getChildren().add(noNotifications);
+            notificationsContainer.getChildren().add(emptyContainer);
+            return;
+        }
         
-        emptyContainer.getChildren().add(noNotifications);
-        notificationsContainer.getChildren().add(emptyContainer);
-        return;
+        for (Notification notification : notificationsToDisplay) {
+            VBox notificationCard = createNotificationCard(notification);
+            notificationsContainer.getChildren().add(notificationCard);
+        }
     }
-    
-    for (Notification notification : notificationsToDisplay) {
-        VBox notificationCard = createNotificationCard(notification);
-        notificationsContainer.getChildren().add(notificationCard);
-    }
-}
-    
-    // --- HELPER LOGIC ---
 
     private String formatTime(Date date) {
         if (date == null) return "Recently";
@@ -299,8 +276,6 @@ private void displayNotifications(List<Notification> notificationsToDisplay) {
         if (updateNotificationReadStatus(notification.getNotificationID(), true)) {
             notification.setRead(true);
             card.getStyleClass().remove("unread");
-            // Optional: remove button immediately
-            // filterNotifications(); // Or just refresh visuals
         }
     }
     
@@ -320,8 +295,6 @@ private void displayNotifications(List<Notification> notificationsToDisplay) {
         });
     }
     
-    // --- DB OPERATIONS ---
-
     private boolean markAllNotificationsAsRead() {
         String query = "UPDATE Notifications SET IsRead = 1 WHERE UserID = ? AND IsRead = 0";
         try (Connection conn = DriverManager.getConnection(DatabaseConfig.getDbUrl(), DatabaseConfig.getDbUser(), DatabaseConfig.getDbPassword());

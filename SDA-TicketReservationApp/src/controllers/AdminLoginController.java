@@ -36,13 +36,8 @@ public class AdminLoginController implements Initializable {
     }
 
     private void setupEventHandlers() {
-        // Login button handler
         loginButton.setOnAction(e -> handleLogin());
-        
-        // Back button handler
         backButton.setOnAction(e -> handleBack());
-        
-        // Enter key support for password field
         passwordField.setOnAction(e -> handleLogin());
     }
 
@@ -56,7 +51,6 @@ public class AdminLoginController implements Initializable {
         } else if (authenticateAdmin(username, password)) {
             showStatusMessage("Admin login successful! Redirecting...", "success");
             
-            // Redirect to admin dashboard after short delay
             new Thread(() -> {
                 try {
                     Thread.sleep(1000);
@@ -73,12 +67,10 @@ public class AdminLoginController implements Initializable {
     }
 
     private boolean authenticateAdmin(String username, String password) {
-        // For testing - allow admin/admin credentials
         if ("admin".equals(username) && "admin".equals(password)) {
             return true;
         }
-        
-        // Check against your user catalog
+
         return adminCatalog.authenticateUser(username, password);
     }
 
@@ -97,11 +89,7 @@ public class AdminLoginController implements Initializable {
     private void showAdminDashboard(String username) {
         try {
             Stage currentStage = (Stage) loginButton.getScene().getWindow();
-            
-            // Create admin object (you might want to get this from your catalog)
             Admin admin = new Admin("ADM001", "System Administrator", "admin", username, "admin@ticketgenie.com", "03001234567");
-            
-            // Redirect to AdminDashboardController instead of DashboardController
             AdminDashboardController.show(currentStage, username, admin);
             
         } catch (Exception e) {
@@ -140,7 +128,6 @@ public class AdminLoginController implements Initializable {
         alert.showAndWait();
     }
 
-    // Static show method for navigation from other controllers
     public static void show(Stage stage) {
         try {
             FXMLLoader loader = new FXMLLoader(AdminLoginController.class.getResource("/ui/adminlogin.fxml"));

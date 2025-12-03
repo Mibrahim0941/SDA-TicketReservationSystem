@@ -25,10 +25,9 @@ public class Schedule {
         this.arrivalTime = arrivalTime;
         this.scheduleClass = scheduleClass;
         this.seats = new ArrayList<>();
-        this.typePercentage = 100.0; // Default 100%
+        this.typePercentage = 100.0; 
     }
-    
-    // Getters and Setters
+
     public String getScheduleID() {
         return scheduleID;
     }
@@ -85,7 +84,6 @@ public class Schedule {
         this.typePercentage = typePercentage;
     }
     
-    // Methods from class diagram
     public boolean checkSchedule() {
         return date != null && departureTime != null && arrivalTime != null && 
                arrivalTime.isAfter(departureTime);
@@ -107,14 +105,6 @@ public class Schedule {
     
     public boolean matchClass(String scheduleClass) {
         return this.scheduleClass.equalsIgnoreCase(scheduleClass);
-    }
-    
-    public void updatePrice(double newPrice) {
-        // Implementation for updating price
-    }
-    
-    public void changeStatus(ArrayList<Seat> newSeats, String status) {
-        // Implementation for changing seat status
     }
     
     @Override

@@ -220,7 +220,7 @@ public class ManagePricingController {
                 Route currentRoute = routeCatalog.getRoute(route.getRouteID());
                 if (currentRoute != null) {
                     double newPrice = currentRoute.getBasePrice() * (1 + percentage/100);
-                    newPrice = Math.round(newPrice * 100.0) / 100.0; // Round to 2 decimal places
+                    newPrice = Math.round(newPrice * 100.0) / 100.0;
                     currentRoute.setBasePrice(newPrice);
                     
                     if (routeCatalog.updateRoute(currentRoute)) {

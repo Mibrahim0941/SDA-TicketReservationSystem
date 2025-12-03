@@ -10,9 +10,8 @@ public class Notification {
     private NotificationType type;
     private boolean isRead;
     private Date createdAt;
-    private String relatedID; // BookingID, PaymentID, etc.
-    
-    // Enum for notification types
+    private String relatedID; 
+
     public enum NotificationType {
         BOOKING("booking"),
         PAYMENT("payment"),
@@ -36,11 +35,10 @@ public class Notification {
                     return type;
                 }
             }
-            return SYSTEM; // Default
+            return SYSTEM;
         }
     }
-    
-    // Constructor for creating new notifications
+
     public Notification(String userID, String title, String message, NotificationType type) {
         this.userID = userID;
         this.title = title;
@@ -49,8 +47,7 @@ public class Notification {
         this.isRead = false;
         this.createdAt = new Date();
     }
-    
-    // Constructor for loading from database
+
     public Notification(int notificationID, String userID, String title, String message, 
                        String type, boolean isRead, Date createdAt, String relatedID) {
         this.notificationID = notificationID;
@@ -63,7 +60,6 @@ public class Notification {
         this.relatedID = relatedID;
     }
     
-    // Full constructor
     public Notification(int notificationID, String userID, String title, String message, 
                        NotificationType type, boolean isRead, Date createdAt, String relatedID) {
         this.notificationID = notificationID;
@@ -76,7 +72,6 @@ public class Notification {
         this.relatedID = relatedID;
     }
     
-    // Getters and Setters
     public int getNotificationID() { 
         return notificationID; 
     }
@@ -117,7 +112,6 @@ public class Notification {
         this.type = type; 
     }
     
-    // For database compatibility
     public String getTypeString() {
         return type.getValue();
     }
@@ -146,7 +140,6 @@ public class Notification {
         this.relatedID = relatedID; 
     }
     
-    // Helper method to get formatted time
     public String getFormattedTime() {
         if (createdAt == null) return "Recently";
         
@@ -161,13 +154,10 @@ public class Notification {
         
         long days = hours / 24;
         if (days < 7) return days + " days ago";
-        
-        // For older notifications, show date
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MMM dd, yyyy");
         return sdf.format(createdAt);
     }
     
-    // Helper method to get CSS style class based on type
     public String getStyleClass() {
         switch (type) {
             case BOOKING:
@@ -185,7 +175,6 @@ public class Notification {
         }
     }
     
-    // Helper method to get icon based on type
     public String getIcon() {
         switch (type) {
             case BOOKING:
@@ -208,8 +197,6 @@ public class Notification {
         return String.format("Notification{id=%d, user='%s', title='%s', type='%s', read=%s}",
             notificationID, userID, title, type, isRead);
     }
-    
-    // Factory methods for common notification types
     
     public static Notification createBookingNotification(String userID, String bookingId, String route) {
         String title = "🎫 Booking Confirmed!";

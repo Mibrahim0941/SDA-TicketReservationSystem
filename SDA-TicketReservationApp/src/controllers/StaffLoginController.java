@@ -37,13 +37,8 @@ public class StaffLoginController implements Initializable {
     }
 
     private void setupEventHandlers() {
-        // Login button handler
         loginButton.setOnAction(e -> handleStaffLogin());
-        
-        // Back button handler
         backButton.setOnAction(e -> handleBackToLoginTypes());
-        
-        // Enter key support for password field
         passwordField.setOnAction(e -> handleStaffLogin());
     }
 
@@ -57,8 +52,6 @@ public class StaffLoginController implements Initializable {
         } else if (staff.authenticateUser(username, password)) {
             showStatusMessage("Staff login successful! Redirecting...", "success");
             currentStaff = (SupportStaff)staff.getUserByUsername(username);
-            
-            // Redirect to staff dashboard after short delay
             new Thread(() -> {
                 try {
                     Thread.sleep(1000);
@@ -122,8 +115,7 @@ public class StaffLoginController implements Initializable {
         alert.setContentText(message);
         alert.showAndWait();
     }
-
-    // Static show method for navigation
+    
     public static void show(Stage stage) {
         try {
             FXMLLoader loader = new FXMLLoader(StaffLoginController.class.getResource("/ui/stafflogin.fxml"));
