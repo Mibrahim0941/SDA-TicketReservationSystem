@@ -1,15 +1,21 @@
 package controllers;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 import models.Customer;
 import models.Notification;
 import config.DatabaseConfig;
+
+import java.io.IOException;
 import java.net.URL;
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -29,10 +35,39 @@ public class NotificationsController implements Initializable {
     @FXML private Button refreshButton;
     @FXML private ComboBox<String> filterCombo;
     
+    private String currentUsername; // Added to keep track of username
     private Customer currentCustomer;
     private List<Notification> notifications = new ArrayList<>();
     
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a");
+
+    // --- 1. NAVIGATION & INITIALIZATION (Added show method to load CSS) ---
+
+    public static void show(Stage stage, String username, Customer customer) {
+        try {
+            FXMLLoader loader = new FXMLLoader(NotificationsController.class.getResource("/ui/notifications.fxml"));
+            Parent root = loader.load();
+            
+            NotificationsController controller = loader.getController();
+            controller.setUserData(username, customer);
+            
+            Scene scene = new Scene(root, 1000, 700);
+            
+            // Explicitly load CSS to ensure styling applies
+            URL stylesheet = NotificationsController.class.getResource("/ui/notifications.css");
+            if (stylesheet != null) {
+                scene.getStylesheets().add(stylesheet.toExternalForm());
+            }
+            
+            stage.setScene(scene);
+            stage.setTitle("TicketGenie - Notifications");
+            stage.centerOnScreen();
+            
+        } catch (IOException e) {
+            showErrorAlert("Failed to load Notifications: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -41,6 +76,7 @@ public class NotificationsController implements Initializable {
     }
     
     public void setUserData(String username, Customer customer) {
+        this.currentUsername = username;
         this.currentCustomer = customer;
         loadNotifications();
     }
@@ -48,38 +84,44 @@ public class NotificationsController implements Initializable {
     private void setupUI() {
         filterCombo.getItems().addAll("All Notifications", "Unread Only", "Booking Related", "Payment Related", "System");
         filterCombo.setValue("All Notifications");
-        
-        if (backButton != null) {
-            backButton.setOnAction(e -> goBackToDashboard());
-        }
     }
     
     private void setupEventHandlers() {
+        if (backButton != null) {
+            backButton.setOnAction(e -> goBackToDashboard());
+        }
         if (markAllReadButton != null) {
             markAllReadButton.setOnAction(e -> markAllAsRead());
         }
-        
         if (refreshButton != null) {
             refreshButton.setOnAction(e -> loadNotifications());
         }
-        
         filterCombo.valueProperty().addListener((obs, oldVal, newVal) -> filterNotifications());
     }
     
+    private void goBackToDashboard() {
+        try {
+            Stage currentStage = (Stage) backButton.getScene().getWindow();
+            // Assuming DashboardController exists and has a show method
+            DashboardController.show(currentStage, currentUsername, currentCustomer);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Error navigating back to dashboard");
+        }
+    }
+
+    // --- DATA LOADING ---
+
     private void loadNotifications() {
         setLoading(true);
-        
-        // Load notifications in background thread
         new Thread(() -> {
             try {
                 List<Notification> loadedNotifications = fetchNotificationsFromDatabase();
-                
                 javafx.application.Platform.runLater(() -> {
                     notifications = loadedNotifications;
                     displayNotifications(notifications);
                     setLoading(false);
                 });
-                
             } catch (Exception e) {
                 e.printStackTrace();
                 javafx.application.Platform.runLater(() -> {
@@ -92,17 +134,12 @@ public class NotificationsController implements Initializable {
     
     private List<Notification> fetchNotificationsFromDatabase() {
         List<Notification> notificationsList = new ArrayList<>();
-        
         String query = "SELECT * FROM Notifications WHERE UserID = ? ORDER BY CreatedAt DESC";
         
-        try (Connection conn = DriverManager.getConnection(
-                DatabaseConfig.getDbUrl(), 
-                DatabaseConfig.getDbUser(), 
-                DatabaseConfig.getDbPassword());
+        try (Connection conn = DriverManager.getConnection(DatabaseConfig.getDbUrl(), DatabaseConfig.getDbUser(), DatabaseConfig.getDbPassword());
              PreparedStatement stmt = conn.prepareStatement(query)) {
             
             if (currentCustomer == null || currentCustomer.getUserID() == null) {
-                System.err.println("Customer or UserID is null");
                 return notificationsList;
             }
             
@@ -110,149 +147,160 @@ public class NotificationsController implements Initializable {
             ResultSet rs = stmt.executeQuery();
             
             while (rs.next()) {
-                try {
-                    Notification notification = new Notification(
-                        rs.getInt("NotificationID"),
-                        rs.getString("UserID"),
-                        rs.getString("Title"),
-                        rs.getString("Message"),
-                        rs.getString("Type"),
-                        rs.getBoolean("IsRead"),
-                        rs.getTimestamp("CreatedAt"),
-                        rs.getString("RelatedID")
-                    );
-                    notificationsList.add(notification);
-                } catch (Exception e) {
-                    System.err.println("Error creating notification from ResultSet: " + e.getMessage());
-                }
+                notificationsList.add(new Notification(
+                    rs.getInt("NotificationID"),
+                    rs.getString("UserID"),
+                    rs.getString("Title"),
+                    rs.getString("Message"),
+                    rs.getString("Type"),
+                    rs.getBoolean("IsRead"),
+                    rs.getTimestamp("CreatedAt"),
+                    rs.getString("RelatedID")
+                ));
             }
-            
         } catch (SQLException e) {
-            System.err.println("Error fetching notifications: " + e.getMessage());
             e.printStackTrace();
         }
-        
         return notificationsList;
     }
     
-    private void displayNotifications(List<Notification> notificationsToDisplay) {
-        notificationsContainer.getChildren().clear();
-        
-        if (notificationsToDisplay == null || notificationsToDisplay.isEmpty()) {
-            Label noNotifications = new Label("📭 No notifications to display.");
-            noNotifications.getStyleClass().add("empty-label");
-            noNotifications.setAlignment(Pos.CENTER);
-            noNotifications.setPadding(new Insets(40));
-            notificationsContainer.getChildren().add(noNotifications);
-            return;
-        }
-        
-        for (Notification notification : notificationsToDisplay) {
-            VBox notificationCard = createNotificationCard(notification);
-            notificationsContainer.getChildren().add(notificationCard);
-        }
+    // --- UI DISPLAY & CARD CREATION ---
+
+private VBox createNotificationCard(Notification notification) {
+    VBox card = new VBox(15);
+    card.getStyleClass().add("notification-card");
+    
+    if (notification != null && !notification.isRead()) {
+        card.getStyleClass().add("unread");
     }
     
-    private VBox createNotificationCard(Notification notification) {
-        VBox card = new VBox(10);
-        card.getStyleClass().add("notification-card");
-        
-        if (notification != null && !notification.isRead()) {
-            card.getStyleClass().add("unread");
-        }
-        
-        // Header with title and time
-        HBox header = new HBox(10);
-        header.setAlignment(Pos.CENTER_LEFT);
-        
-        Label titleLabel = new Label(notification != null ? notification.getTitle() : "Notification");
-        titleLabel.getStyleClass().add("notification-title");
-        
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        
-        Label timeLabel = new Label(notification != null ? formatTime(notification.getCreatedAt()) : "Recently");
-        timeLabel.getStyleClass().add("notification-time");
-        
-        header.getChildren().addAll(titleLabel, spacer, timeLabel);
-        
-        // Message
-        Label messageLabel = new Label(notification != null ? notification.getMessage() : "");
-        messageLabel.getStyleClass().add("notification-message");
-        messageLabel.setWrapText(true);
-        
-        // Footer with type and actions
-        HBox footer = new HBox(10);
-        footer.setAlignment(Pos.CENTER_LEFT);
-        
-        if (notification != null) {
-            Label typeLabel = new Label(notification.getType().toString());
-            typeLabel.getStyleClass().add("notification-type-" + notification.getType().toString().toLowerCase());
-            
-            HBox actionButtons = new HBox(10);
-            actionButtons.setAlignment(Pos.CENTER_RIGHT);
-            
+    // Header with title and time - LIKE MYBOOKINGS HEADER
+    HBox header = new HBox(10);
+    header.getStyleClass().add("notification-header");
+    
+    Label titleLabel = new Label(notification != null ? notification.getTitle() : "Notification");
+    titleLabel.getStyleClass().add("notification-title");
+    titleLabel.setWrapText(true);
+    
+    HBox spacer = new HBox();
+    HBox.setHgrow(spacer, Priority.ALWAYS);
+    
+    HBox rightSection = new HBox(10);
+    rightSection.setAlignment(Pos.CENTER_RIGHT);
+    
+    Label timeLabel = new Label(notification != null ? formatTime(notification.getCreatedAt()) : "Recently");
+    timeLabel.getStyleClass().add("notification-time");
+    
+    if (notification != null) {
+        Label typeLabel = new Label(notification.getType().toString());
+        typeLabel.getStyleClass().addAll("notification-type-badge", 
+            "notification-type-" + notification.getType().toString().toLowerCase());
+        rightSection.getChildren().addAll(typeLabel, timeLabel);
+    } else {
+        rightSection.getChildren().add(timeLabel);
+    }
+    
+    header.getChildren().addAll(titleLabel, spacer, rightSection);
+    
+    // Message - Like route info in MyBookings
+    Label messageLabel = new Label(notification != null ? notification.getMessage() : "");
+    messageLabel.getStyleClass().add("notification-message");
+    messageLabel.setWrapText(true);
+    messageLabel.setMaxWidth(Double.MAX_VALUE);
+    
+    // Footer with actions - Like booking details in MyBookings
+    HBox details = new HBox(10);
+    details.getStyleClass().add("notification-details");
+    
+    VBox leftDetails = new VBox(5);
+    leftDetails.getStyleClass().add("details-left");
+    
+    // Show related ID if exists (like booking ID in MyBookings)
+    if (notification != null && notification.getRelatedID() != null && !notification.getRelatedID().isEmpty()) {
+        Label relatedLabel = new Label("Related to: " + notification.getRelatedID());
+        relatedLabel.getStyleClass().add("related-info");
+        leftDetails.getChildren().add(relatedLabel);
+    }
+    
+    // Action buttons
+    HBox actionButtons = new HBox(10);
+    actionButtons.setAlignment(Pos.CENTER_RIGHT);
+    
+    if (notification != null && !notification.isRead()) {
+        Button markReadBtn = new Button("Mark as Read");
+        markReadBtn.getStyleClass().add("btn-primary");
+        markReadBtn.setOnAction(e -> markAsRead(notification, card));
+        actionButtons.getChildren().add(markReadBtn);
+    }
+    
+    HBox detailSpacer = new HBox();
+    HBox.setHgrow(detailSpacer, Priority.ALWAYS);
+    details.getChildren().addAll(leftDetails, detailSpacer, actionButtons);
+    
+    // Click to mark as read
+    if (notification != null) {
+        card.setOnMouseClicked(e -> {
             if (!notification.isRead()) {
-                Button markReadBtn = new Button("Mark as Read");
-                markReadBtn.getStyleClass().add("btn-small");
-                markReadBtn.setOnAction(e -> markAsRead(notification, card));
-                actionButtons.getChildren().add(markReadBtn);
+                markAsRead(notification, card);
             }
-            
-            Region footerSpacer = new Region();
-            HBox.setHgrow(footerSpacer, Priority.ALWAYS);
-            
-            footer.getChildren().addAll(typeLabel, footerSpacer, actionButtons);
-            
-            // Click to mark as read
-            card.setOnMouseClicked(e -> {
-                if (!notification.isRead()) {
-                    markAsRead(notification, card);
-                }
-            });
-        }
-        
-        card.getChildren().addAll(header, messageLabel, footer);
-        
-        return card;
+        });
     }
     
+    card.getChildren().addAll(header, messageLabel, details);
+    
+    return card;
+}
+
+private void displayNotifications(List<Notification> notificationsToDisplay) {
+    notificationsContainer.getChildren().clear();
+    
+    if (notificationsToDisplay == null || notificationsToDisplay.isEmpty()) {
+        VBox emptyContainer = new VBox();
+        emptyContainer.setAlignment(Pos.CENTER);
+        emptyContainer.setPadding(new Insets(40));
+        
+        Label noNotifications = new Label("📭 No notifications to display.");
+        noNotifications.getStyleClass().add("empty-label");
+        noNotifications.setAlignment(Pos.CENTER);
+        
+        emptyContainer.getChildren().add(noNotifications);
+        notificationsContainer.getChildren().add(emptyContainer);
+        return;
+    }
+    
+    for (Notification notification : notificationsToDisplay) {
+        VBox notificationCard = createNotificationCard(notification);
+        notificationsContainer.getChildren().add(notificationCard);
+    }
+}
+    
+    // --- HELPER LOGIC ---
+
     private String formatTime(Date date) {
         if (date == null) return "Recently";
-        
         try {
             LocalDateTime now = LocalDateTime.now();
-            LocalDateTime notificationTime = date.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime();
-            
+            LocalDateTime notificationTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
             long minutes = java.time.Duration.between(notificationTime, now).toMinutes();
             
             if (minutes < 1) return "Just now";
             if (minutes < 60) return minutes + " minutes ago";
-            
             long hours = minutes / 60;
             if (hours < 24) return hours + " hours ago";
-            
             long days = hours / 24;
             if (days < 7) return days + " days ago";
             
             return notificationTime.format(DATE_FORMAT);
-        } catch (Exception e) {
-            return "Recently";
-        }
+        } catch (Exception e) { return "Recently"; }
     }
     
     private void markAsRead(Notification notification, VBox card) {
         if (notification == null) return;
-        
-        boolean success = updateNotificationReadStatus(notification.getNotificationID(), true);
-        if (success) {
+        if (updateNotificationReadStatus(notification.getNotificationID(), true)) {
             notification.setRead(true);
             card.getStyleClass().remove("unread");
-            
-            // Refresh the display
-            filterNotifications();
+            // Optional: remove button immediately
+            // filterNotifications(); // Or just refresh visuals
         }
     }
     
@@ -262,41 +310,25 @@ public class NotificationsController implements Initializable {
         confirm.setHeaderText("Are you sure?");
         confirm.setContentText("This will mark all notifications as read.");
         
-        Optional<ButtonType> result = confirm.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            boolean success = markAllNotificationsAsRead();
-            if (success) {
-                // Update local notifications
-                for (Notification notification : notifications) {
-                    notification.setRead(true);
+        confirm.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                if (markAllNotificationsAsRead()) {
+                    for (Notification n : notifications) n.setRead(true);
+                    filterNotifications();
                 }
-                // Refresh display
-                filterNotifications();
             }
-        }
+        });
     }
     
+    // --- DB OPERATIONS ---
+
     private boolean markAllNotificationsAsRead() {
-        if (currentCustomer == null || currentCustomer.getUserID() == null) {
-            System.err.println("Customer or UserID is null");
-            return false;
-        }
-        
         String query = "UPDATE Notifications SET IsRead = 1 WHERE UserID = ? AND IsRead = 0";
-        
-        try (Connection conn = DriverManager.getConnection(
-                DatabaseConfig.getDbUrl(), 
-                DatabaseConfig.getDbUser(), 
-                DatabaseConfig.getDbPassword());
+        try (Connection conn = DriverManager.getConnection(DatabaseConfig.getDbUrl(), DatabaseConfig.getDbUser(), DatabaseConfig.getDbPassword());
              PreparedStatement stmt = conn.prepareStatement(query)) {
-            
             stmt.setString(1, currentCustomer.getUserID());
-            int rowsAffected = stmt.executeUpdate();
-            System.out.println("Marked " + rowsAffected + " notifications as read");
-            return rowsAffected >= 0;
-            
+            return stmt.executeUpdate() >= 0;
         } catch (SQLException e) {
-            System.err.println("Error marking all as read: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -304,20 +336,12 @@ public class NotificationsController implements Initializable {
     
     private boolean updateNotificationReadStatus(int notificationId, boolean isRead) {
         String query = "UPDATE Notifications SET IsRead = ? WHERE NotificationID = ?";
-        
-        try (Connection conn = DriverManager.getConnection(
-                DatabaseConfig.getDbUrl(), 
-                DatabaseConfig.getDbUser(), 
-                DatabaseConfig.getDbPassword());
+        try (Connection conn = DriverManager.getConnection(DatabaseConfig.getDbUrl(), DatabaseConfig.getDbUser(), DatabaseConfig.getDbPassword());
              PreparedStatement stmt = conn.prepareStatement(query)) {
-            
             stmt.setBoolean(1, isRead);
             stmt.setInt(2, notificationId);
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
-            
+            return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.err.println("Error updating notification status: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -325,69 +349,45 @@ public class NotificationsController implements Initializable {
     
     private void filterNotifications() {
         String filter = filterCombo.getValue();
-        
         if (filter == null || filter.equals("All Notifications")) {
             displayNotifications(notifications);
             return;
         }
         
         List<Notification> filtered = new ArrayList<>();
-        
-        switch (filter) {
-            case "Unread Only":
-                for (Notification n : notifications) {
-                    if (n != null && !n.isRead()) filtered.add(n);
-                }
-                break;
-                
-            case "Booking Related":
-                for (Notification n : notifications) {
-                    if (n != null && n.getType() != null && 
-                        n.getType().toString().equalsIgnoreCase("booking")) {
-                        filtered.add(n);
-                    }
-                }
-                break;
-                
-            case "Payment Related":
-                for (Notification n : notifications) {
-                    if (n != null && n.getType() != null && 
-                        n.getType().toString().equalsIgnoreCase("payment")) {
-                        filtered.add(n);
-                    }
-                }
-                break;
-                
-            case "System":
-                for (Notification n : notifications) {
-                    if (n != null && n.getType() != null && 
-                        n.getType().toString().equalsIgnoreCase("system")) {
-                        filtered.add(n);
-                    }
-                }
-                break;
+        for (Notification n : notifications) {
+            if (n == null) continue;
+            boolean matches = false;
+            
+            switch (filter) {
+                case "Unread Only": matches = !n.isRead(); break;
+                case "Booking Related": matches = n.getType().toString().equalsIgnoreCase("booking"); break;
+                case "Payment Related": matches = n.getType().toString().equalsIgnoreCase("payment"); break;
+                case "System": matches = n.getType().toString().equalsIgnoreCase("system"); break;
+            }
+            if (matches) filtered.add(n);
         }
-        
         displayNotifications(filtered);
     }
     
-    private void goBackToDashboard() {
-        // This will be handled by the dashboard navigation
-        // The dashboard controller will show home content
-    }
-    
     private void setLoading(boolean loading) {
-        loadingIndicator.setVisible(loading);
-        notificationsContainer.setVisible(!loading);
-        markAllReadButton.setDisable(loading);
-        refreshButton.setDisable(loading);
-        filterCombo.setDisable(loading);
+        if(loadingIndicator != null) loadingIndicator.setVisible(loading);
+        if(notificationsContainer != null) notificationsContainer.setVisible(!loading);
+        if(markAllReadButton != null) markAllReadButton.setDisable(loading);
+        if(refreshButton != null) refreshButton.setDisable(loading);
+        if(filterCombo != null) filterCombo.setDisable(loading);
     }
     
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
-        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+    
+    private static void showErrorAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
         alert.setContentText(message);
         alert.showAndWait();
     }

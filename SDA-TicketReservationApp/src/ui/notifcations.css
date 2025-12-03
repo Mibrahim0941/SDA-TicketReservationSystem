@@ -1,0 +1,201 @@
+/* === ROOT & BACKGROUND - EXACT SAME === */
+.root, .notifications-page {
+    -fx-background-color: #F5EFE7;
+    -fx-font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+/* === HEADER TEXT - MATCHING MYBOOKINGS (UPDATED TO BE BOLD AND PRETTY) === */
+.dashboard-title {
+    -fx-font-size: 32px; /* Slightly larger for emphasis */
+    -fx-font-weight: 900; /* Use 900 for extra bold */
+    -fx-fill: #2E7D32; /* Brighter, more vibrant green */
+    -fx-font-family: 'Segoe UI', Arial, sans-serif;
+    -fx-effect: dropshadow(gaussian, rgba(46, 125, 50, 0.15), 2, 0.5, 0, 1); /* Subtle shadow for depth */
+}
+
+.dashboard-subtitle {
+    -fx-font-size: 16px;
+    -fx-font-weight: 700; /* Bold */
+    -fx-fill: #4CAF50; /* Lighter, fresh green */
+    -fx-font-family: 'Segoe UI', Arial, sans-serif;
+    -fx-opacity: 0.9;
+}
+
+/* Optional: If you want a gradient effect for the title */
+.dashboard-title.gradient {
+    -fx-fill: linear-gradient(to right, #2E7D32, #4CAF50);
+}
+
+/* Or if you want a more elegant look with serif font */
+.dashboard-title.elegant {
+    -fx-font-family: 'Georgia', 'Times New Roman', serif;
+    -fx-font-weight: bold;
+    -fx-fill: #1B5E20; /* Darker green */
+}
+
+/* === FILTERS AND CONTAINERS - MATCHING MYBOOKINGS === */
+.header-section, .filter-container {
+    -fx-background-color: white;
+    -fx-background-radius: 10px;
+    -fx-padding: 15px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);
+}
+
+.input-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #3F5F3C;
+}
+
+.filter-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #3F5F3C;
+}
+
+/* === NOTIFICATION CARD STYLE - MATCHING BOOKING CARD === */
+.notification-card {
+    -fx-background-color: white; /* Crucial: Makes it look like a card */
+    -fx-background-radius: 15px;
+    -fx-border-radius: 15px;
+    -fx-border-color: #E0E0E0;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); /* Same shadow */
+    -fx-padding: 20px;
+    -fx-spacing: 15px;
+}
+
+.unread {
+    -fx-border-width: 1px 1px 1px 3px;
+    -fx-border-color: #E0E0E0 #E0E0E0 #E0E0E0 #F59E0B; /* Left border for unread */
+    -fx-background-color: #FDFDFD;
+}
+
+/* Notification Header */
+.notification-header {
+    -fx-spacing: 10px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.notification-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #3F5F3C;
+}
+
+.notification-time {
+    -fx-font-size: 12px;
+    -fx-text-fill: #888;
+}
+
+.notification-type-badge {
+    -fx-padding: 5px 12px;
+    -fx-background-radius: 15px;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+}
+
+.notification-type-booking {
+    -fx-background-color: #7E9E7A;
+}
+.notification-type-payment {
+    -fx-background-color: #F59E0B;
+}
+.notification-type-system {
+    -fx-background-color: #64748b;
+}
+
+/* Notification Message */
+.notification-message {
+    -fx-font-size: 14px;
+    -fx-text-fill: #555;
+    -fx-padding: 10px 0;
+}
+
+/* Notification Details */
+.notification-details {
+    -fx-spacing: 10px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.details-left {
+    -fx-spacing: 5px;
+}
+
+/* Buttons - MATCHING MYBOOKINGS */
+.button {
+    -fx-cursor: hand;
+    -fx-background-radius: 5px;
+    -fx-font-weight: bold;
+}
+
+.btn-primary {
+    -fx-background-color: #3F5F3C;
+    -fx-text-fill: white;
+}
+.btn-primary:hover { -fx-background-color: #2F4F2C; }
+
+.btn-secondary {
+    -fx-background-color: #E8E8E8;
+    -fx-text-fill: #333;
+}
+.btn-secondary:hover { -fx-background-color: #D0D0D0; }
+
+.btn-back {
+    -fx-background-color: transparent;
+    -fx-text-fill: #7E9E7A;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-border-color: #7E9E7A;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 10px 20px;
+    -fx-cursor: hand;
+}
+.btn-back:hover {
+    -fx-background-color: #F5EFE7;
+    -fx-text-fill: #5F7F5B;
+}
+.btn-back:pressed {
+    -fx-background-color: #E8EFE5;
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
+}
+
+/* ScrollPane Fixes - EXACT SAME */
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+
+/* Form Controls - EXACT SAME */
+.combo-box {
+    -fx-background-color: white;
+    -fx-border-color: #E0E0E0;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 5px;
+}
+
+.text-field {
+    -fx-background-color: white;
+    -fx-border-color: #E0E0E0;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 8px;
+}
+
+/* Empty State */
+.empty-label {
+    -fx-font-size: 16px;
+    -fx-text-fill: #888;
+    -fx-text-alignment: center;
+}
+
+/* Loading Indicator */
+.loading-indicator {
+    -fx-progress-color: #3F5F3C;
+}
